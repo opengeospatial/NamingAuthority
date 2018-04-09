@@ -1,21 +1,15 @@
-# Standard template
+# OGC Name Type Specification - definitions - part 1 – basic name
 
 ## Content
 
-This folder contains the text for the standard
+This folder contains the DRAFT text for the 'OGC Name Type Specification - definitions - part 1 – basic name' policy.
 
-* standard_document.adoc - the main standard document with references to all sections
-* remaining adocs - each section of the standard document is in a separate document: follow directions in each document to populate
-* images - directory for image files used as figures
-* requirements - directory for requirements and requirement classes to be referenced in clause_7_normative_text.adoc
-* code - sample code to accompany the standard, if desired
-* abstract_tests - the Abstract Test Suite comprising one test for every requirement, optional
-* UML - UML diagrams, if applicable
+The entry point is link:/ogcna_definitions_policy.adoc[ogcna_definitions_policy.adoc].
 
 ## Building
 
 To produce the HTML of the standard run `asciidoctor --safe -a data-uri -o
-standard_document.html standard_document.adoc`.
+ogcna_definitions_policy.html ogcna_definitions_policy.adoc`.
 
 To produce the PDF of the standard run `asciidoctor-pdf --safe -o
-standard_document.pdf standard_document.adoc`
+ogcna_definitions_policy.pdf ogcna_definitions_policy.adoc`
