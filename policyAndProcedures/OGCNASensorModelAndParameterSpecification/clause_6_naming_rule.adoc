@@ -1,0 +1,74 @@
+== Naming Rule
+
+This section describes the naming rule. The section is taken from the OGC policy 'OGC-NA Name type specification - definitions: Part 1 - basic name' (OGC 09-048r3).
+
+=== OGC name schemes
+
+Two URI schemes [IETF RFC 3986] are defined by OGC to provide persistent names for resources of interest in geographic information infrastructures. These include schemas for URNs and HTTP URIs. The register of sensor models and parameters uses HTTP URIs as identifiers. The URIs are grounded on the www.opengis.net domain to ensure OGC is able to provide persistent resolvability of the URIs. The identifiers can be used across OGC standards to refer to parameters that have the same semantics.
+
+The generic syntax for OGC http URIs is
+
+  URI = "http://www.opengis.net/" OGCResource "/" ResourceSpecificPath
+
+The following ABNF adapted from [IETF RFC 3986] provides some basic definitions required in the rest of this document.
+
+  segment       = *pchar
+  segment-nc    = *pchar-nc
+  segment-nz    = 1*pchar
+  segment-nz-nc = 1*pchar-nc
+  pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
+  pchar-nc      = unreserved / pct-encoded / sub-delims / "@"
+  pct-encoded   = "%" HEXDIG HEXDIG
+  unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
+  reserved      = gen-delims / sub-delims
+  gen-delims    = ":" / "/" / "?" / "#" / "[" / "]" / "@"
+  sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
+                  / "*" / "+" / "," / ";" / "="
+
+=== Production rule for specification element names
+
+The basic form for an OGC name that identifies a definition shall be produced using the following rule:
+
+  OGCResource   = "def"
+  ResourceSpecificPath = definition-type "/" authority "/" version "/" code
+  ResourceSpecificString = definition-type ":" authority ":" versionURN ":" codeURN
+  definition-type = segment-nz-nc ; a token from the register of OGC definition types
+  authority     = segment-nz-nc ; a token from the register of OGC authorities
+  version       = segment-nz-nc / "0" ; use 0 for un-versioned names
+  code          = segment-nz-nc *( "/" segment-nz-nc )
+  versionURN    = segment-nc ; this may be a zero-length string
+  codeURN       = segment-nz-nc *( ":" segment-nz-nc )
+
+"version" or "versionURN" is a required field. For un-versioned definitions:
+
+* within the http URI form the version field shall be "0"
+* within the URN form versionURN shall be a zero-length string—so an un-versioned definition can be detected by a pair of colons "::".
+
+The actual code may be composed of a sequence of fields delimited by "/" in the http URI form, or ":" in the URN form.
+
+
+=== Additional rules specific to sensor models
+
+The following additional rules apply to sensor models:
+
+. The *definition-type* in a URI identifying a sensor model shall be set as "sensor-model"
+. The *code* segment of a URI identifying a sensor model shall begin with the acronym or UpperCamelCase name of the specification to which the sensor model belongs (e.g. NITF)
+
+An example URI conforming to the rules listed above is http://www.opengis.net/def/sensor-model/NTB/2.1/NITF/RPC00B
+
+The example is based on the National Imagery Transmission Format (NITF)[MIL-STD-2500C] and its Rapid Positioning Capability extension (RPC00B) [STDI-0002 App E]. In the example URI above, the NTB (NITF Technical Board) is the authority, the version number is 2.1, the specification is NITF and the sensor model name is RPC00B (in this case, the name of the NITF extension).
+
+NOTE: The RPC00B contains rational function polynomial coefficients and normalization parameters that define the physical relationship between image coordinates and ground coordinates. That is, the extension is based on Rational Polynomial Coefficients (RPC).
+
+=== Additional rules specific to sensor model parameters
+
+The following additional rules apply to sensor model parameters:
+
+. The *definition-type* in a URI shall be set as "sensor-model-param"
+. The *code* segment of a URI shall begin with the acronym or UpperCamelCase name of the specification to which the sensor model parameter belongs (e.g. NITF)
+. The last sub-segment of the *code* segment shall be a name unique within the sensor model
+. The *code* segment of a URI may optionally include a sub-segment identifying the sensor model and/or other containers of the sensor model parameter.
+
+An example URI conforming to the rules listed above is http://www.opengis.net/def/sensor-model-param/NTB/2.1/NITF/RPC00B/LINE_OFF
+
+In the example URI above, the NTB is the authority, the version number is 2.1, the specification is NITF, the sensor model is RPC00B, the sensor model parameter is LINE_OFF.
