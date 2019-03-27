@@ -5,7 +5,7 @@ This is the main OGC-NA repository. It will hold the following:
 * definitions 
 * draft policies and procedures
 
-A separate repository is available for the OGC Definitions Server (https://github.com/opengeospatial/OGC-NA).
+A separate repository is available for the OGC Definitions Server (https://github.com/opengeospatial/OGC-NA). The OGC Definitions Server is an online registry that allows for the management of resources such as terms, definitions, vocabularies and other related resources that have been recorded in registers that conform to Linked Data principles. The OGC Definitions Server can be accessed at http://www.opengis.net/def
 
 
 ## Intellectual Property Rights
