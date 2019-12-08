@@ -1,0 +1,183 @@
+# rawgithack
+
+# servers configuration
+root /etc/nginx/rawgithack;
+proxy_cache_path /var/cache/nginx/rawgithack
+		 use_temp_path=off levels=1:2
+		 max_size=5g inactive=7d
+		 keys_zone=rawgithack.cache:20m;
+
+limit_req_zone $http_x_forwarded_for zone=purge:10m rate=1r/m;
+
+gzip on;
+
+error_log logs/error.log warn;
+
+# file extension to mime-type mapping
+# kind of workaround because nginx can detect mime-type only for local file
+map $extension $detect_content_type {
+    ~*^(?:appcache|manifest)$    text/cache-manifest;
+    ~*^atom$                     application/atom+xml;
+    ~*^bat$               	 application/x-msdownload;
+    ~*^coffee$                   text/coffeescript;
+    ~*^css$                      text/css;
+    ~*^csv$                      text/csv;
+    ~*^eot$               	 application/vnd.ms-fontobject;
+    ~*^geojson$                  application/vnd.geo+json;
+    ~*^(?:hbs|handlebars)$    	 text/x-handlebars-template;
+    ~*^htc$                      text/x-component;
+    ~*^html?$                  	 text/html;
+    ~*^ics$		         text/calendar;
+    ~*^jscad$                    application/javascript;
+    ~*^json$                     application/json;
+    ~*^jsonld$                   application/ld+json;
+    ~*^kml$               	 application/vnd.google-earth.kml+xml;
+    ~*^(?:md|markdown)$          text/markdown;
+    ~*^m?js$                     application/javascript;
+    ~*^mhtml$                    multipart/related;
+    ~*^n3$                       text/n3;
+    ~*^nt$                       application/n-triples;
+    ~*^otf$               	 font/otf;
+    ~*^(?:owl|rdf)$              application/rdf+xml;
+    ~*^pdf$               	 application/pdf;
+    ~*^rss$                      application/rss+xml;
+    ~*^shexc?$                   text/shex;
+    ~*^svg$               	 image/svg+xml;
+    ~*^swf$               	 application/x-shockwave-flash;
+    ~*^stl$               	 model/stl;
+    ~*^tt(?:c|f)$                application/x-font-ttf;
+    ~*^ttl$                      text/turtle;
+    ~*^vcard$            	 text/vcard;
+    ~*^vcf$ 			 text/x-vcard;
+    ~*^vtt$                      text/vtt;
+    ~*^woff$              	 application/font-woff;
+    ~*^woff2$             	 application/font-woff2;
+    ~*^xht(?:ml)?$               application/xhtml+xml;
+    ~*^xml$ 			 text/xml;
+    ~*^(?:xsl|xsd)$          	 application/xml;
+    ~*^xslt$                     application/xslt+xml;
+    ~*^ya?ml$          	         text/yaml;
+    ~*^wasm$                     application/wasm;
+    default               	 '';
+}
+
+# defines which extensions should include charset definition
+map $extension $content_type_charset_string {
+    ~*^(?:bat|eot|htc|kml|nt|otf|pdf|svg|swf|ttc|ttf|woff2?|wasm)$ '';
+    default '; charset=utf-8';
+}
+
+map $detect_content_type $detect_content_type_with_fallback {
+    '' $upstream_http_content_type;
+    default $detect_content_type$content_type_charset_string;
+}
+
+map $host $origin {
+    ~*^gl(cdn)?.githack.com$ gitlab.com;
+    ~*^bb(cdn)?.githack.com$ bitbucket.org;
+    ~*^raw(cdn)?.githack.com$ raw.githubusercontent.com;
+    ~*^gist(cdn)?.githack.com$ gist.githubusercontent.com;
+}
+
+map "$detect_content_type:$host" $check_redirect {
+    ~*:\w+cdn.githack.com$ 0;
+    ~*^.+: 0;
+    default 1;
+}
+
+map "$host:$rev" $cache_control {
+    ~*^\w+cdn.githack.com:(?!master).+$ 'public, immutable';
+    default 's-maxage=300, public';
+}
+
+map "$host:$rev" $expires {
+    ~*^\w+cdn.githack.com:(?!master).+$ max;
+    default 5m;
+}
+
+lua_package_path '/etc/nginx/rawgithack/?.lua';
+
+server {
+    listen 80;
+    server_name _;
+
+    resolver 1.1.1.1 1.0.0.1;
+
+    location / {
+        ssi on;
+        limit_except GET { deny all; }
+        if ($host != 'raw.githack.com') {
+            return 301 $scheme://raw.githack.com;
+        }
+    }
+
+    location ~* ^/.+/.+/.+/(.+/)*$ {
+        rewrite ^(.*)/$ $1/index.html last;
+    }
+
+    location ~* ^/[^/]+/[^/]+/(?<rev>[^/]+)/.+?(?:\.(?<extension>[a-zA-Z0-9]+))?$ {
+        limit_except GET { deny all; }
+
+        if ($check_redirect) {
+            add_header Content-Type text/html;
+            return 301 https://$origin$request_uri;
+        }
+
+        proxy_read_timeout 10s;
+
+        # caching
+        proxy_cache rawgithack.cache;
+        proxy_cache_key "$origin$uri";
+        proxy_cache_revalidate on;
+        proxy_cache_valid any 5m;
+        proxy_cache_use_stale updating;
+        proxy_cache_background_update on;
+        proxy_cache_lock on;
+
+        proxy_force_ranges on;
+        proxy_http_version 1.1;
+        proxy_intercept_errors on;
+        proxy_pass https://$origin;
+
+        # we need to hide these headers in order to redefine them
+        # if we don't, they will be set twice
+        proxy_hide_header Status;
+        proxy_hide_header Expires;
+        proxy_hide_header Content-Type;
+        proxy_hide_header Cache-Control;
+        proxy_hide_header X-Frame-Options;
+        proxy_hide_header X-XSS-Protection;
+        proxy_hide_header Content-Disposition;
+        proxy_hide_header Content-Security-Policy;
+        proxy_hide_header Strict-Transport-Security;
+        proxy_hide_header Access-Control-Allow-Origin;
+
+        expires $expires;
+
+        # robots, go away!
+        add_header X-Robots-Tag none;
+
+        add_header Cache-Control $cache_control;
+        add_header Access-Control-Allow-Origin *;
+        add_header X-Githack-Cache-Status $upstream_cache_status;
+        add_header Content-Type $detect_content_type_with_fallback;
+    }
+
+    location /purge {
+        set $_url "";
+        limit_req zone=purge nodelay;
+        limit_req_status 429;
+        limit_except POST { deny all; }
+        default_type text/html;
+        lua_need_request_body on;
+        # lua_code_cache off;
+        content_by_lua_block { require("rawgithack").purge_request() }
+    }
+
+    location /proxy {
+        internal;
+        rewrite_by_lua_block { require("rawgithack").patch_proxy() }
+        proxy_http_version 1.1;
+        proxy_pass $_url;
+    }
+}
