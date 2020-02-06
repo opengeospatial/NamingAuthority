@@ -11,6 +11,7 @@ The OGC Definitions Server is an online registry that allows for the management 
 
 The OGC Definitions Server can be accessed at http://www.opengis.net/def/
 
+Presently, the 'OGC Naming Authority registers' of the Definitions Server include among others Sensor Model registers and a list of authorities for definitions endorsed by the OGC, while the 'OGC definitions' list Observation Types and includes the Cadastre and Land Administration Thesaurus.
 
 ## Intellectual Property Rights
 
