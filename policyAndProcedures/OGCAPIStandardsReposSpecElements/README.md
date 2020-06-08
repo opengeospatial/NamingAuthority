@@ -6,6 +6,8 @@ This folder contains the DRAFT text for the OGC Policy on 'Naming of OGC API Sta
 
 The entry point is link:/ogcna_ogcapinaming_policy.adoc[ogcna_ogcapinaming_policy.adoc].
 
+https://htmlpreview.github.io/?https://github.com/opengeospatial/NamingAuthority/blob/master/policyAndProcedures/OGCAPIStandardsReposSpecElements/ogcna_ogcapinaming_policy.html
+
 ## Building
 
 To produce the HTML of the standard run `asciidoctor --safe -a data-uri -o ogcna_ogcapinaming_policy.html ogcna_ogcapinaming_policy.adoc`.
