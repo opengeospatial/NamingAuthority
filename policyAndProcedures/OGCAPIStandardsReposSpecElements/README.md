@@ -1,4 +1,4 @@
-# OGC Name Type Specification - definitions - part 1 – basic name
+# Naming of OGC API Standards, Repositories & Specification Elements
 
 ## Content
 
