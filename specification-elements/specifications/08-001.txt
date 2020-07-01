@@ -1,0 +1,1817 @@
+
+  
+ 
+
+ 
+
+Open Geospatial Consortium, Inc. 
+
+Date: 2008-01-02 
+
+Reference number of this document: OGC 08-001 
+
+Version: 0.0.9 
+
+Category: OGC Discussion Paper 
+
+Editor: Raj Singh 
+
+OGC® Loosely Coupled Synchronization of  
+
+Geographic Databases in the  
+
+Canadian Geospatial Data Infrastructure Pilot 
+
+ 
+
+ 
+
+Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 
+
+To obtain additional rights of use, visit http://www.opengeospatial.org/legal/. 
+
+ 
+
+Warning 
+
+This document is not an OGC Standard. This document is an OGC Discussion 
+
+Paper and is therefore not an official position of the OGC membership. It is 
+
+distributed for review and comment. It is subject to change without notice and may 
+
+not be referred to as an OGC Standard. Further, an OGC Discussion Paper should 
+
+not be referenced as required or mandatory technology in procurements. 
+
+Document type:  OpenGIS
+® 
+
+Discussion Paper 
+
+Document subtype: NA 
+
+Document stage:  Approved for release 
+
+Document language:  English 
+
+http://www.opengeospatial.org/legal/
+
+
+OGC 08-001 
+
+ii Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+ 
+
+ 
+
+Preface 
+
+This Discussion Paper documents results from the Interoperability Program CGDI Pilot 
+
+and describes a suite of services that enable the sharing of geographic information across 
+
+organizations for the purposes of: geographic database synchronization in support of a 
+
+spatial data infrastructure; geographic database modification suggestions from trusted and 
+
+un-trusted sources; and the transmission of geographic information in emergency 
+
+notification events. 
+
+These services are called the Update Feed Service; Feedback Feed Service; and 
+
+Emergency Alert Service respectively. Their information encodings are all based on the 
+
+Atom Syndication Format, extended with GML and WFS Filter encodings to support 
+
+geospatial requirements, and were implemented in the Canadian Geospatial Data 
+
+Infrastructure Pilot. 
+
+Suggested additions, changes, and comments on this draft report are welcome and 
+
+encouraged. Such suggestions may be submitted by email message or by making 
+
+suggested changes in an edited copy of this document. 
+
+The changes made in this document version, relative to the previous version, are tracked 
+
+by Microsoft Word, and can be viewed if desired. If you choose to submit suggested 
+
+changes by editing this document, please first accept all the current changes, and then 
+
+make your suggested changes with change tracking on. 
+
+ 
+
+
+
+OGC 08-001 
+
+Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. iii 
+ 
+
+Contents Page 
+
+1 Introduction ....................................................................................................................1 
+
+1.1 Scope ........................................................................................................................1 
+
+1.2 Document contributor contact points .......................................................................1 
+
+1.3 Revision history .......................................................................................................1 
+
+1.4 Future work ..............................................................................................................2 
+
+2 References ......................................................................................................................2 
+
+3 Terms and definitions ....................................................................................................2 
+
+4 Conventions ...................................................................................................................3 
+
+4.1 Abbreviated terms ....................................................................................................3 
+
+5 Overview ........................................................................................................................3 
+
+5.1 Requirements ...........................................................................................................3 
+
+5.2 Geo-synchronization architecture ............................................................................4 
+
+6 Update Feed Service ......................................................................................................6 
+
+6.1 Update Feed XML Encoding ...................................................................................7 
+
+6.2 Update Feed Query Interface .................................................................................11 
+
+7 Feedback Feed Service ................................................................................................12 
+
+7.1 Overview ................................................................................................................12 
+
+7.2 Workflow ...............................................................................................................12 
+
+7.3 Feedback Feed XML Encoding .............................................................................13 
+
+8 Emergency Alert Service .............................................................................................16 
+
+ 
+
+Figures Page 
+
+Figure 1 — Geo-Synchronization Architecture .............................................................................. 6 
+
+Figure 2 — Update Feed Example ................................................................................................. 9 
+
+Figure 3 — Update Feed Query (WFS Filter) .............................................................................. 12 
+
+Figure 4 — User Feedback Web Client ........................................................................................ 13 
+
+Figure 5 — Feedback Feed Example ........................................................................................... 16 
+
+Figure 6 — Toxic Plume Emergency Event ................................................................................. 16 
+
+Figure 7 — Emergency Alert Feed Example ............................................................................... 18 
+
+  
+
+ 
+
+
+
+OpenGIS
+®
+ Engineering Report OGC 08-001 
+
+ 
+
+Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 1 
+ 
+
+OGC® Loosely Coupled Synchronization of Geographic 
+Databases in the Canadian Geospatial Data Infrastructure 
+Pilot 
+
+1 Introduction 
+
+1.1 Scope 
+
+This OGC™ Discussion Paper defines information encodings for specifying changes to 
+
+geographic information sets. It does not define service interfaces for accessing these 
+
+resources, as it is expected that the Atom Publishing Protocol, or in simple cases, HTTP 
+
+GET alone, suffices for the service interface. 
+
+Attention is drawn to the possibility that some of the elements of this document may be 
+
+the subject of patent rights. The OGC shall not be held responsible for identifying any or 
+
+all such patent rights. 
+
+1.2 Document contributor contact points 
+
+All questions regarding this document should be directed to the editor or the contributors: 
+
+Name Organization 
+
+Raj Singh OGC 
+
+Peter Vretanos Cubewerx Inc. 
+
+Josh Lieberman Traverse Technologies 
+
+Peter Rushforth Natural Resources Canada 
+
+ 
+
+1.3 Revision history 
+
+Date Release Editor Primary clauses 
+modified 
+
+Description 
+
+28 Jan 08 1 Singh  1
+st
+ public release 
+
+     
+
+     
+
+ 
+
+
+
+OGC 08-001 
+
+2 Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+1.4 Future work 
+
+Improvements in this document are desirable to specify a distributed publication 
+
+mechanism for these feed services, to refine the encoding of geospatial information in an 
+
+Atom feed, and to validate the utility of using the Atom service architecture as a 
+
+foundation for geographic information sharing. 
+
+2 References 
+
+The following documents are referenced in this document. For dated references, 
+
+subsequent amendments to, or revisions of, any of these publications do not apply. For 
+
+undated references, the latest edition of the normative document referred to applies. 
+
+The Atom Syndication Format, http://www.ietf.org/rfc/rfc4287.txt 
+
+The Atom Publishing Protocol, http://www.ietf.org/rfc/rfc5023.txt 
+
+GeoRSS: Geographically Encoded Objects for RSS feeds, http://georss.org 
+
+OGC 06-121r3, OpenGIS
+®
+
+ Web Services Common Specification 
+
+OGC 04-094, OpenGIS
+®
+
+ Web Feature Service Implementation Specification 
+
+3 Terms and definitions 
+
+For the purposes of this report, the definitions specified in Clause 4 of the OWS Common 
+
+Implementation Specification [OGC 06-121r3] shall apply. In addition, the following 
+
+terms and definitions apply. 
+
+3.1  
+
+Atom 
+
+Atom Syndication Format 
+
+an XML-based document format that describes lists of related information known as 
+
+"feeds", which are composed of a number of items, known as "entries", each with an 
+
+extensible set of attached metadata 
+
+3.2  
+
+GeoRSS 
+
+GeoRSS describes a number of ways to encode location in RSS and Atom feeds. There 
+
+are two encodings of GeoRSS: GeoRSS Simple and GeoRSS GML. Both encodings 
+
+support the encoding of basic geometries (point, line, polygon, and box).  GeoRSS 
+
+Simple geometries may only support one coordinate reference system—WGS-84 
+
+latitude/longitude in decimal degrees. GeoRSS GML is a formal GML Application 
+
+Profile, and allows the coordinate reference system to be specified as with any GML 
+
+feature. Both formats are designed for use with Atom 1.0, RSS 2.0 and RSS 1.0, although 
+
+it can be used just as easily in non-RSS XML encodings. The definition of GeoRSS is at 
+
+<http://georss.org>. 
+
+
+
+OGC 08-001 
+
+Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 3 
+ 
+
+3.3  
+
+Atom+GeoRSS 
+
+Atom+GeoRSS refers to an XML encoding using Atom version 1.0 with the GeoRSS 
+
+extension. 
+
+4 Conventions 
+
+4.1 Abbreviated terms 
+
+APP Atom Publishing Protocol 
+
+CGDI GeoConnections Canada’s Canadian Geospatial Infrastructure 
+
+IT Information Technology 
+
+SDI Spatial Data Infrastructure 
+
+SOA Service Oriented Architecture 
+
+XML eXtensible Markup Language 
+
+5 Overview 
+
+In today’s environment where users and organizations are collaborating over the creation 
+
+and on-going maintenance of geospatial data sets it is of critical importance for all Spatial 
+
+Data Infrastructure (SDI) partnerships to be able to share geographic information in real 
+
+time, and make the costs associated with sharing—in labor and IT resources—negligible. 
+
+In this report the activity of enabling cross-jurisdiction updates to geographic data is 
+
+termed federated geo-synchronization. 
+
+Some have approached this requirement from the database perspective, expecting 
+
+collaborating organizations to use database replication technology for their geographic 
+
+data sharing needs. This strategy cannot work in most cases because, most notably, every 
+
+organization needs to work with a different information model. For example, a local 
+
+jurisdiction often needs to maintain a large set of properties on their roads data, such as 
+
+maintenance-related items like pavement quality and type. At the national level, however, 
+
+that information is unnecessary. Another limitation of replication technology is that all 
+
+parties must be using the same software. This is rarely the case in a multi-organization 
+
+setting. Finally, replication involves reaching deep into another organization’s IT 
+
+infrastructure, requiring a level of trust between the parties which isn’t always there.  
+
+The CGDI Pilot sought to minimize these barriers to participation by developing an 
+
+interoperable solution to the geographic data synchronization problem that has none of 
+
+these drawbacks. We also believe that this solution to the federated geo-synchronization 
+
+issue is applicable to ongoing SDI initiatives across the globe.  
+
+5.1 Requirements 
+
+The geographic data sharing requirements of the CGDI Pilot were as follows: 
+
+
+
+OGC 08-001 
+
+4 Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+1. Establish a mechanism for supporting feature synchronization and data currency 
+in a distributed and collaborative SDI environment. 
+
+2. Support and promote close-to-source ownership of geospatial data for all data 
+providers. 
+
+3. Ensure real-time access to current geographic features in Canada. 
+
+4. Establish a permanent collaborative environment for geospatial data as a key 
+component for creating a sustainable and current spatial data infrastructure in 
+
+Canada. 
+
+5. Consolidate the CGDI as the permanent spatial information infrastructure for 
+accessing current geographic data content across government departments in 
+
+Canada. 
+
+The CGDI Pilot project aims at establishing distributed geospatial data resources from 
+
+data providers at regional, provincial and national levels in Canada and maintaining 
+
+common and integrated data content at the national level using shared data models and 
+
+open interfaces for supporting feature synchronization. 
+
+5.2 Geo-synchronization architecture 
+
+Geo-synchronization implies that a data provider may decide to keep his data store in 
+
+synchronization with a portion or all of the content of one or more other geospatial data 
+
+sources at a particular time. If the initial process involves also copying the content of the 
+
+source to the target data store then the geo-synchronization service may also be used for 
+
+data replication.  
+
+The proposed geo-synchronization service architecture described below allows SDI data 
+
+provider participants to meet the following requirements: 
+
+ Keep data stores of SDI data provider participants in synchronization with a 
+portion or all of the geospatial data content from one or more other data stores.  
+
+ Keep data stores of SDI data provider participants current by allowing external or 
+internal users to submit feature change proposals via the GeoSynchronization 
+
+service.    
+
+The proposed architecture follows the SOA model in a loosely coupled environment. The 
+
+service allows data custodians to publicize changes to their geographic databases in a 
+
+machine-readable manner, enabling geo-synchronization clients to automatically perform 
+
+synchronization activities. Another feature of the architecture is that end users (internal or 
+
+external to an organization) can create suggested feature change requests which are 
+
+broadcast back to the data custodians, creating an efficient business process for accepting 
+
+change requests, checking their validity, and applying the suggested change if deemed 
+
+appropriate. To close the loop, those changes are then publicized in the same was as 
+
+internal edits to the database.  
+
+
+
+OGC 08-001 
+
+Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 5 
+ 
+
+The overall mechanism for implementing the architecture uses a message format known 
+
+as Atom+GeoRSS feeds. The popular Atom specification for encoding timely event 
+
+information had already been extended to support simple geographic features with 
+
+GeoRSS (http://en.wikipedia.org/wiki/GeoRSS).  The Atom+GeoRSS feed content has 
+
+been popularized by Google News and can easily be overlaid on a map using Google 
+
+Maps. The CGDI Pilot extends Atom+GeoRSS for geo-synchronization by adding GML 
+
+features and/or WFS Filter requests that return GML features, to the format. 
+
+The geo-synchronization architecture presented in Figure 1 describes essential elements 
+
+of a geo-synchronization service, including data currency and synchronization/replication 
+
+of geospatial data. The section below indicates the role that each SDI participant may 
+
+play when using the service. 
+
+User Role: 
+
+1. A user internal to a data provider organization or external to the organization such 
+as a field worker, anonymous internet user, trusted user etc. connects to a WFS 
+
+service at a data provider site.  
+
+2. He identifies an error in a geographic feature and wants to submit a “feature 
+
+change” request. Using a client application he creates a GeoRSS feed entry of the 
+
+“feature change” and posts his request to the GeoSynchronization service (change 
+
+feed) of the data provider. The user subscribes to the update feed of the data 
+
+provider GeoSynchronization service and awaits a response for his feature change 
+
+request. 
+
+Data Provider Role: 
+
+3. A person responsible for the maintenance of geospatial data at a data provider site 
+such as a Provincial Custodian representative has previously subscribed to the 
+
+change feed of his geo-synchronization service and receives the “feature change” 
+
+requests posted by users. 
+
+4. Using a client tool the Provincial Custodian representative validates the change 
+request.  
+
+5. If accepted, the Provincial Custodian representative applies change request to his 
+data store and the provincial WFS server posts an entry to the update feed of his 
+
+GeoSynchronization service, indicating that the change request was accepted.  
+
+6. If rejected, the tool used by the Provincial Custodian representative posts an entry 
+to the update feed of his GeoSynchronization service, indicating that the change 
+
+request was rejected. 
+
+7. Following a response from the Provincial Custodian representative the user is 
+
+notified of the result of his proposed “feature change” request. 
+
+Other Data Provider Role: 
+
+http://www.georss.org/
+
+
+OGC 08-001 
+
+6 Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+8. Another data provider wishing to keep his data store in synchronization with the 
+Provincial Custodian data store subscribes to the update feed available from the 
+
+GeoSynchronization service of the Provincial Custodian and using his own 
+
+software tool applies accepted entries to his own data store. 
+
+GeoSynchronization Service
+
+(for all parties)
+
+Copyright © 2007 CubeWerx Inc.
+
+CarbonArc
+
+Other Participants
+
+User
+
+Provincial Custodian Change Item
+
+Accept
+
+Change?
+
+Change Feed
+
+CarbonArc
+
+Accepted Item
+
+Rejected Item
+
+Update Feed
+
+CarbonArc
+
+1
+
+Yes5
+
+6 No
+
+8
+
+7
+
+4
+
+3
+
+2
+
+Table 1 - Proposed GeoSynchronization Architecture
+
+State Datastore
+
+Participant Datastore
+
+ 
+
+Figure 1 — Geo-Synchronization Architecture 
+
+6 Update Feed Service 
+
+The Update Feed service interface is extremely simple. There are two critical 
+
+requirements for federated updates to work. First, federation partners must implement a 
+
+common GML profile for the data being shared, and expose it through a WFS interface. 
+
+Note that internally, each party may have a database model that is a superset of the shared 
+
+model. Second, the geographic features in the shared data must have a globally unique 
+
+identifier (GUID) property, so that no feature from any participant in the federation has a 
+
+conflicting GUID.  
+
+The service simply involves publishing to a Web location with a stable URI an “Update 
+
+Feed” in Atom format with entries that contain either the actual changed features in the 
+
+database, or a WFS query that returns the changed features. The feed can simply be an 
+
+XML document located at a specific, fixed URL. Therefore, if desired, the feed can be 
+
+secured and encrypted using any number of standard Web security technologies. Since 
+
+the CGDI Pilot required geographic query on feeds, we implemented the architecture as a 
+
+WFS. It may be useful to make this a generic requirement of an SDI federation, but it is 
+
+not a specific requirement of the architecture. 
+
+To synchronize a data store with a source provider, a third party data provider must 
+
+implement an Update Feed client and subscribe to an Update Feed from one or more 
+
+
+
+OGC 08-001 
+
+Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 7 
+ 
+
+federation partners. Update Feed clients are software components that can parse and act 
+
+on that feed. Once received, Update Feed entries are read and applied to a geodata store.  
+
+In the CGDI Pilot, the WFS Transaction interface was used to apply database changes, 
+
+but this fact was opaque to the federation. The detailed characteristics of how the client 
+
+performs the synchronization are of no concern to the interface. In theory, database 
+
+maintainers could use native software to update their databases and still be in compliance 
+
+with the interoperability requirements of the architecture. The only test of whether or not 
+
+the synchronization client-service interaction is successful is to query both data services 
+
+for the feature GUID and check that the content is identical in both locations. 
+
+6.1 Update Feed XML Encoding 
+
+Due to the simplicity of the interface, the only thing that must be detailed is the encoding 
+
+of the XML document. The Atom Syndication Format was used for this purpose, along 
+
+with the GeoRSS extension to Atom. This combination is generally called 
+
+Atom+GeoRSS. The CGDI Pilot further extended this format to support the encoding of 
+
+GML features and WFS queries to meet the project’s needs. 
+
+The method of creating the feed is outside the scope of this interface. We recommend that 
+
+services use the Atom Publishing Protocol to create the feed, but that decision has no 
+
+bearing on the feed’s use in a geo-synchronization setting. 
+
+Examining the example in <?xml version="1.0" encoding="UTF-8"?> 
+
+<feed xmlns="http://www.w3.org/2005/Atom" 
+
+xmlns:georss="http://www.georss.org" 
+
+xmlns:gb="http://www.geobase.ca/interop-pilot-2007" 
+
+xmlns:gml="http://www.opengis.net/gmlsf"> 
+
+  <title>Geobase Feedback</title> 
+
+  <category term="update"/> 
+
+  <link href="http://www.geobase.ca/update"/> 
+
+  <updated>2003-12-13T18:30:02Z</updated> 
+
+  <author> 
+
+    <name>John Doe</name> 
+
+    <email>jdoe@geobase.ca</email> 
+
+  </author> 
+
+  <generator>Cubeserv</generator> 
+
+  <id>urn:uuid:60a76c80-d399-11d9-b93C-0003939e0af7</id> 
+
+  <entry> 
+
+    <title>Ontario updates</title> 
+
+    <author> 
+
+      <name>John Doe</name> 
+
+      <uri>http://www.example.com</uri> 
+
+      <email>jdoe@example.com</email> 
+
+    </author> 
+
+    <category  
+
+scheme="http://www.geobase.ca/scheme/feedtype" 
+
+term="feedback"/> 
+
+    <category  
+
+scheme="http://www.geobase.ca/scheme/domain"  
+
+term="Ontario updates"/> 
+
+
+
+OGC 08-001 
+
+8 Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+    <category  
+
+scheme="http://www.geobase.ca/scheme/featuretype" 
+
+term="Road Segment"/> 
+
+    <category  
+
+scheme="http://www.geobase.ca/scheme/action"  
+
+term="insert"/> 
+
+    <category  
+
+scheme="http://www.geobase.ca/scheme/status"  
+
+term="proposed"/> 
+
+    <content>Ontario updates</content> 
+
+    <id>urn:uuid:aca7bb43-2bd1-4c34-8d13-7b6b5644f2c0</id> 
+
+    <updated>2007-11-06</updated> 
+
+    <summary> 
+
+Updates digitized with GeoBase WMS backdrop. 
+
+ </summary> 
+
+    <georss:where> 
+
+      <gml:Point srsName="urn:ogc:def:crs:EPSG:6.11.2:4326"> 
+
+        <gml:pos>43.928958 -78.933283</gml:pos> 
+
+      </gml:Point> 
+
+    </georss:where> 
+
+    <georss:featureOfInterest> 
+
+      <gml:FeatureCollection  
+
+xmlns:gb="http://www.geobase.ca/interop-pilot-2007"> 
+
+        <gml:boundedBy> 
+
+          <gml:boundedBy> 
+
+            <gml:Envelope 
+
+ srsName="urn:ogc:def:crs:EPSG:6.11.2:4326"> 
+
+              <gml:lowerCorner>43.92566 -78.93541</gml:lowerCorner> 
+
+              <gml:upperCorner>43.92895 -78.93328</gml:upperCorner> 
+
+            </gml:Envelope> 
+
+          </gml:boundedBy> 
+
+        </gml:boundedBy> 
+
+        <gml:featureMember> 
+
+          <gb:RoadSegment> 
+
+            <gb:cgdiId>urn:uuid:cebc5f9b-8bcb-47d6-a51c-
+
+0753d5170475</gb:cgdiId> 
+
+<gb:planimetricDataAccuracy>0 
+
+</gb:planimetricDataAccuracy> 
+
+<gb:acquisitionTechnique>n.a. 
+
+</gb:acquisitionTechnique> 
+
+            <gb:acquisitionProvider>n.a.</gb:acquisitionProvider> 
+
+            <gb:acquisitionOrRevisionDate>2007-11-06-05:00 
+
+</gb:acquisitionOrRevisionDate> 
+
+            <gb:nationalRoadClass>Arterial</gb:nationalRoadClass> 
+
+            <gb:numberOfLanes>0</gb:numberOfLanes> 
+
+            <gb:pavementStatus>n.a.</gb:pavementStatus> 
+
+<gb:pavedRoadSurfaceType>n.a.</gb:pavedRoadSurfaceType> 
+
+<gb:unpavedRoadSurfaceType>n.a.</gb:unpavedRoadSurfaceType> 
+
+            <gb:roadSegmentID>cebc5f9b-8bcb-47d6-a51c-0753d5170475 
+
+</gb:roadSegmentID> 
+
+            <gb:segment> 
+
+              <gml:LineString  
+
+
+
+OGC 08-001 
+
+Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 9 
+ 
+
+srsName="urn:x-ogc:def:crs:EPSG:6.11.2:4326"> 
+
+                <gml:posList>43.927222 -78.93475 43.928612 -78.935393  
+
+        … etc … 
+
+43.926257 -78.9333834 43.9259504 -78.9332889  
+
+</gml:posList> 
+
+              </gml:LineString> 
+
+            </gb:segment> 
+
+          </gb:RoadSegment> 
+
+        </gml:featureMember> 
+
+        … etc … 
+
+   </gml:FeatureCollection> 
+
+    </georss:featureOfInterest> 
+
+  </entry> 
+
+</feed> 
+
+Figure 2, there are several novel uses of the Atom format that are worthy of notice: 
+
+ The <entry>’s <id> is the feature’s GUID. 
+
+ The <entry>’s <author> is the data custodian 
+
+ <category> elements are used to communicate keywords from a formal 
+dictionary. So the feed type is update, the domain is Tasmania, the feature type is 
+
+placename, and so on. 
+
+ <updated> is the time the feature was created, updated or deleted 
+
+ <summary> and <content> allows for a narrative explanation of the update 
+
+ <georss:where> is used as a general “hint” as to where the feature is located, 
+which may be the actual location in the case of a simple point, line or polygon, or 
+
+the bounding box of a more complex feature. 
+
+ <georss:featureOfInterest> is the actual feature to be updated. 
+
+ 
+
+ 
+
+ 
+
+<?xml version="1.0" encoding="UTF-8"?> 
+
+<feed xmlns="http://www.w3.org/2005/Atom" 
+
+xmlns:georss="http://www.georss.org" 
+
+xmlns:gb="http://www.geobase.ca/interop-pilot-2007" 
+
+xmlns:gml="http://www.opengis.net/gmlsf"> 
+
+  <title>Geobase Feedback</title> 
+
+  <category term="update"/> 
+
+  <link href="http://www.geobase.ca/update"/> 
+
+  <updated>2003-12-13T18:30:02Z</updated> 
+
+  <author> 
+
+
+
+OGC 08-001 
+
+10 Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+    <name>John Doe</name> 
+
+    <email>jdoe@geobase.ca</email> 
+
+  </author> 
+
+  <generator>Cubeserv</generator> 
+
+  <id>urn:uuid:60a76c80-d399-11d9-b93C-0003939e0af7</id> 
+
+  <entry> 
+
+    <title>Ontario updates</title> 
+
+    <author> 
+
+      <name>John Doe</name> 
+
+      <uri>http://www.example.com</uri> 
+
+      <email>jdoe@example.com</email> 
+
+    </author> 
+
+    <category  
+
+scheme="http://www.geobase.ca/scheme/feedtype" 
+
+term="feedback"/> 
+
+    <category  
+
+scheme="http://www.geobase.ca/scheme/domain"  
+
+term="Ontario updates"/> 
+
+    <category  
+
+scheme="http://www.geobase.ca/scheme/featuretype" 
+
+term="Road Segment"/> 
+
+    <category  
+
+scheme="http://www.geobase.ca/scheme/action"  
+
+term="insert"/> 
+
+    <category  
+
+scheme="http://www.geobase.ca/scheme/status"  
+
+term="proposed"/> 
+
+    <content>Ontario updates</content> 
+
+    <id>urn:uuid:aca7bb43-2bd1-4c34-8d13-7b6b5644f2c0</id> 
+
+    <updated>2007-11-06</updated> 
+
+    <summary> 
+
+Updates digitized with GeoBase WMS backdrop. 
+
+ </summary> 
+
+    <georss:where> 
+
+      <gml:Point srsName="urn:ogc:def:crs:EPSG:6.11.2:4326"> 
+
+        <gml:pos>43.928958 -78.933283</gml:pos> 
+
+      </gml:Point> 
+
+    </georss:where> 
+
+    <georss:featureOfInterest> 
+
+      <gml:FeatureCollection  
+
+xmlns:gb="http://www.geobase.ca/interop-pilot-2007"> 
+
+        <gml:boundedBy> 
+
+          <gml:boundedBy> 
+
+            <gml:Envelope 
+
+ srsName="urn:ogc:def:crs:EPSG:6.11.2:4326"> 
+
+              <gml:lowerCorner>43.92566 -78.93541</gml:lowerCorner> 
+
+              <gml:upperCorner>43.92895 -78.93328</gml:upperCorner> 
+
+            </gml:Envelope> 
+
+          </gml:boundedBy> 
+
+        </gml:boundedBy> 
+
+        <gml:featureMember> 
+
+          <gb:RoadSegment> 
+
+
+
+OGC 08-001 
+
+Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 11 
+ 
+
+            <gb:cgdiId>urn:uuid:cebc5f9b-8bcb-47d6-a51c-
+
+0753d5170475</gb:cgdiId> 
+
+<gb:planimetricDataAccuracy>0 
+
+</gb:planimetricDataAccuracy> 
+
+<gb:acquisitionTechnique>n.a. 
+
+</gb:acquisitionTechnique> 
+
+            <gb:acquisitionProvider>n.a.</gb:acquisitionProvider> 
+
+            <gb:acquisitionOrRevisionDate>2007-11-06-05:00 
+
+</gb:acquisitionOrRevisionDate> 
+
+            <gb:nationalRoadClass>Arterial</gb:nationalRoadClass> 
+
+            <gb:numberOfLanes>0</gb:numberOfLanes> 
+
+            <gb:pavementStatus>n.a.</gb:pavementStatus> 
+
+<gb:pavedRoadSurfaceType>n.a.</gb:pavedRoadSurfaceType> 
+
+<gb:unpavedRoadSurfaceType>n.a.</gb:unpavedRoadSurfaceType> 
+
+            <gb:roadSegmentID>cebc5f9b-8bcb-47d6-a51c-0753d5170475 
+
+</gb:roadSegmentID> 
+
+            <gb:segment> 
+
+              <gml:LineString  
+
+srsName="urn:x-ogc:def:crs:EPSG:6.11.2:4326"> 
+
+                <gml:posList>43.927222 -78.93475 43.928612 -78.935393  
+
+        … etc … 
+
+43.926257 -78.9333834 43.9259504 -78.9332889  
+
+</gml:posList> 
+
+              </gml:LineString> 
+
+            </gb:segment> 
+
+          </gb:RoadSegment> 
+
+        </gml:featureMember> 
+
+        … etc … 
+
+   </gml:FeatureCollection> 
+
+    </georss:featureOfInterest> 
+
+  </entry> 
+
+</feed> 
+
+Figure 2 — Update Feed Example 
+
+6.2 Update Feed Query Interface 
+
+The only major problem with using Atom for the Update Feed requirement was the lack 
+
+of a query interface in the standard, which obviously includes the lack of a geographic 
+
+query interface. For expediency, participants used the WFS Filter query interface to get 
+
+around this problem, but more work needs to be done in this area before a generic 
+
+solution can be proposed. Figure 3 shows a simple time-based WFS query that returns all 
+
+entries on or after December, 12, 2003. 
+
+<wfs:GetFeature service="WFS" version="1.1.0" outputFormat="ATOM"> 
+
+ <wfs:Query typeName="cw:FeedBackFeed"> 
+
+  <ogc:Filter> 
+
+   <ogc:PropertyIsGreaterThan> 
+
+    <ogc:PropertyName>entry/updated</ogc:PropertyName> 
+
+    <ogc:Literal>2003-12-11T00:00:00</ogc:Literal> 
+
+   </ogc:PropertyIsGreaterThan> 
+
+  </ogc:Filter> 
+
+ </wfs:Query> 
+
+
+
+OGC 08-001 
+
+12 Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+</wfs:GetFeature> 
+
+Figure 3 — Update Feed Query (WFS Filter) 
+
+7 Feedback Feed Service 
+
+7.1 Overview 
+
+Another project requirement was to demonstrate how the Update Feed architecture could 
+
+support database updates from authoritative and anonymous sources. To fulfill this goal, 
+
+the publish-subscribe methodology described above for update synchronization was used, 
+
+and the Atom+GeoRSS format was also deemed appropriate for this use case. The only 
+
+differences between the update feed and the feedback feed are that feedback feed entries 
+
+must contain complete GML features (no WFS queries), and the entries may also contain 
+
+an attribute stating whether the feature is an addition, modification, or deletion request. 
+
+In the CGDI Pilot a Web-based client was developed to demonstrate the ability for a 
+
+national clearinghouse, like GeoConnections, to provide end users with a simple 
+
+graphical interface for creating feedback—suggested changes, additions, deletions—on 
+
+data accessible through the clearinghouse. While the feedback map resides on the federal 
+
+system, the closest-to-source provincial data providers ultimately were the ones handling 
+
+the feedback requests for their jurisdictions.  
+
+7.2 Workflow 
+
+The feedback workflow had the following steps: 
+
+1. User views data on a map using WMS and WFS services. 
+
+2. User enters editing mode. 
+
+3. User modifies geometry and attributes of an existing feature or creates a new one. 
+
+4. User saves the suggested change into a Feedback Feed. 
+
+5. The province receives notification of the feedback by querying the feedback feed 
+for new entries in their area of custodianship. 
+
+6. Provincial data custodian reviews relevant entries from the Feedback feed, then 
+copies or rejects update in the province database.  
+
+7. Province posts a new event to their Update Feed. 
+
+
+
+OGC 08-001 
+
+Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 13 
+ 
+
+ 
+
+Figure 4 — User Feedback Web Client 
+
+7.3 Feedback Feed XML Encoding 
+
+The Feedback Feed uses the same Atom XML encoding as the Update Feed. The only 
+
+difference is in the usage of the information model. Notice that the title of the example in 
+
+Error! Reference source not found. refers to a correction instead of an update.  
+
+Data custodians have two methods of deciding on the authenticity of the feedback’s 
+
+author. The first is the information in the <author> element, which is not necessarily 
+
+trustworthy as it’s hard to know who created that information. More reliable is the URL 
+
+of the feedback feed. If the feed is not coming from a trusted URL, it should be 
+
+considered potentially hazardous and be validated manually by a human. However, if the 
+
+feedback is coming from a trusted partner in the federation, a data custodian may decide 
+
+to implement an automatic, machine-based method of applying feedback to their 
+
+geographic data store. This would make sense, for example, in a scenario where a 
+
+provincial data custodian was responsible for a regional transportation data store, and 
+
+
+
+OGC 08-001 
+
+14 Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+allowed automated processing of feedback from trusted municipal partners who were 
+
+updating road maintenance records. 
+
+<?xml version="1.0" encoding="UTF-8"?> 
+
+<wfs:Transaction xmlns:gml="http://www.opengis.net/gml" 
+
+  xmlns:georss="http://www.georss.org/georss"  
+
+ xmlns:cw="http://www.cubewerx.com/cw"  
+
+ xmlns:wfs="http://www.opengis.net/wfs"  
+
+  service="WFS" version="1.1.0" outputFormat="ATOM"> 
+
+ <wfs:Insert inputFormat="ATOM"> 
+
+  <cw:FeedbackFeed xmlns="http://www.w3.org/2005/Atom" 
+
+xmlns:ogc="http://www.opengis.net/ogc" 
+
+   xmlns:def="http://www.w3.org/2005/Atom"> 
+
+   <entry> 
+
+    <title>Ontario updates</title> 
+
+    <author> 
+
+     <name>John Doe</name> 
+
+     <email>jdoe@nrcan.gc.ca</email> 
+
+    </author> 
+
+    <category  scheme="http://www.geobase.ca/scheme/feedtype"  
+
+         term="feedback" /> 
+
+    <category  scheme="http://www.geobase.ca/scheme/domain"  
+
+         term="Ontario updates" /> 
+
+    <category  scheme="http://www.geobase.ca/scheme/featuretype"  
+
+         term="RoadSegment" /> 
+
+    <category  scheme="http://www.geobase.ca/scheme/status"  
+
+         term="published" /> 
+
+    <content>no content applicable here</content> 
+
+    <id>5b9c07cc-2a18-4f95-80dc-7fcf02642636</id> 
+
+    <updated>2007-10-24</updated> 
+
+    <summary>Updates digitized in Google Earth with GeoBase NRN v1  
+
+    RoadSegment WMS backdrop.</summary> 
+
+    <georss:where> 
+
+     <gml:Point srsName="urn:ogc:def:crs:EPSG:6.11.2:4326"> 
+
+       <gml:pos>43.92895886762516 -78.93328363202983</gml:pos> 
+
+     </gml:Point> 
+
+    </georss:where> 
+
+    <georss:featureOfInterest> 
+
+     <gml:FeatureCollection> 
+
+      <gml:boundedBy> 
+
+       <gml:Envelope srsName="urn:ogc:def:crs:EPSG:6.11.2:4326"> 
+
+        <gml:lowerCorner>43.92566 -78.93541</gml:lowerCorner> 
+
+        <gml:upperCorner>43.92895 -78.93328</gml:upperCorner> 
+
+       </gml:Envelope> 
+
+      </gml:boundedBy> 
+
+      <gml:featureMember xmlns:gb="http://www.geobase.ca/interop-
+
+pilot-2007"> 
+
+       <gb:RoadSegment> 
+
+        <gb:cgdiId>urn:uuid:551b3fb4-d930-4926-8ff9-
+
+f3cdf530588e</gb:cgdiId> 
+
+        <gb:planimetricDataAccuracy>0 
+
+        </gb:planimetricDataAccuracy> 
+
+        <gb:acquisitionTechnique>n.a.</gb:acquisitionTechnique> 
+
+        <gb:acquisitionProvider>n.a.</gb:acquisitionProvider> 
+
+        <gb:acquisitionOrRevisionDate>2007-10-24-04:00 
+
+        </gb:acquisitionOrRevisionDate> 
+
+        <gb:nationalRoadClass>Arterial</gb:nationalRoadClass> 
+
+
+
+OGC 08-001 
+
+Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 15 
+ 
+
+        <gb:numberOfLanes>0</gb:numberOfLanes> 
+
+        <gb:pavementStatus>n.a.</gb:pavementStatus> 
+
+        <gb:pavedRoadSurfaceType>n.a.</gb:pavedRoadSurfaceType> 
+
+        <gb:unpavedRoadSurfaceType>n.a. 
+
+        </gb:unpavedRoadSurfaceType> 
+
+        <gb:roadSegmentID>551b3fb4-d930-4926-8ff9-f3cdf530588e 
+
+        </gb:roadSegmentID> 
+
+        <gb:segment> 
+
+         <gml:LineString 
+
+srsName="urn:ogc:def:crs:EPSG:6.11.2:4326"> 
+
+          <gml:posList> 
+
+           43.92722 -78.9347 43.92861 -78.9353 43.92865 
+
+-78.9354 43.92869 -78.9354 43.92871 -78.9354 43.92874 -78.9353 
+
+43.92875 -78.9353 43.92877 -78.9352 43.92895 -78.9344 43.92895 -
+
+78.9343 43.92893 -78.9342 43.92891 -78.9342 43.92885 -78.9341 
+
+43.92801 -78.9338 43.92746 -78.9336 43.92728 -78.9335 43.92703 -
+
+78.9335 43.92686 -78.9335 43.92664 -78.9335 43.92625 -78.9333 
+
+43.92595 -78.9332 43.92566 -78.9332 
+
+          </gml:posList> 
+
+         </gml:LineString> 
+
+        </gb:segment> 
+
+       </gb:RoadSegment> 
+
+      </gml:featureMember> 
+
+      <gml:featureMember xmlns:gb="http://www.geobase.ca/interop-
+
+pilot-2007"> 
+
+       <gb:RoadSegment> 
+
+        <gb:cgdiId>urn:uuid:3358f9af-7f1f-4d68-b637-
+
+86999061fdc8</gb:cgdiId> 
+
+        <gb:planimetricDataAccuracy>0 
+
+        </gb:planimetricDataAccuracy> 
+
+        <gb:acquisitionTechnique>n.a.</gb:acquisitionTechnique> 
+
+        <gb:acquisitionProvider>n.a.</gb:acquisitionProvider> 
+
+        <gb:acquisitionOrRevisionDate>2007-10-24-04:00 
+
+        </gb:acquisitionOrRevisionDate> 
+
+        <gb:nationalRoadClass>Arterial</gb:nationalRoadClass> 
+
+        <gb:numberOfLanes>0</gb:numberOfLanes> 
+
+        <gb:pavementStatus>n.a.</gb:pavementStatus> 
+
+        <gb:pavedRoadSurfaceType>n.a.</gb:pavedRoadSurfaceType> 
+
+        <gb:unpavedRoadSurfaceType>n.a. 
+
+        </gb:unpavedRoadSurfaceType> 
+
+        <gb:roadSegmentID>3358f9af-7f1f-4d68-b637-86999061fdc8 
+
+        </gb:roadSegmentID> 
+
+        <gb:segment> 
+
+         <gml:LineString 
+
+srsName="urn:ogc:def:crs:EPSG:6.11.2:4326"> 
+
+          <gml:posList> 
+
+           43.92596 -78.9403 43.92635 -78.9386 43.92722 
+
+-78.9347 43.92746 -78.9336 
+
+          </gml:posList> 
+
+         </gml:LineString> 
+
+        </gb:segment> 
+
+       </gb:RoadSegment> 
+
+     <gml:FeatureCollection> 
+
+    </georss:featureOfInterest> 
+
+   </entry> 
+
+  </cw:FeedbackFeed> 
+
+ </wfs:Insert> 
+
+</wfs:Transaction> 
+
+
+
+OGC 08-001 
+
+16 Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+</gml:featureMember> 
+
+Figure 5 — Feedback Feed Example 
+
+ 
+
+8 Emergency Alert Service 
+
+Emergency Alert Service feed items communicate the availability of new information 
+
+and/or actions whose geography is a key component of the event. For the purpose of the 
+
+CGDI Pilot, they include types and targets of events, links to new (feature) information, 
+
+and links to OWS Context documents, which visualize those features on a map.  
+
+The CGDI Pilot once again re-used the above feed format for this purpose, modifying it 
+
+to include Common Alerting Protocol (CAP) information. While some of the data, such 
+
+as the location of the event, is duplicated within the event’s entry, the inclusion of event 
+
+information in conformance with multiple standards makes the transmission able to 
+
+interoperate more easily with a broader array of client software and devices. 
+
+ 
+
+Figure 6 — Toxic Plume Emergency Event 
+
+ 
+
+
+
+OGC 08-001 
+
+Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 17 
+ 
+
+Encapsulating the CAP alert in an Atom+GeoRSS feed allowed CGDI participants to use 
+
+existing software tools to visualize the event. For example, Figure 6 shows a plume 
+
+dispersing across an area. This type of emergency event has a geographic component that 
+
+changes over time. The Atom information model allowed us to capture that event in five 
+
+entries, and visualize it as individual space-time events or in a time series. 
+
+<?xml version="1.0" encoding="ISO-8859-1"?> 
+
+<feed xmlns="http://www.w3.org/2005/Atom" 
+
+xmlns:georss="http://www.georss.org/georss" 
+
+xmlns:gml="http://www.opengis.net/gml" 
+
+xmlns:wfs="http://www.opengis.net/wfs" 
+
+xmlns:gb="http://www.geobase.ca/interop-pilot-2007" 
+
+xmlns:cw="http://www.cubewerx.com/cw"> 
+
+ <title>GeoConnections CGDI Pilot Event Feed</title> 
+
+ <link rel="self" 
+
+href="http://www.pvretano.com/cgdi/cwwfs.cgi?SERVICE=WFS&amp;VERS
+
+ION=1.0.0&amp;REQUEST=GetFeature&amp;TYPENAME=cw%3AEVENTFEED&amp;
+
+outputFormat=ATOM" /> 
+
+ <updated>2008-02-08T05:07:20Z</updated> 
+
+ <subtitle>This ATOM feed is used to alert interested parties about 
+
+emergency events. Feed entries are posted to feed to indicate 
+
+that an emergency event has occurred and parties monitoring the 
+
+feed will then be altered about that event.</subtitle> 
+
+ <id>urn:uuid:d24cd298-395b-4e48-9c20-013b3af9a4a5</id> 
+
+ <generator uri="http://www.pvretano.com/cgdi/cwwfs.cgi" 
+
+version="4.7.3">CubeWerx Web Feature Service</generator> 
+
+ <entry cw:id="CWFID.EVENTFEED.0.6"> 
+
+  <author> 
+
+   <name>John Doe</name> 
+
+   <uri>http://www.geofunctions.org</uri> 
+
+   <email>jdoe@nrcan.gc.ca</email> 
+
+  </author> 
+
+  <category term="event" scheme="http://www.geobase.ca/feedtype" /> 
+
+  <category term="Manitoba" scheme="http://www.geobase.ca/domain" /> 
+
+  <category term="area_alert" 
+
+scheme="http://www.geobase.ca/featuretype" /> 
+
+  <category term="alert" scheme="http://www.geobase.ca/action" /> 
+
+  <category term="published" scheme="http://www.geobase.ca/status" /> 
+
+  <content>Feature collection indicating time and place of alert 
+
+action due to poisonos gas exposure</content> 
+
+  <id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6c</id> 
+
+  <link 
+
+href="http://wolf.cits.rncan.gc.ca:8080/mapbuilder/demo/event/plu
+
+meContext.xml"  
+
+   rel="http://www.geobase.ca/linktype/ows_context" /> 
+
+  <summary>Poison Gas Exposure notice for Southwestern Manitoba 
+
+area</summary> 
+
+  <title>Manitoba sour gas plume alert</title> 
+
+  <updated>2007-11-07T00:00:00Z</updated> 
+
+  <georss:where> 
+
+   <gml:Point srsName="urn:ogc:def:crs:EPSG:6.11.2:4326"> 
+
+    <gml:pos>50.74993437116105 -100.6120574479606</gml:pos> 
+
+   </gml:Point> 
+
+  </georss:where> 
+
+  <georss:featureOfInterest> 
+
+   <gml:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs"   
+
+     xmlns="urn:oasis:names:tc:emergency:cap:1.1"   
+
+
+
+OGC 08-001 
+
+18 Copyright © 2008 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+     xmlns:gml="http://www.opengis.net/gml"> 
+
+    <gml:boundedBy> 
+
+     <gml:Envelope srsName="urn:ogc:def:crs:EPSG:6.11.2:4326"> 
+
+       <gml:lowerCorner>50.06164 -101.18588</gml:lowerCorner> 
+
+       <gml:upperCorner>51.01049 -99.71660</gml:upperCorner> 
+
+     </gml:Envelope> 
+
+    </gml:boundedBy> 
+
+    <gml:featureMember> 
+
+     <PlumeAffectedArea fid="PT1"> 
+
+      <id>1</id> 
+
+      <elapsedHours>1</elapsedHours> 
+
+      <areaAffected> 
+
+       <gml:Polygon srsName="urn:ogc:def:crs:EPSG:6.11.2:4326"> 
+
+        <gml:exterior> 
+
+         <gml:LinearRing> 
+
+          <gml:posList> 
+
+   50.73637 -100.796 50.79564 -100.726 50.80338 -100.656 50.79447 -
+
+100.610 50.77536 -100.572 50.74900 -100.549 50.71873 -100.542 
+
+50.68659 -100.555 50.66018 -100.586 50.64414 -100.632 50.64092 -
+
+100.683 50.65117 -100.733 50.67305 -100.772 50.70323 -100.794 
+
+50.73637 -100.796</gml:posList> 
+
+         </gml:LinearRing> 
+
+        </gml:exterior> 
+
+       </gml:Polygon> 
+
+      </areaAffected> 
+
+     </PlumeAffectedArea> 
+
+    </gml:featureMember> 
+
+    <gml:featureMember> 
+
+     <PlumeAffectedArea fid="PT2"> 
+
+      <id>2</id> 
+
+      <elapsedHours>2</elapsedHours> 
+
+      <areaAffected> 
+
+       <gml:Polygon srsName="urn:ogc:def:crs:EPSG:6.11.2:4326"> 
+
+        <gml:exterior> 
+
+         <gml:LinearRing> 
+
+          <gml:posList> 
+
+   50.78288 -100.803 50.84021 -100.716 50.84655 -100.696 50.85718 -
+
+100.623 50.85131 -100.549 50.82967 -100.482 50.79489 -100.431 
+
+50.75121 -100.402 50.70389 -100.399 50.67471 -100.410 50.64772 -
+
+100.430 50.62421 -100.459 50.60528 -100.495 50.59181 -100.537 
+
+50.58445 -100.582 50.58911 -100.674 50.60091 -100.717 50.61839 -
+
+100.755 50.64072 -100.787 50.66686 -100.810 50.69557 -100.823 
+
+50.72549 -100.827 50.75518 -100.820 50.78288 -
+
+100.803</gml:posList> 
+
+         </gml:LinearRing> 
+
+        </gml:exterior> 
+
+       </gml:Polygon> 
+
+      </areaAffected> 
+
+     </PlumeAffectedArea> 
+
+    </gml:featureMember> 
+
+   </gml:FeatureCollection> 
+
+  </georss:featureOfInterest> 
+
+ </entry> 
+
+</feed> 
+
+ 
+
+Figure 7 — Emergency Alert Feed Example 
+
+
+	Introduction
+	Scope
+	Document contributor contact points
+	Revision history
+	Future work
+
+	References
+	Terms and definitions
+	Conventions
+	Abbreviated terms
+
+	Overview
+	Requirements
+	Geo-synchronization architecture
+
+	Update Feed Service
+	Update Feed XML Encoding
+	Update Feed Query Interface
+
+	Feedback Feed Service
+	Overview
+	Workflow
+	Feedback Feed XML Encoding
+
+	Emergency Alert Service
+

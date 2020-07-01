@@ -1,0 +1,729 @@
+
+Open Geospatial Consortium  
+Date:  2010-10-27 
+
+Reference number of this OpenGIS® Project Document: OGC 09-147r1 
+
+Version: 1.0.0 
+
+Category: OpenGIS® Interface Standard 
+
+Editor:  Peter Baumann 
+
+OGC® Web Coverage Service 2.0 Interface Standard - 
+KVP Protocol Binding Extension 
+
+ 
+
+Copyright © 2010 Open Geospatial Consortium 
+To obtain additional rights of use, visit http://www.opengeospatial.org/legal/. 
+
+ 
+ 
+
+ 
+
+ 
+
+Warning 
+
+This document is an OGC Member approved international standard. This document is avail-
+able on a royalty free, non-discriminatory basis. Recipients of this document are invited to 
+submit, with their comments, notification of any relevant patent rights of which they are 
+aware and to provide supporting documentation. 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+Document type: OpenGIS® Interface Standard 
+Document subtype: Extension 
+Document stage: Approved OGC Standard 
+Document language: English 
+
+ 
+
+http://www.opengeospatial.org/legal/
+
+
+OGC 09-147r1 
+
+Contents Page 
+1  Scope ............................................................................................................................. 1 
+
+2  Conformance ............................................................................................................... 1 
+
+3  Normative references .................................................................................................. 1 
+
+4  Terms and definitions ................................................................................................. 2 
+
+5  Conventions ................................................................................................................. 2 
+
+5.1  UML notation .............................................................................................................. 2 
+
+5.2  Data dictionary tables ................................................................................................. 2 
+
+6  HTTP/GET with KVP ................................................................................................ 2 
+
+6.1  General ......................................................................................................................... 2 
+
+6.2  GetCapabilities ............................................................................................................ 2 
+
+6.3  DescribeCoverage ........................................................................................................ 3 
+
+6.4  GetCoverage ................................................................................................................ 3 
+
+7  Exceptions .................................................................................................................... 4 
+
+Bibliography ............................................................................................................................. 5 
+
+Annex A (normative)  Abstract test suite .............................................................................. 6 
+A.1  Conformance Test Class: get-kvp .............................................................................. 6 
+A.1.1  Extension identification .............................................................................................. 6 
+A.1.2  Encode special characters ........................................................................................... 6 
+A.1.3  Proper case handling ................................................................................................... 6 
+A.1.4  GetCapabilities request encoding.................................. Error! Bookmark not defined. 
+A.1.5  GetCapabilities response structure ............................................................................. 7 
+A.1.6  DescribeCoverage request encoding ........................................................................... 7 
+A.1.7  GetCoverage request encoding ................................................................................... 7 
+A.1.8  GetCoverage subset specification .............................................................................. 7 
+A.1.9  Disjoint GetCoverage subsetting parameter keys ....... Error! Bookmark not defined. 
+A.1.10  Exceptions .................................................................................................................... 8 
+
+ 
+ 
+
+Tables Page 
+Table 1 — DescribeCoverage request URL encoding .......................................................... 3 
+Table 2 — GetCoverage request KVP encoding ................................................................... 3 
+Table 3 — Exception codes for XML/POST operations ....................................................... 4 
+ 
+
+ii Copyright © 2010 Open Geospatial Consortium
+ 
+
+
+
+OGC 09-147r1 
+
+iii Copyright © 2010 Open Geospatial Consortium
+ 
+
+i. Preface 
+
+This document specifies an extension to the OGC Web Coverage Service (WCS) 2.0 core to 
+allow for client/server communication using HTTP GET with key/value pair (KVP) encod-
+ing.  
+
+ii. Terms and definitions 
+
+This document uses the specification terms defined in Subclause 5.3 of [OGC 06-121r9], 
+which is based on the ISO/IEC Directives, Part 2, Rules for the structure and drafting of In-
+ternational Standards. In particular, the word “shall” (not “must”) is the verb form used to 
+indicate a requirement to be strictly followed to conform to this standard. 
+
+iii. Submitting organizations 
+
+The following organizations have submitted this Implementation Specification to the Open 
+Geospatial Consortium, Inc.: 
+
+• Jacobs University Bremen 
+• National Center for Atmospheric Research 
+
+(NCAR) 
+• Oracle USA 
+• PCI Geomatics Inc. 
+• ERDAS, Inc. 
+
+• EOX IT Services GmbH 
+• Spot Image 
+• BAE Systems - C3I Systems 
+• Natural Environment Research Council 
+
+(NERC) 
+• George Mason University 
+
+
+
+ OGC 09-147r1
+
+ 
+
+Copyright © 2010 Open Geospatial Consortium iv 
+
+iv. Document Contributor Contact Points 
+
+  
+ 
+
+Name Organization  
+Peter Baumann Jacobs University Bremen, 
+
+rasdaman GmbH 
+ 
+
+v. Revision history 
+Date Release Author Paragraph modified Description 
+
+2009-08-22 0.0.1 PB All Created
+
+vi. Changes to the OpenGIS® Abstract Specification 
+
+The OpenGIS® Abstract Specification does not require any changes to accommodate the 
+technical contents of this (part of this) document. 
+
+vii.  Future Work 
+
+Nothing foreseen currently. 
+
+
+
+OGC 09-147r1 
+ 
+
+Foreword 
+
+Some of the elements of this document may be the subject of patent rights. Open Geospatial 
+Consortium Inc. shall not be held responsible for identifying any such patent rights. 
+
+Attention is drawn to the possibility that some of the elements of this document may be the 
+subject of patent rights. The Open Geospatial Consortium Inc. shall not be held responsible 
+for identifying any or all such patent rights. 
+
+Recipients of this document are requested to submit, with their comments, notification of any 
+relevant patent claims or other intellectual property rights of which they may be aware that 
+might be infringed by any implementation of the standard set forth in this document, and to 
+provide supporting documentation. 
+
+ 
+
+Copyright © 2010 Open Geospatial Consortium  v
+ 
+
+
+
+OGC 09-147r1 
+ 
+
+vi Copyright © 2010 Open Geospatial Consortium
+ 
+
+Introduction 
+
+The OGC Web Coverage Service (WCS) supports electronic retrieval of geospatial data as 
+"coverages" – that is, digital geospatial information representing space/time-varying phe-
+nomena. 
+
+This document specifies an extension to the OGC Web Coverage Service (WCS) 2.0 core to 
+allow for client/server communication using HTTP GET with key/value pair (KVP) encod-
+ing.  
+
+ 
+
+
+
+OGC 09-147r1 
+ 
+
+OGC® Web Coverage Service 2.0 Interface Standard - 
+KVP Protocol Binding Extension 
+
+1 Scope  
+
+This document specifies how Web Coverage Service (WCS) clients and servers can commu-
+nicate over the Internet using HTTP GET with key/value pair (KVP) encoding. 
+
+2 Conformance 
+
+Standardization target are WCS 2.0 implementations (currently: servers).  
+
+This document establishes a single requirements class, get-kvp, of URI 
+http://www.opengis.net/spec/WCS_protocol-binding_get-kvp/1.0/req/get-kvp with a single 
+pertaining conformance class, get-kvp, of URI http://www.opengis.net/spec/WCS_protocol-
+binding_get-kvp/1.0/conf/get-kvp. Requirements and conformance test URIs defined in this 
+document are relative to http://www.opengis.net/spec/WCS_protocol-binding_get-kvp/1.0/. 
+
+Annex A lists the conformance tests which shall be exercised on any software artefact claim-
+ing to implement an OGC WCS using this extension.  
+
+3 Normative references 
+
+This OGC WCS 2.0 KVP Protocol Binding Extension specification consists of the present 
+document and an XML Schema. The complete specification is identified by OGC URI 
+http://www.opengis.net/spec/WCS_protocol-binding_get-kvp/1.0, the document has OGC 
+URI http://www.opengis.net/doc/ISx/WCS_protocol-binding_get-kvp/1.0.  
+
+The complete specification is available for download from 
+http://www.opengeospatial.org/standards/wcs; additionally, the XML Schema is posted on-
+line at http://schemas.opengis.net/wcs/2.0 as part of the OGC schema repository. In the event 
+of a discrepancy between bundled and schema repository versions of the XML Schema files, 
+the schema repository shall be considered authoritative. 
+
+The following normative documents contain provisions that, through reference in this text, 
+constitute provisions of this specification. For dated references, subsequent amendments to, 
+or revisions of, any of these publications do not apply. For undated references, the latest edi-
+tion of the normative document referred to applies. 
+
+OGC 06-121r9, OGC Web Service Common Specification, version 2.0 
+Conformance classes used: 
+
+• HTTP GET 
+
+• KVP encoding 
+OGC 09-110r3, OGC® Web Coverage Service 2.0 Interface Standard - Core, version 2.0 
+
+Conformance classes used: 
+• Core 
+
+Copyright © 2010 Open Geospatial Consortium  1
+ 
+
+http://www.opengis.net/spec/WCS_protocol-binding_get-kvp/1.0/req/get-kvp
+http://www.opengis.net/spec/WCS_protocol-binding_get-kvp/1.0/conf/get-kvp
+http://www.opengis.net/spec/WCS_protocol-binding_get-kvp/1.0/conf/get-kvp
+http://www.opengis.net/spec/WCS_protocol-binding_get-kvp/1.0/
+http://www.opengis.net/spec/WCS_protocol-binding_get-kvp/1.0
+http://www.opengis.net/doc/ISx/WCS_protocol-binding_get-kvp/1.0
+http://www.opengeospatial.org/stan%1fdards/wcs
+http://schemas.opengis.net/wcs/2.0
+
+
+OGC 09-147r1 
+ 
+
+4 Terms and definitions 
+
+For the purposes of this document, the terms and definitions given in the above references 
+apply. 
+
+5 Conventions 
+
+5.1 UML notation 
+
+All the diagrams that appear in this specification are presented using the Unified Modeling 
+Language (UML) static structure diagram, as described in Subclause 5.2 of OGC Web Ser-
+vice Common [OGC 06-121r9]. 
+
+5.2 Data dictionary tables 
+
+The UML model data dictionary is specified herein in a series of tables. The contents of the 
+columns in these tables are described in Subclause 5.5 of [OGC 06-121r9]. The contents of 
+these data dictionary tables are normative, including any table footnotes. 
+
+6 HTTP/GET with KVP 
+
+6.1 General 
+
+Requirement 1 /req/get-kvp/extension-identifier: 
+A WCS service implementing this extension shall include the following URI in the Profile 
+element of the ServiceIdentification in a GetCapabilities response: 
+  http://www.opengis.net/spec/ 
+   WCS_protocol-binding_get-kvp/1.0 
+
+Requirement 2 /req/get-kvp/url-encoding: 
+Operation responses shall URL-encode special characters as defined in [2].  
+
+Example  Use “%3F” to represent a question mark, “?”. 
+
+Requirement 3 /req/get-kvp/case-sensitivity: 
+Keys shall be case insensitive, values shall be case sensitive. 
+
+While this requirement is strict, the corresponding conformance test tentatively does not 
+stamp an implementation non-conformant if it is elastic in also recognizing a wrong case in 
+values, as long as this does not cause a conflict.  
+
+Example “REQUEST=GETCAPABILITIES” allows unambiguous recognition of the canonical 
+value “GetCapabilities”. For coverage identifiers, on the other hand, case distinction is essential. 
+
+6.2 GetCapabilities 
+
+A GetCapabilities request in the get-kvp conformance class consists of an URL with KVP 
+parameters, while the response – a capabilities document – is an XML document. 
+
+Example To request a Capabilities document, a client can issue the following minimal GetCap-
+abilities operation request encoded as KVP: 
+
+2 Copyright © 2010 Open Geospatial Consortium
+ 
+
+
+
+OGC 09-147r1 
+ 
+
+http://hostname:port/path?service=WCS&request=GetCapabilities 
+
+Requirement 4 /req/get-kvp/getCapabilities-response-structure: 
+The response to a successful GetCapabilities request shall be a valid XML document of type 
+wcs:CapabilitiesType. 
+
+Example See [OGC 09-110r3]. 
+
+6.3 DescribeCoverage 
+
+Requirement 5 /req/get-kvp/describeCapabilities-request-structure: 
+The KVP encoding of a DescribeCoverage request shall be as defined in Table 1. 
+
+Table 1 — DescribeCoverage request URL encoding 
+
+Name Definition Data type Multiplicity 
+service Identifier of the OGC service String,  
+
+fixed to “WCS” 
+One (mandatory) 
+
+version Request protocol version String One (mandatory) 
+request Request type name String, fixed to  
+
+“DescribeCoverage” 
+One (mandatory) 
+
+coverageId List of coverage identifiers to 
+be described 
+
+Comma-separated NCName 
+list 
+
+One (mandatory) 
+
+ 
+
+Example The following KVP structure requests information about the coverages with identifiers 
+C0002,  C0003, and C0004, resp.: 
+
+http://www.myserver.org:port/path? 
+ service=WCS 
+&version=2.0 
+&request=DescribeCoverage 
+&coverageid=C0002,C0003,C0004 
+
+6.4 GetCoverage 
+
+Requirement 6 /req/get-kvp/getCoverage-request-structure: 
+The KVP encoding of a GetCoverage request shall be as defined in Table 2. 
+
+Table 2 — GetCoverage request KVP encoding 
+
+Name Definition Data type Multiplicity 
+service Identifier of the OGC service String,  
+
+fixed to “WCS” 
+one (mandatory) 
+
+version Request protocol version String one (mandatory) 
+request Request type name String, fixed to 
+
+“GetCoverage” 
+one (mandatory) 
+
+coverageId Identifier of coverage to be inspected NCName one (mandatory) 
+subset boundaries of coverage subset SubsetSpec as 
+
+defined in  
+zero or more  
+
+(optional) 
+
+Copyright © 2010 Open Geospatial Consortium  3
+ 
+
+
+
+OGC 09-147r1 
+ 
+
+Requirement 7 
+ 
+
+Requirement 7 /req/get-kvp/getCoverage-request-subsetspec: 
+Each SubsetSpec shall adhere to this EBNF syntax: 
+ SubsetSpec:  dimension [ , crs ] ( intervalOrPoint )  
+ dimension:   NCName 
+ crs      anyURI 
+ intervalOrPoint: interval | point 
+ interval:   low , high 
+ low:     point | * 
+ high:    point | * 
+ point:    number | " token " // " = ASCII 0x42 
+
+Syntax rules are as follows [3]: underlined tokens represent literals which appear “as is” 
+(“terminal symbols”), other tokens represent sub-expressions to be substituted (“non-
+terminals”). A vertical bar (“|”) denotes alternatives, items in brackets (“[ ]”) are optional. 
+Non-terminals NCName, number, token, and anyURI follow the resp. XML definitions. 
+
+NOTE Allowed values for points are determined by the CRS used. This ranges from 2009-11-06 for 
+time over -41.5 for lat/long to 41°5’ for lat/long whereby non-numeric values have to be enclosed in dou-
+ble quotes. 
+
+Example The following KVP-encoded GetCoverage request addresses service path on server 
+www.myservice.org at port port retrieves all range fields of coverage 42 in the domain specified 
+by the bounding box with longitude (-71,47) and latitude (-66,51), expressed in spatial CRS WGS84 2D and 
+temporal CRS ISO:8601 (which are assumed to be supported for the coverage): 
+
+http://www.myserver.org:port/path? 
+ service=WCS 
+&version=2.0 
+&request=GetCoverage 
+&coverageId=C0002 
+&subset=lon,http://www.opengis.net/def/crs/EPSG/0/4326(-71,47)  
+&subset=lat,http://www.opengis.net/def/crs/EPSG/0/4326(-66,51) 
+&subset=t,http://www.opengis.net/def/trs/ISO-
+8601/0/Gregorian+UTC("2009-11-06T23:20:52Z") 
+
+7 Exceptions 
+
+Requirement 8 /req/get-kvp/exceptions: 
+When a WCS server encounters an error described in column “meaning of exception code” in 
+Table 3 then it shall return the corresponding exception report message with the contents of 
+the locator parameter value as specified in the right column of  Table 3. 
+
+Table 3 — Exception codes for XML/POST operations 
+
+exceptionCode value HTTP 
+code 
+
+Meaning of code locator value
+
+InvalidEncodingSyntax 400 Document received does not 
+conform with protocol syntax 
+
+key of violating 
+element 
+
+ 
+
+ 
+
+4 Copyright © 2010 Open Geospatial Consortium
+ 
+
+
+
+OGC 09-147r1 
+ 
+
+Bibliography 
+
+[1] IETF RFC 2387, The MIME Multipart/Related Content-type. IETF, 1998 
+
+[2] IETF RFC 2396, Uniform Resource Identifiers (URI): Generic Syntax. IETF, 1998 
+
+[3] IETF RFC 2616, Hypertext Transfer Protocol -- HTTP/1.1. IETF, 1999 
+
+[4] W3C Note 11, SOAP Messages with Attachments. W3C Note 11, 2000 
+
+  
+
+Copyright © 2010 Open Geospatial Consortium  5
+ 
+
+
+
+OGC 09-147r1 
+ 
+
+Annex A 
+(normative) 
+
+ 
+Abstract test suite 
+
+A WCS implementing this extension shall pass all of the following tests, plus those of the 
+WCS core [OGC 09-110r3], to be conformant with this specification. 
+
+A.1 Conformance Test Class: get-kvp 
+
+The OGC URI identifier of this conformance class is: 
+http://www.opengis.net/spec/WCS_protocol-binding_get-kvp/1.0/conf-class/get-kvp.  
+
+Test identifiers below are relative to http://www.opengis.net/spec/WCS_protocol-
+binding_get-kvp/1.0/. 
+
+A.1.1 Extension identification 
+
+Test id: /conf/get-kvp/extension-identifier 
+
+Test Purpose: Requirement /req/get-kvp/extension-identifier: 
+A WCS service implementing this extension shall include the following 
+URI in the Profile element of the ServiceIdentification in a 
+GetCapabilities response: 
+  http://www.opengis.net/spec/ 
+   WCS_protocol-binding_get-kvp 
+
+Test method: Send a GetCapabilities request to server under test, verify that the response 
+contains a Profile element with said URI. 
+
+A.1.2 Encode special characters 
+
+Test id: /conf/get-kvp/url-encoding 
+
+Test Purpose: Requirement /req/get-kvp/url-encoding: 
+Operation responses shall URL-encode special characters as defined in [2]. 
+
+Test method: For each request type, send a request to the service under test which con-
+tains special characters and send a request such that the response contains 
+special characters. Check correct handling of the special characters. 
+
+A.1.3 Proper case handling 
+
+Test id: /conf/get-kvp/case-sensitivity 
+
+Test Purpose: Requirement /req/get-kvp/case-sensitivity: 
+Keys shall be case insensitive, values shall be case sensitive. 
+
+6 Copyright © 2010 Open Geospatial Consortium
+ 
+
+http://www.opengis.net/spec/WCS_protocol-binding_get-kvp/1.0/conf-class/get-kvp
+http://www.opengis.net/spec/WCS_protocol-binding_get-kvp/1.0/
+http://www.opengis.net/spec/WCS_protocol-binding_get-kvp/1.0/
+
+
+OGC 09-147r1 
+ 
+
+Test method: For each request type: 
+
+• send requests to the server under test containing lower, mixed, and 
+upper case keys. Check proper response. 
+
+• Send requests to the server under test with different case in values, 
+except for the REQUEST and VERSION parameters. Check that 
+the server differentiates in its response. 
+
+Test passes if all individual tests pass. 
+
+A.1.4 GetCapabilities response structure 
+
+Test id: /conf/get-kvp/getCapabilities-response-structure 
+
+Test Purpose: Requirement /req/get-kvp/getCapabilities-response-structure: 
+The response to a successful GetCapabilities request shall be a valid XML 
+document of type wcs:CapabilitiesType. 
+
+Test method: Send a valid GetCapabilities request. Pass test if an XML validator reports 
+validity of the response document against its schema definition. 
+
+A.1.5 DescribeCoverage request encoding 
+
+Test id: /conf/get-kvp/describeCapabilities-request-structure 
+
+Test Purpose: Requirement /req/get-kvp/describeCapabilities-request-structure: 
+The KVP encoding of a DescribeCoverage request shall be as defined in 
+Table 1. 
+
+Test method: Send DescribeCoverage requests testing server response on the cases dis-
+tinguished in said reference. Check proper response. 
+
+A.1.6 GetCoverage request encoding 
+
+Test id: /conf/get-kvp/getCoverage-request-structure 
+
+Test Purpose: Requirement /req/get-kvp/getCoverage-request-structure: 
+The KVP encoding of a GetCoverage request shall be as defined in Table 
+2. 
+
+Test method: Send GetCoverage requests testing server response on the cases distin-
+guished in said reference. Check proper response. 
+
+A.1.7 GetCoverage subset specification 
+
+Test id: /conf/get-kvp/getCoverage-request-subsetspec 
+
+Copyright © 2010 Open Geospatial Consortium  7
+ 
+
+
+
+OGC 09-147r1 
+ 
+
+Test Purpose: Requirement /req/get-kvp/getCoverage-request-subsetspec: 
+Each SubsetSpec shall adhere to this EBNF syntax: 
+ SubsetSpec:  dimension [ , crs ] ( intervalOrPoint 
+)  
+ dimension:   NCName 
+ crs      anyURI 
+ intervalOrPoint: interval | point 
+ interval:   low , high 
+ low:     point | * 
+ high:    point | * 
+ point:    number | " token " // " = ASCII 0x42 
+
+Test method: Send GetCoverage requests to the service under test, evaluate whether re-
+sponses are adequate (based on knowledge about a pre-existing coverages 
+with at least 3 dimensions). Exercise tests for the following situations: 
+
+• No subsetting parameter 
+• Zero/one/two trimmings, no slicing 
+• Zero/one/two slicings, no trimming 
+• trim operations with trim coordinates and with “*” for low and high 
+
+bound (independently) 
+
+Each test in the above set shall be performed  
+
+• Once for each dimensionality supported by the server 
+• Without CRS parameter provided in the request, and with a valid 
+
+CRS parameter provided (if the server supports a CRS extension). 
+
+Pass if coverage responses indicate (by range set inspection) that the opera-
+tion has been recognized and executed properly. 
+
+A.1.8 Exceptions 
+
+Test id: /conf/get-kvp/exceptions 
+
+Test Purpose: Requirement /req/get-kvp/exceptions: 
+When a WCS server encounters an error described in column “meaning of 
+exception code” in Table 3 then it shall return the corresponding exception 
+report message with the contents of the locator parameter value as speci-
+fied in the right column of  Table 3. 
+
+Test method: Send requests of all types supported to the server under test. Each request 
+shall include all (mandatory and) optional parameters and shall be valid 
+except for one parameter which shall contain an encoding error described in 
+the exception specification. Test passes if exception is reported according to 
+requirement. 
+
+ 
+
+-- end of ATS -- 
+
+8 Copyright © 2010 Open Geospatial Consortium
+ 
+
+
+
+OGC 09-147r1 
+ 
+
+Copyright © 2010 Open Geospatial Consortium  9
+ 
+
+ 
+
+
+	1 Scope 
+	2 Conformance
+	3 Normative references
+	4 Terms and definitions
+	5 Conventions
+	5.1 UML notation
+	5.2 Data dictionary tables
+	6 HTTP/GET with KVP
+	6.1 General
+	6.2 GetCapabilities
+	6.3 DescribeCoverage
+	6.4 GetCoverage
+	7 Exceptions
+	Bibliography
+	Annex A(normative)Abstract test suite
+

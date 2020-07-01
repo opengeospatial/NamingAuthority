@@ -1,0 +1,806 @@
+
+Open Geospatial Consortium Inc. 
+Date: 2009-09-14 
+
+Reference number of this document: 09-076r3 
+
+Version: 0.3.0 
+
+Category:  OGC Public Discussion Paper 
+
+Editor: Arliss Whiteside 
+
+Uses and summary of Topic 2: Spatial referencing by coordinates  
+ 
+
+Copyright © 2009 Open Geospatial Consortium, Inc.  
+To obtain rights of use, visit http://www.opengeospatial.org/legal/. 
+
+Warning 
+
+This document is not an OGC Standard. This document is an OGC Discussion 
+Paper and is therefore not an official position of the OGC membership. It is 
+distributed for review and comment. It is subject to change without notice and may 
+not be referred to as an OGC Standard. Further, an OGC Discussion Paper should 
+not be referenced as required or mandatory technology in procurements. 
+
+ 
+
+ 
+
+Document type:  OpenGIS® Discussion Paper 
+Document subtype: NA 
+Document stage:  Approved for Public Release 
+Document language:  English 
+
+Copyright © 2009 Open Geospatial Consortium, Inc.  1 
+
+http://www.opengeospatial.org/legal/
+
+
+OGC 09-076r3 
+
+ 
+Forward 
+
+Attention is drawn to the possibility that some of the elements of this document may be 
+the subject of patent rights. The Open Geospatial Consortium Inc. shall not be held 
+responsible for identifying any or all such patent rights. 
+
+Recipients of this document are requested to submit, with their comments, notification of 
+any relevant patent claims or other intellectual property rights of which they may be 
+aware that might be infringed by any implementation of the standard set forth in this 
+document, and to provide supporting documentation. 
+
+ 
+
+Table of Contents Page 
+1. Introduction ..............................................................................................................2 
+2. CRS uses for data sharing ........................................................................................3 
+3. CRS identifiers for interoperability .........................................................................4 
+4. XML encoding .........................................................................................................4 
+5. Topic 2 summary .....................................................................................................5 
+6. Definitions copied from Topic 2 ..............................................................................8 
+
+6.1 General concepts ......................................................................................................8 
+6.2 Coordinate reference system types ..........................................................................9 
+6.3 Datum types .............................................................................................................9 
+6.4 Coordinate system types ........................................................................................10 
+6.5 Coordinate operation types ....................................................................................11 
+6.6 Geodetic CRS terms ...............................................................................................11 
+6.7 Projected CRS terms ..............................................................................................12 
+6.8 Vertical CRS terms ................................................................................................13 
+6.9 Other terms.............................................................................................................14 
+
+7. References ..............................................................................................................14 
+
+1. Introduction 
+This document first discusses the uses for data sharing, and then provides a brief 
+summary, of OGC Abstract Specification Topic 2: Spatial referencing by coordinates. 
+Topic 2 is almost the same as ISO 19111:2007, but includes some corrections.  This 
+document includes some best practices for using Coordinate Reference Systems (CRSs). 
+
+Abstract Specification Topic 2 specifies the concepts, definitions, and data model of a 
+coordinate reference system (CRS) and its various parts. Readers of this document are 
+encouraged to reference the UML diagrams in Topic 2, especially Figures 2, 3, 6, 7, 9, 
+11, and 12.  A CRS definition provides the meaning of position coordinates using that 
+CRS, and includes an identifier and a somewhat detailed description of that CRS. A CRS 
+
+2 Copyright © 2009 Open Geospatial Consortium, Inc.  
+
+
+
+  OGC 09-076r3 
+
+is thus essential (meta) data for sharing most geospatial data, in which spatial positions 
+are represented by coordinates. 
+
+2. CRS uses for data sharing 
+A CRS definition provides the meaning for position coordinates that use that CRS. Topic 
+2 does not discuss the uses of a CRS, but understanding CRS use cases is essential for 
+sharing geospatial data in which positions are represented by coordinates. In this data 
+sharing, the data represented by coordinates will reference the appropriate CRS(s), and 
+CRS definitions are shared when needed. 
+
+ The current uses of CRS definitions in sharing geospatial data include: 
+
+a) A CRS definition provides human-understandable name, aliases, units, direction, and 
+origin for each coordinate axis (ordinate from a coordinate tuple), and a name and 
+aliases for the CRS, for data that references (or includes) this CRS definition. 
+
+b) A CRS definition (encoded in GML) provides software-useable CRS, datum, and 
+coordinate system identifiers, names, and aliases, plus each coordinate axis identifier, 
+name, aliases, and units, for data that references (or includes) this CRS definition. 
+
+NOTE 1 The above use has been rare, except for requirements in Sensor Web Enablement (SWE).  
+Discussion with the SWE community indicates they require more definition information to be separately 
+encoded, especially datum information.  Some persons have thus suggested that they propose extending 
+Topic 2 and the corresponding GML encoding. 
+
+c) The source and target CRS identifiers explicitly referenced in a coordinate 
+Transformation indicate the intended use of that Transformation, to transform data 
+using the source CRS into the corresponding data using the target CRS (or in the 
+opposite direction).  These CRS identifiers are also clear when a coordinate 
+transformation or equivalent is required by an OGC Web Service operation (e.g., in 
+WMS, WFS, WCS). 
+
+NOTE 2 The following use might be interpreted as either a precondition or consequence of the above use. 
+
+d) The CRS identifiers provided for different data sets should indicate if that data is 
+directly comparable.  That is, providing the same CRS identifiers for different data 
+should indicate that the data is directly comparable, while providing different CRS 
+identifiers should indicate that the data is not directly comparable (without 
+transformation).  Directly comparable here means that different data with the same 
+position coordinates is for (approximately) the same spatial position.  Directly 
+comparable means that this data can be meaningfully overlaid or merged. (That is, 
+geographic properties such as distances, bearings, and areas can be calculated using 
+data from the comparable data sets.)  Of course, the different data is likely to be for 
+different times or different feature types.  [Best Practice] 
+
+Uses c) and d) listed above refer to CRS identifiers since shared data users are expected 
+to compare CRS identifiers (not complete definitions) for these purposes.  That is, the 
+CRS identifiers provided with different data sets are expected to be compared to 
+determine if that data is directly comparable [use d)].  Similarly, the CRS identifiers 
+provided with different data sets are expected to be used to select a coordinate 
+
+Copyright © 2009 Open Geospatial Consortium, Inc.  3 
+
+
+
+OGC 09-076r3 
+
+transformation that could be applied to make different data sets directly comparable [use 
+c)]. 
+
+3. CRS identifiers for interoperability 
+Use d) listed above in Clause 2 uses the word “should” since nothing is said in Topic 2 
+that promotes (or ensures) assignment of CRS identifiers for this use.  However, good 
+assignment of CRS identifiers is essential for interoperability among multiple data 
+sources and data users.  If one data source produces multiple data sets, it should assign 
+CRSs to those sets so that the CRS identifiers indicate if that data is directly comparable.  
+Similarly, if multiple interoperating data sources produce multiple data sets, they should 
+assign CRSs to those sets so that the CRS identifiers indicate if that data is directly 
+comparable.  [Best Practice] 
+
+Good assignment of CRS identifiers may take the form of using widely known CRSs 
+with standardized CRS identifiers and definitions.  Geographic CRSs and Projected CRSs 
+based on those geographic CRSs are often widely known, and use of standardized CRS 
+identifiers and definitions is highly desirable for interoperability.  Such standardization is 
+a major purpose of the EPSG database: to define standard CRSs and assign standard 
+identifiers to them.  [Best Practice] 
+
+Good assignment of CRS identifiers may take the form of assigning unique CRS 
+identifiers for each image and for each object to which an Engineering CRS is applied. 
+Each different image requires a different CRS, because it uses a different datum that 
+references the specific image.  Similarly, each different object to which an Engineering 
+CRS is applied requires a different CRS, using a different datum.  [Best Practice] 
+
+The assignment of CRS identifiers for interoperability is harder in many other cases. One 
+such case is a georectified grid, even a grid in a standard Projected CRS or geographic 
+CRS. There are many possible rectified grids in one Projected CRS or geographic CRS, 
+and work on defining standardized rectified grids is either non-existent or not widely 
+known. 
+
+In many of these other cases, assigning CRS identifiers to indicate if data is directly 
+comparable seems to require coordination between multiple interoperating data sources.  
+Such coordination might be obtained by using one or more central registry(ies) of these 
+CRS identifiers and definitions.  The degree to which this is achieved is then one measure 
+of the interoperability of multiple data sources.   
+
+4. XML encoding 
+Clause 12 “Coordinate reference systems schemas” of GML 3.2.1 specifies how to XML 
+encode the definition of a coordinate reference system (CRS), a coordinate system (CS), 
+a coordinate axis, a datum, a coordinate operation (including coordinate transformations 
+and conversions), an operation method, and an operation parameter.  Such GML 
+encoding of these definitions should be used for uses a) and b) listed above in Clause 2.  
+[Best Practice] 
+
+On the other hand, XML encoding of CRS references, using CRS identifiers, is usually 
+used for uses c) and d) listed above.  In most cases, CRS references use the XML Schema 
+
+4 Copyright © 2009 Open Geospatial Consortium, Inc.  
+
+
+
+  OGC 09-076r3 
+
+data type anyURI, to encode a reference to a CRS using its identifier.  This is done by all 
+geometries encoded in GML 3, where the gml:SRSReferenceGroup attribute group is 
+included in each direct position (gml:pos) or higher-level geometry element.  Use of the 
+XML Schema data type anyURI is also specified in Clause 10.3 of OWS Common 1.2. 
+NOTE 1 In addition to the CRS identifier, the gml:SRSReferenceGroup attribute group allows inclusion 
+of copies of some CRS definition data.  That optional definition data is an ordered list of coordinate axis 
+names, and an ordered list of coordinate axis units, both the same as specified in the definition of the 
+referenced CRS. 
+
+NOTE 2 OWS Common 1 does not use the gml:SRSReferenceGroup attribute group, or any equivalent, 
+since it does not use GML, and it usually encodes CRS references as XML elements (not XML attributes). 
+
+Clause 10.3 of OWS Common 1.2 specifies, and GML 3 allows, an anyURI to reference 
+a CRS (or a CRS component) using either of two alternative URI formats:  [Best 
+Practice] 
+
+a) Universal Resource Locator (URL), using the standard forms.  The URL format shall 
+be used when the referenced definition is known to be electronically available using 
+this standard URL.  When not in the same XML document, those definitions shall be 
+electronically available over the Internet using this URL.  The available definitions 
+shall be encoded in GML, perhaps using one or more GML Application Schemas. 
+
+b) Universal Resource Name (URN), with a specified form.  The URN format shall be 
+used whenever the referenced definition is not, or might not be, available using a 
+URL.  This URN shall reference data that is specified by some “authority” and is 
+“well-known” to both client and server software, including multiple clients and 
+multiple servers.   A URN value in the “ogc” URN namespace may be used to 
+reference a definition specified in that “ogc” URN namespace.  The format of those 
+URNs shall be as specified in OGC Policy documents OGC 09-048, 09-054, and 09-
+055. 
+
+NOTE  The OGC is currently in the process of setting up a URN resolver service for assigned URN 
+values in the “ogc” URN namespace, as discussed in OGC Policy document OGC 09-046. 
+
+5. Topic 2 summary 
+Topic 2 specifies the concepts, and the data required to define, a coordinate reference 
+system (CRS), a coordinate system (CS), a coordinate axis, a datum, a coordinate 
+operation (including coordinate transformations and conversions), an operation method, 
+and an operation parameter.  In more detail: 
+
+a) A CRS specifies the meaning for point position coordinates. 
+NOTE  Without a CRS, point position coordinates are essentially meaningless. 
+
+b) Topic 2 does not specify how to encode position coordinates. 
+NOTE  Topic 3 (ISO 19107) and GML specify how to encode position coordinates for “direct 
+positions” used in a geometry.  OWS Common, WMS, WCS, and other OGC standards specify how to 
+encode position coordinates for service input-output positions not in any geometry. 
+
+c) A coordinate reference system relates a coordinate system to a specific object by a 
+datum. 
+
+Copyright © 2009 Open Geospatial Consortium, Inc.  5 
+
+
+
+OGC 09-076r3 
+
+NOTE  The specific object is often a physical object, such as the earth or a specific moving platform. 
+However, the object may be a specific grid coverage. 
+
+d) A CRS definition combines a coordinate system (CS) with a datum, and includes 
+unique identifiers for that CRS, CS, datum, and each coordinate axes in that CS. 
+
+NOTE  One CS will often be used with many different datums.  One datum may be used with several 
+different CSs. 
+
+e) A datum identifies the location of the origin of the CRS-associated CS. 
+NOTE  A datum may identify the location of the origin by means other than identifying the origin point.  
+For example, a GeodeticDatum often identifies the location of the origin by specifying the geographic 
+coordinates of an identified “fundamental point”. 
+
+f) A datum also (sometimes implicitly) identifies one or more sets of orientation 
+directions that are referenced by the coordinate axes in that CS. 
+
+NOTE  This interpretation of a datum is not always fully understood.  If a datum has more than one 
+alternate set of orientation directions, as a geodetic datum does, the type of the associated CS selects the 
+proper set of datum orientation directions. 
+
+g) A datum (usually) does NOT numerically specify the location of the origin of the 
+associated CS, or the set of orientation directions, in any other CRS or CS, and a 
+datum should NOT numerically specify these.  [Best Practice] 
+
+h) The location of the origin of the datum should be an identified point on some 
+identified object, where an image or other grid coverage is considered such an object.  
+[Best Practice] 
+
+i) The anchorDefinition in the definition of an EngineeringDatum should identify a 
+specific origin point and the orientation directions for coordinate axes, relative to the 
+identified object.  [Best Practice] 
+
+NOTE  The anchorDefinition was previously called the anchorPoint, in GML 3.1.1 and ISO 
+19111:2003. (The reason for this change was that the relationship of a datum with the physical object is 
+sometimes defined through multiple points, not just one.) 
+
+j) The anchorDefinition in the definition of an ImageDatum should identify a pixel in 
+the image as the position of the origin.  [Best Practice] 
+
+k) The anchorDefinition in the definition of an ImageDatum also (perhaps implicitly) 
+defines the orientation set of directions in the image object, which are parallel to the 
+image pixel rows and columns.  The CS axes are then defined to be in the directions 
+of the (perhaps implicit) datum orientation directions.  [Best Practice] 
+
+NOTE 1 As stated in Clause B.3.5 of Topic 2, the anchorDefinition pixel is usually either the centre or a 
+corner of the image.  Notice that the anchorDefinition is different from the pixelInCell, which specifies 
+whether the origin is centered on a pixel or is halfway between pixel centers 
+
+NOTE 2 Although the anchorDefinition is optional, it should be included in an engineering or image 
+datum.  Because the image IS the object, different anchorDefinitions and ImageDatums are needed by 
+different images, and the ImageCRS thus must be different for each image.  [Best Practice] 
+
+l) A coordinate system (CS) specifies an ordered sequence of the position coordinate 
+axes (ordinates from a coordinate tuple) in that CS.  The specified axis order shall be 
+used by the coordinates (ordinates) in recorded coordinate tuples. 
+
+6 Copyright © 2009 Open Geospatial Consortium, Inc.  
+
+
+
+  OGC 09-076r3 
+
+m) Each coordinate axis specifies the name(s) of that axis (ordinate), the axis direction, 
+and the units that shall be used for recording positions along that axis.   
+
+n) Each axis direction (informally) references a direction of the orientation of the datum 
+with which this CS is used by a CRS.  [Best Practice] 
+
+NOTE  This meaning of the axis direction is not explicitly stated in Topic 2, and thus not always 
+understood.  The purpose of the axis direction is to prevent ambiguity in associating the axes of a 
+coordinate system with the directions defined by the datum. The exact direction of a coordinate axis can 
+never be defined in absolute terms, since absolute directions do not exist. 
+
+o) A coordinate axis may be straight or curved, or may be an angle. 
+NOTE  Some persons prefer to think of a coordinate axis as always straight, with a coordinate 
+conversion to a curve.  However, this terminology is not now supported in Topic 2. Topic 2 deliberately 
+and explicitly supports curved spaces, such as the surface of an ellipsoid, or the curved axis of a gravity-
+related Vertical CRS. The conversion between curved and straight axes does not take place at the axis or 
+coordinate system level, but in coordinate operations between coordinate reference systems. 
+
+p) A coordinate operation defines how to change coordinates from one coordinate 
+reference system to another. 
+
+NOTE  A coordinate operation is often based on a one-to-one relationship between corresponding 
+coordinates.  However, a coordinate operation may be based on other relationships between corresponding 
+coordinates.  For example, a many-to-one relationship usually exists, and is used, from 3D ground 
+coordinates to unrectified 2D image coordinates. 
+
+q) A coordinate operation contains values for the operation parameters needed to 
+perform this operation, and is associated to one operation method, which describes 
+how to perform that operation using values of zero or more parameters. 
+
+NOTE  One operation method will often be used by many different coordinate operations with different 
+source and target CRSs, which may use different coordinate axis names. 
+
+r) The CRS, datum, and coordinate operation definitions each contain one or more 
+“scope” parameters, to identify expected usage or restrictions and limitations of 
+usage. 
+
+NOTE  The “scope” parameter is required, so it must have the value “not known” when the “scope” in 
+unknown.  The “scope” may be repeated, but repetition is rare. 
+
+s) Although a CRS, CS, or datum might be used for more than position coordinates, 
+such as velocities and accelerations, Topic 2 does not mention these possible uses, 
+and thus does not suggest how this should be done. 
+
+NOTE  This (current) limitation of the scope of Topic 2 is not always understood.  (Topic 2 supports the 
+DirectPosition specified in ISO 19107, providing the reference information required to interpret the 
+position coordinates in the DirectPosition class.) However, extensions and modifications of Topic 2 are 
+now being considered to increase its scope. Indeed, a new Topic 19 that extends Topic 2 has been drafted.  
+Persons are encouraged to propose extensions to Topic 2 as may be needed to meet their needs. 
+
+t) Topic 2 specifies 7 concrete types of CRS, namely GeodeticCRS, VerticalCRS, 
+ImageCRS, EngineeringCRS, ProjectedCRS, DerivedCRS, and CompoundCRS. 
+
+u) Topic 2 specifies 4 concrete types of datum, namely GeodeticDatum, VerticalDatum, 
+ImageDatum, and EngineeringDatum. 
+
+v) Topic 2 specifies 9 concrete types of CS, namely EllipsoidalCS, CartesianCS, 
+VerticalCS, LinearCS, CylindricalCS, PolarCS, AffineCS, and UserDefinedCS. 
+
+Copyright © 2009 Open Geospatial Consortium, Inc.  7 
+
+
+
+OGC 09-076r3 
+
+NOTE  The LinearCS, CylindricalCS, PolarCS, AffineCS, and UserDefinedCS are rarely used. 
+
+w) Topic 2 specifies 4 concrete types of coordinate operation, namely Transformation, 
+Conversion, PassThroughOperation, and ConcatenatedOperation. 
+
+x) A ProjectedCRS or DerivedCRS inherits its datum through its baseCRS, and just 
+changes the CS using a coordinate Conversion between the old and new CSs. 
+
+6. Definitions copied from Topic 2 
+The following definitions from Topic 2 are ordered for top-down understanding. 
+
+6.1 General concepts 
+
+4.5 
+coordinate 
+one of a sequence of n numbers designating the position of a point in n-dimensional 
+space  
+NOTE In a coordinate reference system, the coordinate numbers are qualified by units. 
+
+4.46 
+unit 
+defined quantity in which dimensioned parameters are expressed 
+NOTE In this Abstract Specification, the subtypes of units are length units, angular units, time units, 
+scale units and pixel spacing units. 
+
+4.8 
+coordinate reference system 
+coordinate system that is related to an object by a datum 
+NOTE For geodetic and vertical datums, the object will be the Earth. 
+
+EDITOR’S NOTE Restating this definition: A coordinate reference system relates its coordinate 
+system to a specific object by a datum. The object is often a physical object, such as the earth or a moving 
+platform. 
+
+4.14 
+datum 
+parameter or set of parameters that define the position of the origin, the scale, and the 
+orientation of a coordinate system 
+EDITOR’S NOTE The words “the scale” in the above definition apply primarily to geodetic 
+datums, and this scale reflects very small errors in the geodetic datum. 
+
+4.10 
+coordinate system 
+set of mathematical rules for specifying how coordinates are to be assigned to points 
+
+4.7 
+coordinate operation 
+
+8 Copyright © 2009 Open Geospatial Consortium, Inc.  
+
+
+
+  OGC 09-076r3 
+
+change of coordinates, based on a one-to-one relationship, from one coordinate 
+reference system to another 
+NOTE Supertype of coordinate transformation and coordinate conversion. 
+
+6.2 Coordinate reference system types 
+
+4.23 
+geodetic coordinate reference system 
+coordinate reference system based on a geodetic datum 
+
+4.47 
+vertical coordinate reference system 
+one-dimensional coordinate reference system based on a vertical datum 
+
+4.30 
+image coordinate reference system 
+coordinate reference system based on an image datum 
+
+4.20 
+engineering coordinate reference system 
+coordinate reference system based on an engineering datum 
+EXAMPLES Local engineering and architectural grids; coordinate reference system local to a ship or 
+an orbiting spacecraft. 
+
+4.3 
+compound coordinate reference system 
+coordinate reference system using at least two independent coordinate reference 
+systems 
+NOTE Coordinate reference systems are independent of each other if coordinate values in one cannot 
+be converted or transformed into coordinate values in the other. 
+
+6.3 Datum types 
+
+4.24 
+geodetic datum 
+datum describing the relationship of a two- or three-dimensional coordinate system to 
+the Earth 
+
+4.49 
+vertical datum 
+datum describing the relation of gravity-related heights or depths to the Earth 
+
+NOTE In most cases, the vertical datum will be related to mean sea level. Ellipsoidal heights are treated 
+as related to a three-dimensional ellipsoidal coordinate system referenced to a geodetic datum. Vertical 
+datums include sounding datums (used for hydrographic purposes), in which case the heights may be 
+negative heights or depths. 
+
+4.31 
+image datum 
+engineering datum which defines the relationship of a coordinate system to an image 
+
+Copyright © 2009 Open Geospatial Consortium, Inc.  9 
+
+
+
+OGC 09-076r3 
+
+4.21 
+engineering datum 
+local datum 
+datum describing the relationship of a coordinate system to a local reference 
+NOTE Engineering datum excludes both geodetic and vertical datums. 
+
+EXAMPLE A system for identifying relative positions within a few kilometres of the reference point. 
+
+6.4 Coordinate system types 
+
+4.18 
+ellipsoidal coordinate system 
+coordinate system in which position is specified by geodetic latitude, geodetic 
+longitude and (in the three-dimensional case) ellipsoidal height 
+
+4.2 
+Cartesian coordinate system 
+coordinate system which gives the position of points relative to n mutually 
+perpendicular axes 
+NOTE n is 2 or 3 for the purposes of this Abstract Specification. 
+
+4.48 
+vertical coordinate system 
+one-dimensional coordinate system used for gravity-related height or depth 
+measurements 
+
+4.32 
+linear coordinate system 
+one-dimensional coordinate system in which a linear feature forms the axis 
+
+EXAMPLES Distances along a pipeline; depths down a deviated oil well bore. 
+
+4.44 
+spherical coordinate system 
+three-dimensional coordinate system with one distance measured from the origin and 
+two angular coordinates, commonly associated with a geodetic coordinate reference 
+system 
+
+[ISO 19136] 
+NOTE Not to be confused with an ellipsoidal coordinate system based on an ellipsoid ‘degenerated’ 
+into a sphere. 
+
+4.37 
+polar coordinate system 
+two-dimensional coordinate system in which position is specified by distance and 
+direction from the origin 
+NOTE For the three-dimensional case, see spherical coordinate system (4.44). 
+
+4.13 
+cylindrical coordinate system 
+
+10 Copyright © 2009 Open Geospatial Consortium, Inc.  
+
+
+
+  OGC 09-076r3 
+
+three-dimensional coordinate system with two distance and one angular coordinates 
+
+4.1 
+affine coordinate system 
+coordinate system in Euclidean space with straight axes that are not necessarily mutually 
+perpendicular 
+
+6.5 Coordinate operation types 
+
+4.11 
+coordinate transformation 
+coordinate operation in which the two coordinate reference systems are based on 
+different datums 
+NOTE A coordinate transformation uses parameters which are derived empirically by a set of points 
+with known coordinates in both coordinate reference systems. 
+
+4.6 
+coordinate conversion 
+coordinate operation in which both coordinate reference systems are based on the 
+same datum 
+
+EXAMPLE Conversion from an ellipsoidal coordinate reference system based on the WGS 84 datum to a 
+Cartesian coordinate reference system also based on the WGS 84 datum, or change of units such as from radians to 
+degrees or feet to meters. 
+NOTE A coordinate conversion uses parameters which have specified values that are not determined 
+empirically. 
+
+4.4 
+concatenated operation 
+coordinate operation consisting of sequential application of multiple coordinate 
+operations 
+
+6.6 Geodetic CRS terms 
+
+4.25 
+geodetic latitude 
+ellipsoidal latitude 
+angle from the equatorial plane to the perpendicular to the ellipsoid through a given 
+point, northwards treated as positive 
+
+4.26 
+geodetic longitude 
+ellipsoidal longitude 
+angle from the prime meridian plane to the meridian plane of a given point, eastward 
+treated as positive 
+
+4.19 
+ellipsoidal height 
+geodetic height 
+
+Copyright © 2009 Open Geospatial Consortium, Inc.  11 
+
+
+
+OGC 09-076r3 
+
+distance of a point from the ellipsoid measured along the perpendicular from the 
+ellipsoid to this point, positive if upwards or outside of the ellipsoid 
+NOTE Only used as part of a three-dimensional ellipsoidal coordinate system and never on its own. 
+
+4.17 
+ellipsoid 
+surface formed by the rotation of an ellipse about a main axis 
+NOTE In this Abstract Specification, ellipsoids are always oblate, meaning that the axis of rotation is 
+always the minor axis. 
+
+4.40 
+semi-major axis 
+a 
+semi-diameter of the longest axis of an ellipsoid 
+NOTE This equates to the semi-diameter of the ellipsoid measured in its equatorial plane. 
+
+4.41 
+semi-minor axis 
+b 
+semi-diameter of the shortest axis of an ellipsoid 
+NOTE The shortest axis coincides with the rotation axis of the ellipsoid and therefore contains both 
+poles. 
+
+4.22 
+flattening 
+ratio of the difference between the semi-major (a) and semi-minor axis (b) of an 
+ellipsoid to the semi-major axis; f = (a – b)/a 
+NOTE Sometimes inverse flattening 1/f  = a/(a − b) is given instead; 1/f is also known as reciprocal 
+flattening. 
+
+4.35 
+meridian 
+intersection of an ellipsoid by a plane containing the shortest axis of the ellipsoid 
+NOTE This term is often used for the pole-to-pole arc rather than the complete closed figure. 
+
+4.38 
+prime meridian 
+zero meridian 
+meridian from which the longitudes of other meridians are quantified 
+
+6.7 Projected CRS terms 
+
+4.39 
+projected coordinate reference system 
+
+12 Copyright © 2009 Open Geospatial Consortium, Inc.  
+
+
+
+  OGC 09-076r3 
+
+coordinate reference system derived from a two-dimensional geodetic coordinate 
+reference system by applying a map projection 
+
+4.33 
+map projection 
+coordinate conversion from an ellipsoidal coordinate system to a plane 
+
+4.16 
+easting 
+E 
+distance in a coordinate system, eastwards (positive) or westwards (negative) from a 
+north-south reference line 
+
+4.36 
+northing 
+N 
+distance in a coordinate system, northwards (positive) or southwards (negative) from an 
+east-west reference line 
+
+6.8 Vertical CRS terms 
+
+4.29 
+height 
+h, H 
+distance of a point from a chosen reference surface measured upward along a line 
+perpendicular to that surface 
+NOTE A height below the reference surface will have a negative value. 
+
+4.15 
+depth 
+distance of a point from a chosen reference surface measured downward along a line 
+perpendicular to that surface 
+NOTE A depth above the reference surface will have a negative value. 
+
+4.27 
+geoid 
+equipotential surface of the Earth’s gravity field which is everywhere perpendicular to the 
+direction of gravity and which best fits mean sea level either locally or globally 
+
+4.28 
+gravity-related height 
+H 
+height dependent on the Earth’s gravity field 
+NOTE This refers to in particular orthometric height or normal height, which are both approximations 
+of the distance of a point above the mean sea level. 
+
+4.34 
+mean sea level 
+
+Copyright © 2009 Open Geospatial Consortium, Inc.  13 
+
+
+
+OGC 09-076r3 
+
+average level of the surface of the sea over all stages of tide and seasonal variations 
+NOTE Mean sea level in a local context normally means mean sea level for the region calculated from 
+observations at one or more points over a given period of time. Mean sea level in a global context differs 
+from a global geoid by not more than 2 m. 
+
+6.9 Other terms 
+
+4.12 
+coordinate tuple 
+tuple composed of a sequence of coordinates 
+NOTE The number of coordinates in the coordinate tuple equals the dimension of the coordinate 
+system; the order of coordinates in the coordinate tuple is identical to the order of the axes of the coordinate 
+system. 
+
+4.42 
+sequence 
+finite, ordered collection of related items (objects or values) that may be repeated 
+
+[ISO 19107] 
+
+4.43 
+spatial reference 
+description of position in the real world 
+NOTE This may take the form of a label, code or coordinate tuple. 
+
+4.9 
+coordinate set 
+collection of coordinate tuples related to the same coordinate reference system 
+
+4.45 
+tuple 
+ordered list of values  
+
+7. References 
+[1] OGC 08-015, The OpenGIS® Abstract Specification Topic 2: Spatial referencing by 
+
+coordinates  
+
+[2] OGC 08-010r1, Topic 2 change request - Correct grid cell terms”  
+[3] OGC 08-089r3, Topic 2 change request - Correct inconsistencies ”  
+[4] OGC 08-149, Topic 2 change request - Change associations to 
+
+GeneralParameterValue” 
+NOTE  The three Topic 2 change requests listed above were accepted by the OGC Technical Committee 
+in their September 2008 meeting. 
+
+[5] OGC 07-011, The OpenGIS® Abstract Specification Topic 6: Schema for coverage 
+geometry and functions  
+
+[6] OGC 07-036, Geography Markup Language (GML), version 3.2.1 
+
+14 Copyright © 2009 Open Geospatial Consortium, Inc.  
+
+
+
+  OGC 09-076r3 
+
+Copyright © 2009 Open Geospatial Consortium, Inc.  15 
+
+[7] OGC 06-121r7, OGC Web Services Common, version 1.2 
+[8] OGC 04-107, The OpenGIS® Abstract Specification Topic 7: The Earth Imagery 
+
+Case 
+
+ 
+
+
+	Introduction
+	2. CRS uses for data sharing
+	3. CRS identifiers for interoperability
+	4. XML encoding
+	5. Topic 2 summary
+	6. Definitions copied from Topic 2
+	6.1 General concepts
+	6.2 Coordinate reference system types
+	6.3 Datum types
+	6.4 Coordinate system types
+	6.5 Coordinate operation types
+	6.6 Geodetic CRS terms
+	6.7 Projected CRS terms
+	6.8 Vertical CRS terms
+	6.9 Other terms
+
+	7. References
+

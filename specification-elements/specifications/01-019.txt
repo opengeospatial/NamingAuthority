@@ -1,0 +1,805 @@
+
+OpenGIS Document #01-019 
+ 
+TITLE: Discussion Paper: XML for Image and Map Annotations (XIMA) 
+ Draft Candidate Interface Specification 
+
+VERSION: 0.4 
+
+EDITOR: John D. Evans 
+ NASA Digital Earth Office 
+ Goddard Space Flight Center, Bldg. 3, Rm. S3 
+ Greenbelt, MD 20771 
+ Phone: +1 301 286 0803 
+ Email: jdevans@alum.mit.edu 
+
+DATE: 2001-02-06 
+
+This paper presents a discussion of technology issues considered in a Special Interest Group of the Open GIS Consortium 
+Technical Committee. The content of this paper is presented to create discussion in the geospatial information industry on this 
+topic; the content of this paper is not to be considered an adopted specification of any kind. This paper does not represent the 
+official position of the Open GIS Consortium nor of the OGC Technical Committee. 
+
+Copyright © 2001 OGC. All Rights Reserved. 
+
+Authors 
+John D. Evans, MIT / GST/ NASA (editor) 
+Dave Case, MITRE Harry Nietzwiadek, Image Matters 
+Ron Lake, Galdos Systems Carl Reed, Carl Reed Associates 
+
+Contents 
+1. Abstract........................................................................................................................................................................2 
+2. Concept........................................................................................................................................................................2 
+3. Requirements ..............................................................................................................................................................3 
+
+3.1 Annotations are independent features ...............................................................................................................3 
+3.2 Annotations must annotate something..............................................................................................................4 
+3.3 Annotations often point to a spatial subset of a map or image .....................................................................4 
+3.4 Annotations may link to multiple images or maps...........................................................................................5 
+3.5 Annotations have different shapes on different images or maps ..................................................................5 
+3.6 Annotations may have rich content....................................................................................................................5 
+3.7 Annotations may have properties .......................................................................................................................6 
+3.8 Requirements summary ........................................................................................................................................7 
+
+4. Simple Schema............................................................................................................................................................7 
+4.1 Summary .................................................................................................................................................................7 
+4.2 Document Type Definition .................................................................................................................................8 
+4.3 XML Schema definition .......................................................................................................................................9 
+
+5. Using a Location Organizer Folder for annotations ..........................................................................................10 
+5.1 Motivation.............................................................................................................................................................10 
+5.2 Useful LOF elements..........................................................................................................................................11 
+5.3 Useful modifications to LOF elements............................................................................................................13 
+5.4 Deriving from the LOF schema..................................................................Error! Bookmark not defined. 
+
+Appendix A. LOF instance for annotations .................................................................................................................15 
+
+
+
+XIMA v0.4 / 2001-02-06 p. 2 of 2 
+
+1. Abstract 
+This document defines an XML vocabulary to encode annotations on imagery, maps, and other 
+geospatial data. This vocabulary draws on the Geography Markup Language (OpenGIS GML 
+Recommendation Paper, Revision 2.0, OGC Document #01-016) to express the positions of these 
+annotations in geographic (real-world) or image-pixel coordinates, and to associate each annotation 
+with the geospatial resource(s) it describes. Encoding annotations using such a vocabulary will let 
+Web-GIS users more easily and flexibly 
+
+• Interchange annotated maps and images,  
+• Integrate image interpretations with raw imagery, and  
+• Converse geographically over images and maps. 
+
+These activities are of particular interest to the defense and intelligence community, which first 
+articulated the need for such an encoding scheme. However, the XML encoding presented here is 
+also useful for any activity that requires linking or tagging geospatial data in order to discuss it with 
+others, to make joint decisions, or to communicate spatially. Examples include 
+
+• Tourism (e.g., highlighting sites or tours on a map),  
+• Education (e.g., dialogs between students and teachers about pictures or maps),  
+• City planning (e.g., joint decisions on zoning or development), and 
+• Participatory government (spatially-referenced comments, e.g., on regulatory proposals). 
+
+This document presents, first, several encoding requirements for annotations, illustrating each one 
+with simple examples. It then proposes a simple XML Schema that meets those requirements. 
+Finally, it explains how one might apply or adapt the Location Organizer Folder (LOF), devised 
+within the OpenGIS Geospatial Fusion Services Testbed, to the case of image and map annotations. 
+
+2. Concept 
+Imagery analysts, and other users of imagery and maps, often need to summarize the essential content of an 
+image, point out features of interest, or express similarities or differences between images. Likewise, GIS 
+specialists often need to highlight spatial patterns, label certain features, or otherwise “mark up” a map. Any 
+of these activities creates and communicates a valuable piece of information: an image or map annotation. 
+Figure 1 shows some examples of these annotations. 
+
+
+
+XIMA v0.4 / 2001-02-06 p. 3 of 3 
+
+ 
+
+Figure 1. Example image and annotations 
+
+Figure 1 illustrates the variety of content that may comprise an annotation: a text label, a simple graphic, an 
+inset image. (In fact, an inset image is but one example of the rich multimedia content – sound, video, etc. -- 
+that might comprise an annotation.). Figure 1 also illustrates the crucial relationship between annotations and 
+specific locations on a map or image. 
+
+3. Requirements 
+This document specifies an XML vocabulary and document structure (an application schema) that applies 
+GML features and relationships to image and map annotations. The next seven sections use simple examples 
+to explain each requirement of annotations, and to show how one can meet those requirements in XML. 
+
+3.1 Annotations are independent features 
+
+At first glance, one might choose simply to append annotations to the encoding of maps or images. This has 
+been the practice for image/graphic formats such as the National Imagery Transfer Format (NITF/BIIF). 
+However, effective multi-purpose usage over the Web requires access to each annotation in its own right, so 
+as to (re)use it independently of its source image, and to link it with other maps or images. Encoding each 
+annotation as an independent entity also allows reuse of GML specifications and technologies such as Web 
+Feature Servers, Location Organizer Clients, etc. We can allow this looser coupling by expressing annotations 
+as distinct, identifiable entities, as in the following example: 
+
+ <AnnotationList> 
+  <Annotation ID="A234"> … </Annotation> 
+  <Annotation ID="C235"> … </Annotation> 
+ </AnnotationList> 
+
+In accordance with XML document structuring conventions, we enclose a series of Annotation elements 
+within a single top-level AnnotationList (this is so that a parsing application can detect the end of the list). 
+
+
+
+XIMA v0.4 / 2001-02-06 p. 4 of 4 
+
+3.2 Annotations must annotate something 
+
+In general, an annotation provides some sort of content and indicates what resource(s) that content applies 
+to. Without a link to at least one map or image, the annotation's content would often become ambiguous or 
+meaningless (e.g., a curved green arrow isn't much use by itself). So we need a reference to a map or image 
+alongside the annotation's content, as shown in the following XML fragment: 
+
+ <Annotation ID="233A"> 
+  <Content type="text"> Aerial view of facility XYZ </Content> 
+  <Annotates xlink:href="http://my.server.net/image42.jpg"/> 
+ </Annotation> 
+
+This example features in-line text content ("Aerial view of facility XYZ "). Later we'll see examples of external 
+content. This example annotates the image located at the URL "http://my.server.net/image42.jpg" using 
+XML’s Xlink syntax. In general, the xlink:href attribute refers to either 
+
+• an entire file (as in the above example); 
+• a fragment of an XML document (this one or another) using the XPath/XPointer syntax; 
+• an element with an xlink:label attribute in this XML document; or 
+• a dynamically created data-stream invoked through a URL GET query. 
+
+This lets us annotate an image, a document, a GML feature or feature collection, even other annotations. In 
+the absence of a GML geometry sub-element (see next), this annotation would apply to the entire resource 
+(or XML fragment) to which it points. 
+
+3.3 Annotations often point to a spatial subset of a map or image 
+
+Many annotations apply only to a small, spatially defined subset of an image or map. Such annotations must 
+specify which portion of the pointed-to image they actually apply to. In XML, we can encode this using a 
+GML geometry under the Annotates element, as in the following example: 
+
+ <Annotation ID="234A"> 
+  <Content type="text"> HQ building </Content> 
+  <Annotates xlink:href="http://my.server.net/image42.jpg"/> 
+   <gml:Point><gml:coordinates>142,78</gml:coordinates></gml:Point> 
+  </Annotates> 
+ </Annotation> 
+
+In the above example, the geometry sub-element is a single GML point; but it could consist of any GML 
+geometry (a point, rectangle, line-string, polygon, or multiples of these) or a GML Box. For example: 
+
+ <Annotation ID="235A"> 
+  <Content type="text"> HQ building </Content> 
+  <Annotates xlink:href="http://my.server.net/image42.jpg"/> 
+   <gml:Polygon> 
+     <gml:outerBoundaryIs><gml:LinearRing><gml:coordinates> 
+      142,78 149,85 156,93 149,101 141,122 129,110 135,95 
+     </gml:coordinates></gml:LinearRing></gml:outerBoundaryIs> 
+   </gml:Polygon> 
+  </Annotates> 
+ </Annotation> 
+
+One important detail is the Spatial Reference System (SRS) in which the geometry is defined. 
+
+• If the geometry has no srsName attribute, its SRS shall be "context-defined" as that of the pointed-to 
+image or map. If that resource is a GML feature or feature collection, this would be the SRS defined 
+there. If the pointed-to resource is an image with no SRS defined, the geometry coordinates are integer 
+pixel offsets from the top-left corner (x=column, y=row). 
+
+
+
+XIMA v0.4 / 2001-02-06 p. 5 of 5 
+
+• If the geometry does have an srsName attribute, rendering it for display may require transforming it into 
+display coordinates. If this SRS matches that of the annotated map or image, this is most likely a simple 
+affine transform, easily specified in an XSLT stylesheet; otherwise a full coordinate transform may be 
+required, specified via XSLT extension functions or performed by some other mechanism. 
+
+Another important point: this geometry describes the portion of the map or image that the annotation applies 
+to. This geometry is not a property of the annotation itself, but rather of its relationship to an image or map. 
+This will become more apparent as we annotate several different maps or annotations with a single piece of 
+content, as described next. 
+
+3.4 Annotations may link to multiple images or maps 
+
+We may often need to link an annotation to more than one image or map, e.g., to highlight the same feature 
+at different scales, or at different times, as in the following example: 
+
+ <Annotation ID="234A"> 
+  <Content type="text"> Headquarters building </Content> 
+  <Annotates xlink:href="http://my.server.net/image42.jpg"/> 
+   … 
+  </Annotates> 
+  <Annotates xlink:href="http://your.server.net/photo3205.png"/> 
+   … 
+  </Annotates> 
+ </Annotation> 
+
+A given annotation must have a single Content element (containing the text “Headquarters building” in the 
+example above); but the Annotates element may be repeated any number of times to link the content to 
+multiple images or maps. 
+
+3.5 Annotations have different shapes on different images or maps 
+
+When an annotation is linked to more than one image or map, it will usually refer to a different portion of 
+each image or map. (For example, the quadrilateral annotation labeled "HELO PAD" in Figure 1 would look 
+very different in an overhead view). As a result, an annotation usually has no intrinsic geometry of its own, 
+apart from its relationship to maps or images. This is why a GML geometry appears on each Annotates sub-
+element -- rather than on the Content or on the Annotation as a whole.  
+
+One occasional exception to this rule is simple symbols -- stars, crosses, arrows perhaps – encoded in GML. 
+The shape of these symbols would remain the same regardless of what they annotate, so they could be 
+considered a property of the Content element. However, because these would likely be drawn from some 
+external library, the Content element would not normally define the geometry in-line, but rather include it by 
+reference just as it does for images or other external content (see next). 
+
+3.6 Annotations may have rich content 
+
+Some annotations (such as an inset image) may have external content rather than in-line text. The Content 
+element can reference this through an optional xlink:href attribute, as in the following two examples. 
+
+
+
+XIMA v0.4 / 2001-02-06 p. 6 of 6 
+
+• Inset image: 
+
+ <Annotation ID="234A"> 
+  <Content type="image/gif" xlink:href="http://my.server.net/close-up.gif" /> 
+  <Annotates> 
+   … 
+  </Annotates> 
+ </Annotation> 
+
+• Graphical annotation (symbols, etc., reused across several annotations): 
+
+ <Annotation ID="234A"> 
+  <Content type="text/xml" xlink:href="http://my.server.net/symbols.xml#5pt_star" /> 
+  <Annotates> 
+   … 
+  </Annotates> 
+ </Annotation> 
+
+External links are useful when (i) the annotation's content is binary (thus not easily encoded in XML), (ii) it 
+already exists elsewhere and we don't want to duplicate it, or (iii) we wish to reuse the same content many 
+times. In particular, this allows annotations consisting of images and GML or SVG geometry, but also 
+potentially of images, or audio or video clips. As mentioned earlier, the xlink:href attribute contains a URI 
+that may point to a file; a local or remote XML fragment, an element with an xlink:label attribute in the 
+current XML document; or a dynamically-created data stream. 
+
+3.7 Annotations may have properties 
+
+Finally, annotations usually need to be qualified as to their origin, their degree of certainty, rationale, etc. 
+These elements may apply to the annotation's content, as in the following example: 
+
+ <Annotation ID="234A"> 
+  <Content type="text"> HQ building </Content> 
+  <Title> Main Headquarters for the facility</Title> 
+  <Author> Mary Franklin </Author> 
+  <DateTime>19990919</DateTime> 
+  <Certainty>High</Certainty> 
+  <Rationale>This is the standard layout for these buildings.</Rationale> 
+  <Annotates> 
+   … 
+  </Annotates> 
+ </Annotation> 
+
+Or these properties may qualify the annotation’s link(s) to maps or images: 
+
+ <Annotation ID="234A"> 
+  <Content> 
+   … 
+  </Content> 
+  <Annotates xlink:href="http://my.server.net/image42.jpg"/> 
+   <AreaOfInterest> … </AreaOfInterest> 
+   <Title>Smoke plume from chimney</Title> 
+   <Author> Bill Ludlow </Author> 
+   <DateTime> 20000922 </DateTime> 
+   <Certainty> Tentative </Certainty> 
+   <Rationale> Checked against Ikonos; monitored for 2 weeks </Rationale> 
+  </Annotates> 
+ </Annotation> 
+
+
+
+XIMA v0.4 / 2001-02-06 p. 7 of 7 
+
+3.8 Requirements summary 
+
+In summary, image and map annotations are independent entities with one (or more) links to maps or images. 
+They will usually have different shapes on different images or maps; and so the corresponding GML 
+geometry describes not the annotation itself, but its “footprint” on each image or map. Finally, an annotation 
+may have inline or external content (or both), and properties describing its content and/or its link to each 
+image or map it annotates. 
+
+The following section presents a Document Type Definition and XML Schema Definition that meet these 
+requirements. This is followed by some guidelines for using the Location Organizer Folder document schema 
+for image and map annotations. It’s not yet clear which approach will prove more successful (using a simple, 
+new application schema vs. reusing / adapting / reinterpreting an existing, more complex schema); both are 
+included here for discussion. 
+
+4. Simple Schema 
+
+4.1 Summary 
+
+The following document tree would meet the requirements spelled out earlier: 
+
+ 
+Figure 2. Document tree 
+
+As the diagram shows, a top-level AnnotationList has one or more Annotation elements; and each Annotation 
+has one Content element, which may consist of character data OR it may be empty (with remote content 
+referred to by Xlink attributes). The Annotation element also has a cluster of metadata (Title, Author, 
+DateTime, etc.), and one or more Annotates elements linking it to maps or images. 
+
+Each Annotates element has (required) Xlink attributes (not shown above) indicating what map or image it 
+applies to. Each Annotates element also has an optional GML geometry sub-element; if this is absent the 
+
+
+
+XIMA v0.4 / 2001-02-06 p. 8 of 8 
+
+annotation is presumed to apply to all of the pointed-to image or map. The Annotates element also has a 
+cluster of metadata (Title, Author, DateTime, etc.) describing its link to the map or image. 
+
+4.2 Document Type Definition 
+
+The following Document Type Definition corresponds to the tree described previously. It refers to the GML 
+1.0 geometries (and GML Box) to describe the shape of an annotation on an image or map. 
+
+<!-- XML Annotations, DTD v0.3. --> 
+
+<!-- Incorporate GML 1.0 geometry --> 
+<!ENTITY % gmlgeometry.dtd SYSTEM 
+  "http://www.opengis.org/techno/specs/00-029/gmlgeometry.dtd"> 
+%gmlgeometry.dtd; 
+
+<!-- A reusable cluster of metadata to qualify annotations --> 
+<!ENTITY % Properties "Title , Author , DateTime , Certainty , Rationale"> 
+
+<!-- Standard XLink attributes other than xlink:href. --> 
+<!ENTITY % xlinkRefAttrs " 
+ xmlns:xlink  CDATA #FIXED 'http://www.w3.org/2000/xlink/namespace/' 
+  xlink:type  (simple|extended|locator|arc) 'simple'  
+  xlink:role  CDATA #IMPLIED 
+  xlink:title  CDATA #IMPLIED 
+  xlink:show   (new|embed|replace) 'embed' 
+  xlink:actuate (onRequest|onLoad) 'onLoad' "> 
+
+<!-- Top-level list of annotations --> 
+<!ELEMENT AnnotationList (Annotation)+> 
+<!-- Every annotation has a locally unique ID (to facilitate reuse) --> 
+<!ELEMENT Annotation (Content, %Properties;, Annotates+)> 
+<!ATTLIST Annotation ID ID #REQUIRED > 
+
+<!-- Content may be inline text, or remote XML or multimedia linked in 
+  via the Xlink attributes. --> 
+<!ELEMENT Content (#PCDATA)> 
+<!ATTLIST Content 
+ type CDATA #REQUIRED 
+ %xlinkRefAttrs;  
+ xlink:href CDATA #IMPLIED > 
+
+<!-- Identifies what map or image (and what spatial subset of it) is being annotated.  
+  No geometry here means the entire map or image is annotated.--> 
+<!ELEMENT Annotates ((%GeometryClasses; | Box)?, %Properties;)> 
+<!ATTLIST Annotates 
+ %xlinkRefAttrs;  
+ xlink:href CDATA #REQUIRED > 
+
+<!-- Metadata qualifying the annotation or its link to a map or image. Complete list TBD. --> 
+<!ELEMENT Title (#PCDATA)> 
+<!ELEMENT Author (#PCDATA)> 
+<!ELEMENT DateTime (#PCDATA)> 
+<!ELEMENT Certainty (#PCDATA)> 
+<!ELEMENT Rationale (#PCDATA)> 
+
+No doubt practical usage will require additional elements and attributes within this basic structure -- 
+particularly the %Properties entity, whose elements qualify an annotation's content or its link to an image or 
+map. 
+
+
+
+XIMA v0.4 / 2001-02-06 p. 9 of 9 
+
+4.3 XML Schema definition 
+
+This is an XML schema corresponding to the previous tree. It uses the October 2000 XML Schema syntax 
+(W3C Candidate Recommendation), and draws on the GML 2.0 geometry schema (OGC Document 01-016, 
+OpenGIS GML Recommendation Paper, Revision 2.0). Of particular interest is the repeatable Annotates 
+element, which has both an XLink attribute and a gml:_Geometry sub-element (this is an abstract type, which 
+instance documents must instantiate with one of gml:Point, gml:Polygon, gml:LineString, etc.). 
+
+<?xml version="1.0"?> 
+<xsd:schema targetNamespace="http://www.opengis.net/xima" 
+xmlns:xlink="http://www.w3.org/1999/xlink" 
+xmlns:gml="http://www.opengis.net/gml" 
+xmlns="http://www.opengis.net/xima" 
+xmlns:xsd="http://www.w3.org/2000/10/XMLSchema"  
+elementFormDefault="unqualified" attributeFormDefault="unqualified"> 
+
+ <xsd:import namespace="http://www.opengis.net/gml" 
+schemaLocation="http://www.opengis.net/namespaces/gml/core/geometry.xsd"/> 
+ <xsd:import namespace="http://www.w3.org/1999/xlink" 
+schemaLocation="http://www.opengis.net/namespaces/gml/core/xlinks.xsd"/> 
+
+ <xsd:element name="AnnotationList"> 
+  <xsd:complexType> 
+   <xsd:sequence maxOccurs="unbounded"> 
+    <xsd:element ref="Annotation"/> 
+   </xsd:sequence> 
+  </xsd:complexType> 
+ </xsd:element> 
+
+ <xsd:element name="Annotation"> 
+  <xsd:complexType> 
+   <xsd:sequence> 
+    <xsd:element ref="Content"/> 
+    <xsd:group ref="Properties"/> 
+    <xsd:element ref="Annotates" maxOccurs="unbounded"/> 
+   </xsd:sequence> 
+   <xsd:attribute name="ID" type="xsd:ID"/> 
+  </xsd:complexType> 
+ </xsd:element> 
+
+ <xsd:element name="Content"> 
+  <xsd:complexType> 
+   <xsd:attribute name="type" type="xsd:string" use="required"/> 
+   <xsd:attributeGroup ref="xlink:simpleLink"/> 
+   <xsd:attribute ref="xlink:href" type="xsd:uriReference"/> 
+  </xsd:complexType> 
+ </xsd:element> 
+
+
+
+XIMA v0.4 / 2001-02-06 p. 10 of 10
+
+ <xsd:element name="Annotates"> 
+  <xsd:complexType> 
+   <xsd:sequence> 
+    <xsd:choice minOccurs="0"> 
+     <xsd:element ref="gml:_Geometry"/> 
+     <xsd:element ref="gml:Box"/> 
+    </xsd:choice> 
+    <xsd:group ref="Properties"/> 
+   </xsd:sequence> 
+   <xsd:attribute ref="xlink:href" type="xsd:uriReference" use="required"/> 
+  </xsd:complexType> 
+ </xsd:element> 
+
+ <xsd:element name="Title" type="xsd:string"/> 
+ <xsd:element name="Author" type="xsd:string"/> 
+ <xsd:element name="DateTime" type="xsd:string"/> 
+ <xsd:element name="Certainty" type="xsd:string"/> 
+ <xsd:element name="Rationale" type="xsd:string"/> 
+ <xsd:group name="Properties"> 
+  <xsd:sequence> 
+   <xsd:element ref="Title"/> 
+   <xsd:element ref="Author"/> 
+   <xsd:element ref="DateTime"/> 
+   <xsd:element ref="Certainty"/> 
+   <xsd:element ref="Rationale"/> 
+  </xsd:sequence> 
+ </xsd:group> 
+</xsd:schema> 
+
+5. Using a Location Organizer Folder for 
+annotations 
+The OpenGIS Geospatial Fusion Services Testbed (and subsequent Pilot Project) have developed the notion 
+of a Location Organizer Folder. This is an XML document structure (schema) that bundles together 
+multimedia information related to a particular set of events and places. Although this schema was not 
+designed to support image and map annotations; yet it can be applied to collections of annotations by 
+reinterpreting certain elements in new ways, or by deriving a new schema from the LOF schema. The next 
+three sections describe some ways to do this using one particular LOF schema, the one used by the 
+Geospatial Fusion Services Pilot Project on Jan. 25, 2001 
+<http://www.opengis.net/namespaces/gfspp/lof.xsd>. 
+
+5.1 Motivation 
+
+Using the existing LOF schema for annotations promises to leverage existing and future LOF software, 
+including feature servers, LOF viewer clients, LOF stylesheets, and the like. This adds value to these 
+components, while providing a shortcut to implementation for image and map annotations. Furthermore, the 
+LOF structure makes explicit the list of maps or images necessary for a bundle of annotations. This is a 
+practical improvement over the simple schema listed earlier, in which this list remains implicit. 
+
+However, the LOF schema was designed not for image or map annotations, but for information fusion and 
+decision support; so it doesn't resemble the above AnnotationList schema very closely. Accordingly, using 
+LOFs for annotations requires reinterpreting several LOF elements, and carrying around a certain amount of 
+LOF "baggage" (required elements) that are not useful for most image annotations. 
+
+
+
+XIMA v0.4 / 2001-02-06 p. 11 of 11
+
+The following sections highlight the parts of the LOF schema that are useful for image annotations; they also 
+point out some LOF elements that could support annotations more effectively with small changes; and how 
+to subclass (derive by restriction) a LOF special case to support image annotations. 
+
+5.2 Useful LOF elements 
+
+The primary challenge in reusing the LOF schema to support image annotations is identifying an element 
+analogous to the Annotates element listed previously. This element describes the "footprint" of an annotation 
+on a particular image or map; it is a "relationship with a shape". The geometry must be associated not with 
+the annotation itself, but with its link to a map or image; and it must be repeatable so that a given annotation 
+may be linked with multiple maps or images. The first challenge, therefore, is to find a LOF element that can 
+contain such a "relationship with shape." The two most obvious LOF elements won't do: 
+
+• In the current LOF schema (v0.81 / 2001-01-25) this requirement rules out the lofMember / lof_feature 
+family. Elements derived from these types (Airport, Building, etc.) may indeed have multiple geometries 
+(as their location, extentOf, centerLineOf, footprint, etc.); they may even have multiple relationships 
+(relationshipProperty, a.k.a. frontsOn). However both the geometry and relationship pertain to the 
+feature itself; they are not associated with each other as required for annotations. 
+
+• As for the InformationElement family, each of these elements (GeoTextMessage, Image, etc.) also has a 
+gml.rel:relationshipProperty and optional geometric properties, but these too are associated with the 
+InformationElement rather than with each other. The geometric properties 
+(gml:AbstractGeometryPropertyType) do have optional Xlink attributes: these are clearly intended for 
+remote (rather than in-line) geometry; yet this Xlink could be reinterpreted to allow the "relationship with 
+shape" necessary for annotations. But the current LOF schema allows only one geometric property per 
+InformationElement. 
+
+The LOF schema does provide a repeatable "relationship with shape" in the PlaceName element (under 
+InformationElements). PlaceName has two sub-elements: Locations (which contain gml:_Geometry 
+elements) and Occurrence (which contains a Link element with Xlink attributes). Figure 3 shows this part of 
+the LOF schema: 
+
+ 
+Figure 3. LOF PlaceName provides a "relationship with shape" 
+
+Figure 4 shows the PlaceName potion of an example LOF instance: 
+
+
+
+XIMA v0.4 / 2001-02-06 p. 12 of 12
+
+ 
+Figure 4. LOF PlaceName instance 
+
+Thus, the Locations and Occurrence sub-elements of Placename in an InformationElement's 
+EntryCollection would support the "relationship with shape" required for annotations. 
+
+The second item of interest for annotations is the LOF BackgroundMap element (under areaOfInterest). 
+This element provides some useful organization to the annotated images or maps: the repeatable 
+backgroundMap element provides a place to communicate an explicit listing of the maps or images annotated 
+within the LOF. The backgroundMap's gml.rel:label attribute provides a common identifier that different 
+annotations in the LOF may refer to. This nicely fits the common situation where a bundle of annotations 
+apply to one or a few images. This can be seen in the following schema and instance fragments: 
+
+
+
+XIMA v0.4 / 2001-02-06 p. 13 of 13
+
+ 
+Figure 5. LOF BackgroundMap provides an explicit listing of annotated maps and images 
+
+ 
+Figure 6. LOF BackgroundMap instance 
+
+Appendix A presents the full, validated XML source for these instance fragments. 
+
+5.3 Useful modifications to LOF schema 
+
+Using the LOF schema for annotations is feasible, but it does require a fair amount of "shoehorning" -- 
+reinterpreting the intended meaning of some elements, and carrying around a fair amount of unneeded 
+complexity. A few simple modifications to the LOF schema could go a long way towards making it more 
+directly usable for image and map annotations. For example: 
+
+
+
+XIMA v0.4 / 2001-02-06 p. 14 of 14
+
+• Make lof_features optional (right now at least one is required). This avoids having to carry a feature 
+around just for validation when everything of interest in the LOF is an InformationElement. 
+
+• Derive an annotationProperty from gml:AbstractGeometryPropertyType, with extended Xlink 
+attributes. Allow it (optionally but repeatably) in the lof_feature and InformationElement content models. 
+
+• Provide ID attributes on the backgroundMaps, to facilitate simple Xlinks (from within the LOF or 
+outside of it). 
+
+These would be ways to adapt the LOF schema and make it more flexible. 
+
+In addition XML Schema provides powerful facilities for deriving a new, special-purpose schema by 
+extending or restricting an existing schema. Further design work is required to derive an annotation-specific 
+schema from the "canonical" LOF schema -- one that will support annotations efficiently, yet also work as a 
+LOF and thus remain usable by LOF clients. This deserves to be an important priority for future work on 
+LOF and XIMA designs. 
+
+
+
+XIMA v0.4 / 2001-02-06 p. 15 of 15
+
+Appendix A. LOF instance for 
+annotations 
+The following XML listing expresses several image and map annotations using the LOF schema defined by 
+the Geospatial Fusion Services Pilot Project as of Jan. 25, 2001 
+<http://www.opengis.net/namespaces/gfspp/lof.xsd>. The use of this LOF might be tourism; it highlights an 
+airphoto of Boston, pointing out interesting historical sites. There are three annotations in all: 
+
+• The first is the GeoTextMessage "Boston-area overview"; it annotates all of the map labeled as "map1". 
+
+• The second is the GeoTextMessage "U.S.S. Constitution"; it annotates a single point on "map1" and a 
+polygon on "map2". 
+
+• The third is an image labeled as "Closeup of U.S. Constitution", and annotates all of "map2". 
+
+Further down, two backgroundMap elements provide details on the maps labeled as "map1" and "map2". 
+
+The LOF also includes a couple of features (a Building and a MarineTerminal) that might be of possible 
+interest. 
+
+?xml version="1.0" encoding="UTF-8"?> 
+<!-- edited with XML Spy v3.5 --> 
+<LocationFolder xmlns="http://www.examples.org" 
+xmlns:xsi="http://www.w3.org/2000/10/XMLSchema-instance" 
+xmlns:gml="http://www.opengis.net/gml" 
+xmlns:xlink="http://www.w3.org/1999/xlink" 
+xmlns:gml.rel="http://www.opengis.net/gml/relations" 
+xsi:schemaLocation="http://www.examples.org   http://www.opengis.net/namespaces/gfspp/lof.xsd"> 
+ <gml:boundedBy> 
+  <gml:Box srsName="EPSG:4326"> 
+   <gml:Coord> 
+    <gml:x>-71.257388</gml:x> 
+    <gml:y>42.251900</gml:y> 
+   </gml:Coord> 
+   <gml:Coord> 
+    <gml:x>-70.891897</gml:x> 
+    <gml:y>42.455805</gml:y> 
+   </gml:Coord> 
+  </gml:Box> 
+ </gml:boundedBy> 
+ <gml:featureMember> 
+  <Building xlink:type="resource" fid="bldg12"> 
+   <gml:boundedBy> 
+    <gml:Box> 
+     <gml:Coord> 
+      <gml:x>122</gml:x> 
+      <gml:y>386</gml:y> 
+     </gml:Coord> 
+     <gml:Coord> 
+      <gml:x>134</gml:x> 
+      <gml:y>404</gml:y> 
+     </gml:Coord> 
+    </gml:Box> 
+   </gml:boundedBy> 
+   <gml.rel:relationshipProperty type="arc" xlink:to="map1"/> 
+  </Building> 
+  <MarineTerminal xlink:type="extended"> 
+
+
+
+XIMA v0.4 / 2001-02-06 p. 16 of 16
+
+   <gml:extentOf/> 
+  </MarineTerminal> 
+ </gml:featureMember> 
+ <informationElement> 
+  <GeoTextMessage xlink:type="extended"> 
+   <gml.rel:relationshipProperty xlink:type="arc" xlink:to="map1"/> 
+   <contents>Boston area overview<contents/> 
+  </GeoTextMessage> 
+ </informationElement> 
+ <informationElement> 
+  <GeoTextMessage xlink:type="extended"> 
+   <contents>U.S.S. Constitution</contents> 
+   <gml:pointProperty xlink:href="map1"> 
+    <gml:Point> 
+     <gml:Coord> 
+      <gml:x/> 
+      <gml:y/> 
+     </gml:Coord> 
+    </gml:Point> 
+   </gml:pointProperty> 
+   <EntryCollection> 
+    <PlaceName n="1"> 
+     <Name/> 
+     <Locations> 
+      <Location n="1"> 
+       <gml:Point> 
+        <gml:Coord> 
+         <gml:x>321</gml:x> 
+         <gml:y>241</gml:y> 
+        </gml:Coord> 
+       </gml:Point> 
+      </Location> 
+     </Locations> 
+     <Occurrence n="1"> 
+      <Link href="map1"/> 
+     </Occurrence> 
+    </PlaceName> 
+    <PlaceName n="2"> 
+     <Name/> 
+     <Locations> 
+      <Location n="1"> 
+       <gml:Polygon> 
+        <gml:outerBoundaryIs> 
+         <gml:LinearRing> 
+          <gml:Coord> 
+           <gml:x>304</gml:x> 
+           <gml:y>223</gml:y> 
+          </gml:Coord> 
+          <gml:Coord> 
+           <gml:x>353</gml:x> 
+           <gml:y>201</gml:y> 
+          </gml:Coord> 
+          <gml:Coord> 
+           <gml:x>319</gml:x> 
+           <gml:y>265</gml:y> 
+          </gml:Coord> 
+          <gml:Coord> 
+           <gml:x>304</gml:x> 
+           <gml:y>223</gml:y> 
+          </gml:Coord> 
+         </gml:LinearRing> 
+        </gml:outerBoundaryIs> 
+
+
+
+XIMA v0.4 / 2001-02-06 p. 17 of 17
+
+       </gml:Polygon> 
+      </Location> 
+     </Locations> 
+     <Occurrence n="1"> 
+      <Link href="map2"/> 
+     </Occurrence> 
+    </PlaceName> 
+   </EntryCollection> 
+  </GeoTextMessage> 
+ </informationElement> 
+ <informationElement> 
+  <Image xlink:type="extended"> 
+   <gml.rel:relationshipProperty xlink:type="arc" xlink:from="http://www..." xlink:to="map2"/> 
+   <contents>Closeup of U.S.S. Constitution</contents> 
+  </Image> 
+ </informationElement> 
+ <createdBy/> 
+ <dateCreated/> 
+ <areaOfInterest> 
+  <gml:Box> 
+   <gml:Coord> 
+    <gml:x/> 
+    <gml:y/> 
+   </gml:Coord> 
+   <gml:Coord> 
+    <gml:x/> 
+    <gml:y/> 
+   </gml:Coord> 
+  </gml:Box> 
+  <backgroundMap xlink:type="resource" 
+xlink:href="http://ortho.mit.edu/server.cgi?wmtver=1.0&amp;request=..." gml.rel:label="map1" xlink:title="Overview 
+photo"> 
+   <gml:Box> 
+    <gml:Coord> 
+     <gml:x>0</gml:x> 
+     <gml:y>0</gml:y> 
+    </gml:Coord> 
+    <gml:Coord> 
+     <gml:x>600</gml:x> 
+     <gml:y>450</gml:y> 
+    </gml:Coord> 
+   </gml:Box> 
+  </backgroundMap> 
+  <backgroundMap xlink:type="resource" 
+xlink:href="http://coast.mit.edu/wmtserver.cgi?wmtver=0.9&amp;request=..." gml.rel:label="map2" 
+xlink:title="Charlestown Navy Yard"> 
+   <gml:Box> 
+    <gml:Coord> 
+     <gml:x>0</gml:x> 
+     <gml:y>0</gml:y> 
+    </gml:Coord> 
+    <gml:Coord> 
+     <gml:x>600</gml:x> 
+     <gml:y>450</gml:y> 
+    </gml:Coord> 
+   </gml:Box> 
+  </backgroundMap> 
+ </areaOfInterest> 
+</LocationFolder> 
+
+

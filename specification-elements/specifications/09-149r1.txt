@@ -1,0 +1,591 @@
+
+Open Geospatial Consortium  
+Date:  2010-10-27 
+
+Reference number of this OpenGIS® Project Document: OGC 09-149r1 
+
+Version: 1.0.0 
+
+Category: OpenGIS® Interface Standard 
+
+Editor:  Peter Baumann 
+
+OGC® Web Coverage Service 2.0 Interface Standard - 
+XML/SOAP Protocol Binding Extension 
+
+ 
+
+Copyright © 2010 Open Geospatial Consortium 
+To obtain additional rights of use, visit http://www.opengeospatial.org/legal/. 
+
+ 
+ 
+
+ 
+
+ 
+
+Warning 
+
+This document is an OGC Member approved international standard. This document is avail-
+able on a royalty free, non-discriminatory basis. Recipients of this document are invited to 
+submit, with their comments, notification of any relevant patent rights of which they are 
+aware and to provide supporting documentation. 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+Document type: OpenGIS® Interface Standard 
+Document subtype: Extension 
+Document stage: Approved OGC Standard 
+Document language: English 
+
+ 
+
+http://www.opengeospatial.org/legal/
+
+
+OGC 09-149r1 
+
+Contents Page 
+1 Scope ............................................................................................................................. 1 
+2 Conformance ............................................................................................................... 1 
+3 Normative references .................................................................................................. 1 
+4 Terms and definitions ................................................................................................. 2 
+5 Conventions ................................................................................................................. 2 
+5.1 UML notation .............................................................................................................. 2 
+5.2 Data dictionary tables ................................................................................................. 2 
+6 SOAP with XML ......................................................................................................... 2 
+7 WSDL ........................................................................................................................... 3 
+8 Exceptions .................................................................................................................... 3 
+Bibliography ............................................................................................................................. 4 
+Annex A (normative)  Abstract test suite .............................................................................. 5 
+A.1 Conformance Test Class: WCS SOAP protocol ....................................................... 5 
+A.1.1 Extension identification .............................................................................................. 5 
+A.1.2 Service metadata ......................................................................................................... 5 
+A.1.3 SOAP version and message exchange pattern .......................................................... 5 
+A.1.4 SOAP encoding ............................................................................................................ 6 
+A.1.5 SOAP GetCoverage response encoding ...................................................................... 6 
+A.1.6 SOAP body ................................................................................................................... 6 
+A.1.7 SOAP error handling .................................................................................................. 7 
+A.1.8 WSDL ........................................................................................................................... 7 
+A.1.9 Exceptions .................................................................................................................... 7 
+
+ 
+
+Tables Page 
+Table 1  — Exception codes for XML/POST operations ....................................................... 3 
+
+ 
+
+ii Copyright © 2010 Open Geospatial Consortium
+ 
+
+
+
+OGC 09-149r1 
+
+Copyright © 2010 Open Geospatial Consortium  iii
+ 
+
+i. Preface 
+
+This document specifies an extension to the OGC Web Coverage Service (WCS) 2.0 core to 
+allow for client/server communication using SOAP with XML encoding.  
+
+ii. Terms and definitions 
+
+This document uses the specification terms defined in Subclause 5.3 of [OGC 06-121r9], 
+which is based on the ISO/IEC Directives, Part 2, Rules for the structure and drafting of In-
+ternational Standards. In particular, the word “shall” (not “must”) is the verb form used to 
+indicate a requirement to be strictly followed to conform to this standard. 
+
+iii. Submitting organizations 
+
+The following organizations have submitted this Implementation Specification to the Open 
+Geospatial Consortium, Inc.: 
+
+• Jacobs University Bremen 
+• National Center for Atmospheric Re-
+
+search (NCAR) 
+• Oracle USA 
+• PCI Geomatics Inc. 
+• ERDAS, Inc. 
+
+• EOX IT Services GmbH 
+• Spot Image 
+• BAE Systems - C3I Systems 
+• Natural Environment Research Council 
+
+(NERC) 
+• George Mason University 
+
+ 
+
+
+
+ OGC 09-149r1
+
+ 
+
+Copyright © 2010 Open Geospatial Consortium iv 
+
+iv. Document Contributor Contact Points 
+
+  
+ 
+
+Name Organization  
+Peter Baumann Jacobs University Bremen, 
+
+rasdaman GmbH 
+ 
+
+v. Revision history 
+Date Release Author Paragraph modified Description 
+
+2009-11-02 0.0.1 PB All Created
+
+vi. Changes to the OpenGIS® Abstract Specification 
+
+The OpenGIS® Abstract Specification does not require any changes to accommodate the 
+technical contents of this (part of this) document. 
+
+vii.  Future Work 
+
+Nothing foreseen currently. 
+
+
+
+OGC 09-149r1 
+ 
+
+Foreword 
+
+Some of the elements of this document may be the subject of patent rights. Open Geospatial 
+Consortium Inc. shall not be held responsible for identifying any such patent rights. 
+
+Attention is drawn to the possibility that some of the elements of this document may be the 
+subject of patent rights. The Open Geospatial Consortium Inc. shall not be held responsible 
+for identifying any or all such patent rights. 
+
+Recipients of this document are requested to submit, with their comments, notification of any 
+relevant patent claims or other intellectual property rights of which they may be aware that 
+might be infringed by any implementation of the standard set forth in this document, and to 
+provide supporting documentation. 
+
+ 
+
+Copyright © 2010 Open Geospatial Consortium  v
+ 
+
+
+
+OGC 09-149r1 
+ 
+
+vi Copyright © 2010 Open Geospatial Consortium
+ 
+
+Introduction 
+
+The OGC Web Coverage Service (WCS) supports electronic retrieval of geospatial data as 
+"coverages" – that is, digital geospatial information representing space/time-varying phe-
+nomena. 
+
+This document specifies an extension to the OGC Web Coverage Service (WCS) 2.0 core to 
+allow for client/server communication using SOAP with XML encoding.  
+
+ 
+
+
+
+OGC 09-149r1 
+ 
+
+OGC® Web Coverage Service 2.0 Interface Standard - 
+XML/SOAP Protocol Binding Extension 
+
+1 Scope  
+
+This document specifies how Web Coverage Service (WCS) clients and servers can commu-
+nicate over the Internet using SOAP with XML encoding. 
+
+2 Conformance 
+
+Standardization target are WCS 2.0 implementations (currently: servers).  
+
+This document establishes a single requirements class, soap, of URI 
+http://www.opengis.net/spec/WCS_protocol-binding_soap/1.0/req/soap with a single pertain-
+ing conformance class, soap, of URI http://www.opengis.net/spec/WCS_protocol-
+binding_soap/1.0/conf /soap. Requirements and conformance test URIs defined in this docu-
+ment are relative to http://www.opengis.net/spec/WCS_protocol-binding_soap/1.0/. 
+
+Annex A lists the conformance tests which shall be exercised on any software artefact claim-
+ing to implement an OGC WCS using this extension.  
+
+3 Normative references 
+
+This OGC WCS 2.0 SOAP Protocol Binding Extension specification consists of the present 
+document and an XML Schema. The complete specification is identified by OGC URI 
+http://www.opengis.net/spec/WCS_protocol-binding_soap/1.0, the document has OGC URI 
+http://www.opengis.net/doc/ISx/WCS_protocol-binding_soap/1.0.  
+
+The complete specification is available for download from 
+http://www.opengeospatial.org/standards/wcs; additionally, the XML Schema is posted on-
+line at http://schemas.opengis.net/wcs/ 2.0 as part of the OGC schema repository. In the event 
+of a discrepancy between bundled and schema repository versions of the XML Schema files, 
+the schema repository shall be considered authoritative. 
+
+The following normative documents contain provisions that, through reference in this text, 
+constitute provisions of this specification. For dated references, subsequent amendments to, 
+or revisions of, any of these publications do not apply. For undated references, the latest edi-
+tion of the normative document referred to applies. 
+
+OGC 06-121r9, OGC Web Service Common Specification, version 2.0 
+
+Conformance classes used: 
+• HTTP POST 
+
+• SOAP encoding 
+OGC 09-110r3, OGC® Web Coverage Service 2.0 Interface Standard - Core, version 2.0 
+
+Conformance classes used: 
+
+Copyright © 2010 Open Geospatial Consortium  1
+ 
+
+http://www.opengis.net/spec/WCS_protocol-binding_soap/1.0/req/soap
+http://www.opengis.net/spec/WCS_protocol-binding_soap/1.0/conf%20/soap
+http://www.opengis.net/spec/WCS_protocol-binding_soap/1.0/conf%20/soap
+http://www.opengis.net/spec/WCS_protocol-binding_soap/1.0/
+http://www.opengis.net/spec/WCS_protocol-binding_soap/1.0
+http://www.opengis.net/doc/ISx/WCS_protocol-binding_soap/1.0
+http://www.opengeospatial.org/stan%1fdards/wcs
+http://schemas.opengis.net/wcs/%202.0
+
+
+OGC 09-149r1 
+ 
+
+• Core 
+
+4 Terms and definitions 
+
+For the purposes of this document, the terms and definitions given in the above references 
+apply. 
+
+5 Conventions 
+
+5.1 UML notation 
+
+All the diagrams that appear in this specification are presented using the Unified Modeling 
+Language (UML) static structure diagram, as described in Subclause 5.2 of OGC Web Ser-
+vice Common [OGC 06-121r9]. 
+
+5.2 Data dictionary tables 
+
+The UML model data dictionary is specified herein in a series of tables. The contents of the 
+columns in these tables are described in Subclause 5.5 of [OGC 06-121r9]. The contents of 
+these data dictionary tables are normative, including any table footnotes. 
+
+6 SOAP with XML 
+
+Requirement 1 /req/soap/extension-identifier: 
+A WCS service implementing this extension shall include the following URI in the Profile 
+element of the ServiceIdentification in a GetCapabilities response: 
+  http://www.opengis.net/spec/WCS_protocol-binding_soap/1.0 
+
+Requirement 2 /req/soap/wcsServiceMetadata: 
+For those WCSServiceMetadata elements inherited from OWSServiceMetadata, WCS 
+servers shall specify the HTTP POST request encodings accepted by including an 
+ows:Constraint element, with “PostEncoding” as the value of the name attribute and 
+with a value of “SOAP” to indicate that SOAP encoding is allowed. 
+
+Requirement 3 /req/soap/soap-pattern: 
+WCS servers and clients implementing this protocol shall adhere to SOAP 1.2 for all WCS 
+operation requests and responses. The SOAP Request-Response message exchange pattern 
+shall be used with the HTTP POST binding. 
+
+Requirement 4 /req/soap/soap-envelope-body: 
+Each XML-encoded operation request and response shall consist of one SOAP Envelope 
+containing exactly one Body. In a request, each Body shall contain exactly one WCS request. 
+
+Requirement 5 /req/soap/soap-with-attachments: 
+A GetCoverage SOAP response shall be encoded as “SOAP with Attachments” as defined in 
+[W3C Note 11], but using SOAP 1.2 rather than SOAP 1.1. 
+
+Requirement 6 /req/soap/single-body-element: 
+In a GetCoverage response, the SOAP Envelope shall contain one Body element which con-
+tains the Coverage as its single element. 
+
+2 Copyright © 2010 Open Geospatial Consortium
+ 
+
+
+
+OGC 09-149r1 
+ 
+
+Requirement 7 /req/soap/soap-fault: 
+When an error is detected while processing an operation request encoded in a SOAP envel-
+ope, the WCS server shall generate a SOAP response message where the content of the Body 
+element is a Fault element containing an ows:ExceptionReport element [OGC 06-
+121r9], with the soap:Value element element having the fixed string “soap:server” and the 
+soap:Text having the fixed string “Server exception was encountered.”  
+
+Note This fixed string is used since the details of the exception shall be specified in the Detail ele-
+ment using an ows:ExceptionReport element as specified in OWS Common [OGC 06-121r9]. 
+
+To allow WCS extensions to add further parameters the XML Schema wcs:Request-
+BaseType contains an optional element <extension> with unbounded cardinality. This 
+way, extensions can add their individual request parameters without (syntactic) interference. 
+
+7 WSDL 
+
+WCS SOAP bindings are described in file wcs-soap-binding.wsdl provided in the 
+wsdl/ subdirectory of the WCS XML schema tree.  
+
+Requirement 8 /req/soap/wsdl: 
+Publication of a WCS SOAP service endpoint shall use the binding as defined in file 
+wsdl/wcs-soap-binding.wsdl of the WCS XML package. 
+
+NOTE A sample service description relying on this binding is provided in file example-soap-
+endpoint.wsdl. 
+
+8 Exceptions 
+
+Requirement 9 /req/soap/exceptions: 
+When a WCS server encounters an error described in column “meaning of exception code” in 
+Table 1 then it shall return the corresponding exception report message with the contents of 
+the locator parameter value as specified in the right column of  Table 1. 
+
+Table 1 — Exception codes for XML/POST operations  
+
+exceptionCode value HTTP 
+code 
+
+Meaning of code locator value 
+
+InvalidEncodingSyntax 400 Document received does not 
+conform with protocol syntax. 
+
+Name of violating 
+element 
+
+ 
+
+Copyright © 2010 Open Geospatial Consortium  3
+ 
+
+
+
+OGC 09-149r1 
+ 
+
+Bibliography 
+
+[1] IETF RFC 2387, The MIME Multipart/Related Content-type. IETF, 1998 
+
+[2] IETF RFC 2396, Uniform Resource Identifiers (URI): Generic Syntax. IETF, 1998 
+
+[3] W3C Note 11, SOAP Messages with Attachments. W3C Note 11, 2000 
+
+ 
+
+4 Copyright © 2010 Open Geospatial Consortium
+ 
+
+
+
+OGC 09-149r1 
+ 
+
+Annex A 
+(normative) 
+
+ 
+Abstract test suite 
+
+A WCS implementing this extension shall pass all of the following tests, plus those of the 
+WCS core [OGC 09-110r3], to be conformant with this specification. 
+
+A.1 Conformance Test Class: soap 
+
+The OGC URI identifier of this conformance class is: 
+http://www.opengis.net/spec/WCS_protocol-binding_soap/1.0/conf/soap.  
+
+Test identifiers below are relative to http://www.opengis.net/spec/WCS_protocol-
+binding_soap/1.0/. 
+
+A.1.1 Extension identification 
+
+Test id: /conf/soap/extension-identifier 
+
+Test Purpose: Requirement /req/soap/extension-identifier: 
+A WCS service implementing this extension shall include the following 
+URI in the Profile element of the ServiceIdentification in a 
+GetCapabilities response: 
+  http://www.opengis.net/spec/WCS_protocol-
+binding_soap 
+
+Test method: Send a GetCapabilities request to the server under test, verify that the re-
+sponse contains a Profile element with said URI. 
+
+A.1.2 Service metadata 
+
+Test id: /conf/soap/wcsServiceMetadata 
+
+Test Purpose: Requirement /req/soap/wcsServiceMetadata: 
+For those WCSServiceMetadata elements inherited from 
+OWSServiceMetadata, WCS servers shall specify the HTTP POST 
+request encodings accepted by including an ows:Constraint element, 
+with “PostEncoding” as the value of the name attribute and with a value of 
+“SOAP” to indicate that SOAP encoding is allowed. 
+
+Test method: Send a GetCapabilities request to the server under test, verify that the re-
+sponse satisfies the constraints. 
+
+ 
+
+A.1.3 SOAP version and message exchange pattern 
+
+Test id: /conf/soap/soap-pattern 
+
+Copyright © 2010 Open Geospatial Consortium  5
+ 
+
+http://www.opengis.net/spec/WCS_protocol-binding_soap/1.0/conf/soap
+http://www.opengis.net/spec/WCS_protocol-binding_soap/1.0/
+http://www.opengis.net/spec/WCS_protocol-binding_soap/1.0/
+
+
+OGC 09-149r1 
+ 
+
+Test Purpose: Requirement /req/soap/soap-pattern: 
+WCS servers and clients implementing this protocol shall adhere to SOAP 
+1.2 for all WCS operation requests and responses. The SOAP Request-
+Response message exchange pattern shall be used with the HTTP POST 
+binding. 
+
+Test method: Send request of each type to server under test. Check response whether the 
+condition is fulfilled. 
+
+A.1.4 SOAP encoding 
+
+Test id: /conf/soap/soap-envelope-body 
+
+Test Purpose: Requirement /req/soap/soap-envelope-body: 
+Each XML-encoded operation request and response shall consist of one 
+SOAP Envelope containing exactly one Body. In a request, each Body 
+shall contain exactly one WCS request. 
+
+Test method: Send request of each type to server under test. Check response whether the 
+condition is fulfilled. 
+
+A.1.5 SOAP GetCoverage response encoding 
+
+Test id: /conf/soap/soap-with-attachments 
+
+Test Purpose: Requirement /req/soap/soap-with-attachments: 
+A GetCoverage SOAP response shall be encoded as “SOAP with Attach-
+ments” as defined in [W3C Note 11], but using SOAP 1.2 rather than 
+SOAP 1.1. 
+
+Test method: Send GetCoverage request. Check response whether the condition is ful-
+filled. 
+
+A.1.6 SOAP body 
+
+Test id: /conf/soap/single-body-element 
+
+Test Purpose: Requirement /req/soap/single-body-element: 
+In a GetCoverage response, the SOAP Envelope shall contain one Body 
+element which contains the Coverage as its single element. 
+
+Test method: Send GetCoverage request. Check response whether the condition is ful-
+filled. 
+
+6 Copyright © 2010 Open Geospatial Consortium
+ 
+
+
+
+OGC 09-149r1 
+ 
+
+Copyright © 2010 Open Geospatial Consortium  7
+ 
+
+A.1.7 SOAP error handling 
+
+Test id: /conf/soap/soap-fault 
+
+Test Purpose: Requirement /req/soap/soap-fault: 
+When an error is detected while processing an operation request encoded in 
+a SOAP envelope, the WCS server shall generate a SOAP response mes-
+sage where the content of the Body element is a Fault element containing 
+an ows:ExceptionReport element [OGC 06-121r9], with the 
+soap:Value element element having the fixed string “soap:server” and 
+the soap:Text having the fixed string “Server exception was encoun-
+tered.” 
+
+Test method: For each request type, send an erroneous request. Check SOAP response 
+document. 
+
+A.1.8 WSDL 
+
+Test id: /conf/soap/wsdl 
+
+Test Purpose: Requirement /req/soap/wsdl: 
+Publication of a WCS SOAP service endpoint shall use the binding as de-
+fined in file wsdl/wcs-soap-binding.wsdl of the WCS XML pack-
+age. 
+
+Test method: For the service under test, retrieve the WSDL description and issue requests 
+which make use of this service definition. Check that the service can be 
+addressed and that queries can be retrieved properly. 
+
+A.1.9 Exceptions 
+
+Test id: /conf/soap/exceptions 
+
+Test Purpose: Requirement /req/soap/exceptions: 
+When a WCS server encounters an error described in column “meaning of 
+exception code” in Table 1 then it shall return the corresponding exception 
+report message with the contents of the locator parameter value as speci-
+fied in the right column of  Table 1. 
+
+Test method: Send requests of all types supported to the server under test. Each request 
+shall include all (mandatory and) optional parameters and shall be valid 
+except for one parameter which shall contain an encoding error described in 
+the exception specification. Test passes if exception is reported according to 
+requirement. 
+
+ 
+
+-- end of ATS -- 
+
+
+	1 Scope 
+	2 Conformance
+	3 Normative references
+	4 Terms and definitions
+	5 Conventions
+	5.1 UML notation
+	5.2 Data dictionary tables
+	6 SOAP with XML
+	7 WSDL
+	8 Exceptions
+	Bibliography
+	Annex A(normative)Abstract test suite
+

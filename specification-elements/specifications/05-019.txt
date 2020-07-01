@@ -1,0 +1,1841 @@
+
+ 
+
+Open Geospatial Consortium Inc. 
+
+Date: 2005-02-02 
+
+Reference number of this OGC™ document: OGC 05-019 
+
+Version: 0.3.0 
+
+Category: OGC™ Discussion Paper 
+
+Editors: Udo Quadt, Thomas H. Kolbe 
+
+Web 3D Service 
+
+ 
+
+Copyright © Open Geospatial Consortium (2005) 
+
+ 
+
+Warning 
+
+This document is not an OGC Standard. It is distributed for review and comment. It is 
+subject to change without notice and may not be referred to as an OGC Standard. 
+
+Recipients of this document are invited to submit, with their comments, notification of 
+any relevant patent rights of which they are aware and to provide supporting 
+documentation. 
+
+Document type: OGC™ Discussion Paper 
+Document subtype: Draft Implementation Specification  
+Document stage: Approved Discussion Paper 
+Document language: English 
+
+
+
+OGC 05-019 
+
+ © Open Geospatial Consortium (2005) ii 
+
+Contents Page 
+
+1 Scope ....................................................................................................................... 1 
+
+2 Conformance ........................................................................................................... 1 
+
+3 Normative references............................................................................................... 1 
+
+4 Terms and definitions .............................................................................................. 2 
+
+5 Conventions ............................................................................................................. 3 
+5.1 Symbols (and abbreviated terms) ...................................................................... 3 
+
+6 Basic service elements............................................................................................. 4 
+6.1 Introduction ....................................................................................................... 4 
+6.2 Version numbering and negotiation .................................................................. 4 
+
+6.2.1 Version number form and value .................................................................. 4 
+6.2.2 Version number changes ............................................................................. 4 
+6.2.3. Appearance in requests and in service metadata ......................................... 4 
+6.2.4. Version number negotiation........................................................................ 5 
+
+6.3 General HTTP request rules .............................................................................. 5 
+6.4 General HTTP response rules............................................................................ 5 
+6.5 Output formats ................................................................................................... 5 
+6.6 Request parameter rules .................................................................................... 5 
+6.7 Cascading and chaining W3DS ......................................................................... 5 
+6.8 Exceptions ......................................................................................................... 5 
+
+7 Web 3D service operations ...................................................................................... 5 
+7.1 Introduction ....................................................................................................... 5 
+7.2 GetCapabilities (mandatory) ............................................................................. 6 
+
+7.2.1 General ........................................................................................................ 6 
+7.2.2 GetCapabilities request overview ................................................................ 6 
+
+7.2.3 Request parameters............................................................................................ 6 
+7.2.4. GetCapabilities response ................................................................................... 6 
+
+7.2.4.1 General ........................................................................................................ 6 
+7.2.4.2 Exceptions ................................................................................................... 7 
+7.2.4.3 Layers .......................................................................................................... 7 
+
+7.3 GetScene (mandatory) ....................................................................................... 7 
+7.3.1 General ........................................................................................................ 7 
+7.3.2 GetScene request ......................................................................................... 9 
+
+7.3.2.1 Parameters ......................................................................................................... 9 
+7.3.2.2 VERSION........................................................................................................ 10 
+7.3.2.3 REQUEST....................................................................................................... 10 
+7.3.2.4 SRS .................................................................................................................. 10 
+7.3.2.5 POI................................................................................................................... 10 
+7.3.2.6 PITCH.............................................................................................................. 11 
+7.3.2.7 YAW................................................................................................................ 11 
+7.3.2.8 ROLL............................................................................................................... 11 
+
+
+
+OGC 05-019 
+
+© Open Geospatial Consortium (2005)  iii 
+
+7.3.2.9 DISTANCE ..................................................................................................... 11 
+7.3.2.10 POC ................................................................................................................. 11 
+7.3.2.11 AOV ................................................................................................................ 12 
+7.3.2.12 BBOX.............................................................................................................. 12 
+7.3.2.13 MINHEIGHT .................................................................................................. 12 
+7.3.2.14 MAXHEIGHT................................................................................................. 12 
+7.3.2.15 LAYERS.......................................................................................................... 12 
+7.3.2.16 STYLES .......................................................................................................... 13 
+7.3.2.17 FORMAT ........................................................................................................ 13 
+7.3.2.18 TIME ............................................................................................................... 13 
+7.3.2.19 EXCEPTIONS................................................................................................. 14 
+7.3.2.20 TRANSLATE.................................................................................................. 14 
+7.3.2.21 ENVIRONMENT............................................................................................ 14 
+7.3.2.22 BGCOLOR...................................................................................................... 15 
+7.3.2.23 BGIMAGE ...................................................................................................... 15 
+
+7.3.3 GetScene response ..................................................................................... 15 
+
+Annex A (normative)  XML schemas ............................................................................... 16 
+
+Annex B (informative)   Examples.................................................................................... 20 
+ 
+
+Figures Page 
+
+Figure 1 — Different types of geodata are merged in one 3D scene graph......................................... ix 
+
+Figure 2 — The component structure of the portrayal pipeline allows the integration of data on 
+different levels in order to obtain an integrated visualization (Doyle & Cuthbert 1998 [1]). 
+Besides on the image level objects can have both two or three dimensional geometries ................x 
+
+Figure 3 — Different balancing schemes between client and server..................................................xi 
+Figure 4 — The different viewing parameters of the GetScene request ..............................................8 
+
+Figure 5 — Axes transformation from real world coordinates (left)  to 3D computer graphics 
+coordinate system (right) .........................................................................................................9 
+
+Tables Page 
+
+Table 1 — The parameters of the GetCapabilities request URL.........................................................6 
+Table 2 — Parameters of the GetScene request ................................................................................9 
+
+Table 3 — Feasible output formats................................................................................................13 
+
+ 
+
+
+
+OGC 05-019 
+
+ © Open Geospatial Consortium (2005) iv 
+
+i. Preface 
+
+NOTE  The previous version of this document was numbered 04-096, now renumbered 05-019 after 
+approval and final editing in 2005. 
+
+Although this specification defines a stand-alone web service for the 3D visualization of 
+geographic data, the document refers strongly to other OGC specifications. It is based on the 
+ISO/DIS 19128 Web Map Service standard, the OGC’s OWS Common Implementation 
+Specification (V0.3.0) and the Web Terrain Service (V0.5.0). The document structure is 
+adopted from other OGC Implementation Specifications. 
+
+ii. Submitting organizations 
+
+The following organizations submitted this Implementation Specification to the Open 
+Geospatial Consortium Inc.  
+
+SIG 3D of the  GDI-NRW 
+
+(Special Interest Group of the Geodata Infrastructure of North-Rhine Westphalia, 
+GERMANY). 
+
+Find more at: http://www.gdi-nrw.de 
+
+iii. Submission contact points 
+
+All questions regarding this submission should be directed to the principal editor or the 
+submitters: 
+
+Udo Quadt 
+Institute for Cartography and Geoinformation 
+University of Bonn 
+Meckenheimer Allee 172 
+53115 Bonn, Germany 
+Phone: ++49 (0)228 736334 
+Fax: ++49 (0)228 731753 
+E-mail: quadt@ikg.uni-bonn.de 
+
+
+
+OGC 05-019 
+
+© Open Geospatial Consortium (2005)  v 
+
+iv. Participators in development 
+
+Dr. Thomas H. Kolbe 
+Institute for Cartography and Geoinformation, University of Bonn 
+kolbe@ikg.uni-bonn.de 
+
+Christoph Uhlenküken 
+Fa. conterra 
+uhlenkueken@conterra.de 
+
+Dr. Andreas Poth 
+Fa. Lat/Lon 
+poth@lat-lon.de 
+
+Dr. Benno Schmidt 
+Fa. conterra 
+schmidt@conterra.de 
+
+Martin May 
+Institute for Geoinformatics, University of Münster 
+may@ifgi.uni-muenster.de 
+
+Ralf Stüber 
+Fa. CPA Geo-Information 
+stueber@supportgis.de 
+
+Dr. Michael Schluse 
+Institute for Robotics Research, University of Dortmund 
+schluse@irf.de 
+
+v. Revision history 
+
+Date Release Author Primary clauses 
+modified 
+
+Description 
+
+2003-10-25 0.1.0 Thomas H. Kolbe First internal SIG 3D version 
+
+2004-07-03 0.2.0 Thomas H. Kolbe Mapping coordinate axes from real world 
+to computer graphics 
+GetScene: BBOX becomes mandatory 
+GetScene: scene’s displacement to local 
+coordinates 
+GetScene: new parameters TRANSFORM, 
+ENVIRONMENT, MINHEIGHT, 
+MAXHEIGHT 
+
+2004-12-15 0.3.0 Udo Quadt  Complete restructuring of the document 
+using OGC template 
+English translation 
+
+
+
+OGC 05-019 
+
+ © Open Geospatial Consortium (2005) vi 
+
+ 
+
+vi. Changes to the OGC Abstract Specification 
+
+The OGC™ Abstract Specification does not require changes to accommodate the technical 
+contents of this document.  
+
+vii. Future work 
+
+NOTE            Generalization of the service interface now specified in this Discussion Paper has not yet been 
+considered by the OGC. Such generalization of this interface will include considering combining the functions 
+supported here with functions currently supported by other OGC (approved and draft) web services. 
+
+This specification was developed in the context of the Pilot 3D of the initiative geodata 
+infrastructure North Rhine-Westphalia (GDI-NRW). The pilot 3D concerns the interoperable 
+visualization of 3D city- and regional models. Different prototypical implementations of the 
+W3DS have been realized and are still running. Further improvements are desirable to 
+support: 
+
+a) Queryable W3DS 
+Like the GetFeatureInfo operation of a WMS, a W3DS should return the information 
+about an interactively selected object in the scene graph. The returned information about 
+selected objects will be formatted as an XML file (e.g., GML 3) for automatic 
+computation or it could be displayed right into the 3D scene graph. 
+
+b) Environmental enhancements of the scene  
+For a more realistic display of the scene graph, it would be desirable to define additional 
+sources of light (street lights, the moon, etc.) or adding atmospheric conditions like fog or 
+rain. 
+
+c) Generating animations and predetermined flight of camera 
+Instead of interactive navigation through the 3D scene, sometimes it may be desired to get 
+an automatic sequence or movie of the 3D models. Predefined routes through cities and 
+buildings could be used as demos for trade fairs etc. 
+
+d) Adding additional output formats 
+It should be considered if the W3DS could be applied as a basis for an open, interoperable 
+3D streaming service. It should be checked if other output formats beside the 
+recommended ones (VRML97, GeoVRML and X3D) are feasible. 
+
+e) Styled LayerDescriptors  
+The concept of Styled Layer Descriptors is described in the Styled Layer Descriptor 
+
+
+
+OGC 05-019 
+
+© Open Geospatial Consortium (2005)  vii 
+
+Implementation Specification. It enables the user to control the graphical style of 3D 
+graphic elements. 
+
+f) Build on OWS Common 
+This document should more extensively build on the OGC Web Services Common 
+Specification (OGC 05-008), normatively referencing parts of that document instead of 
+repeating information. 
+
+
+
+OGC 05-019 
+
+ © Open Geospatial Consortium (2005) viii 
+
+Foreword 
+
+This version of the specification cancels and replaces all previous versions.  
+
+Attention is drawn to the possibility that some of the elements of this document may be the 
+subject of patent rights. Open Geospatial Consortium Inc. shall not be held responsible for 
+identifying any or all such patent rights. However, to date, no such rights have been claimed 
+or identified. 
+
+
+
+OGC 05-019 
+
+© Open Geospatial Consortium (2005)  ix 
+
+Introduction 
+
+The Web 3D Service is a portrayal service for three-dimensional geodata, delivering graphical 
+elements from a given geographical area. In contrast to the OGC Web Mapping service 
+(WMS) and the OGC Web terrain service (WTS) 3D scene graphs are produced. These scene 
+graphs will be rendered by the client and can interactively be explored by the user. The W3DS 
+merges different types (layers) of 3D data in one scene graph. (cf. Figure 1). 
+
+ 
+
+Figure 1 — Different types of geodata are merged in one 3D scene graph 
+
+3D scene graphs represent visual illustrations of 3D geodata and are not the geodata 
+themselves. They do not contain the semantic characteristics and relations of the basic 
+geodata. For gaining access to the 3D geodata OGC’s Web Feature Service is recommended. 
+All implementations of a Web 3D Service shall support VRML97 as default output format. 
+Still other formats like GeoVRML or X3D are strongly advised compensating disadvantages 
+of the aged VRML97 standard. 
+
+Geo-visualization using web services   (taken from [4]) 
+
+Concerning the portrayal of spatial data the OpenGIS Consortium employs a four level 
+visualization pipeline, which describes visualization as a multi-level process starting from 
+non-graphical object representations stored in a repository (e.g. a database) and ending with 
+the final presentation of graphical entities on a display device (see Doyle and Cuthbert 1998 
+[1]). The lowest level is built by the spatial data resources. In a selection step the interesting 
+
+DTM road furniture 
+
+buildings 
+
+
+
+OGC 05-019 
+
+ © Open Geospatial Consortium (2005) x 
+
+objects are retrieved. The second step transforms the selected spatial objects to a graphical 
+representation, i.e. the spatial objects are mapped to display elements. In the third step the 
+generated display elements are rendered to an image, which in the final step is displayed to 
+the user by an appropriate output device (cf. Figure 2). 
+
+ 
+
+Figure 2 — The component structure of the portrayal pipeline allows the integration of 
+data on different levels in order to obtain an integrated visualization (Doyle & Cuthbert 
+
+1998 [1]). Besides on the image level objects can have both two or three dimensional 
+geometries 
+
+As can be seen from Figure 2 the merging of data from different sources can take place at 
+different levels of the visualization pipeline. After the selection of the spatial objects to be 
+presented the data from path A are merged into path B, where for the objects from both A and 
+B display elements are generated. Further display elements from path C are integrated before 
+an image containing all graphic elements from A, B, and C is rendered. At the time of 
+presentation another image can be integrated from path D as an overlay to the previously 
+generated image. The latter approach is often used for the stacking of (2d) web map layers 
+delivered from distributed web map services. The advantage is that the services that are to be 
+combined only have to be compatible on the level of map graphics (JPG, TIFF or PNG in 
+most cases), but not on the levels below. This allows the integration of maps from different 
+systems that otherwise has nothing else in common. 
+
+Unfortunately, 3D visualizations cannot be integrated on the image level, since rendered 
+images are only 2d. If two systems render views of the same scene, these images may not 
+simply be overlaid, because the lower image can show objects that are nearer to the camera as 
+the objects in the upper image. Nearer objects then might be covered by the rendered objects 
+in the upper image. Therefore, 3D integration has to take place earlier, i.e. on the level of 
+display elements. For proper integration of different sets of display elements then it is 
+necessary that they have 3D geometries and use the same spatial reference system.  
+
+
+
+OGC 05-019 
+
+© Open Geospatial Consortium (2005)  xi 
+
+The components of the portrayal pipeline have not to reside on the same system; they can be 
+distributed over the internet. However, in client-server applications the lower level 
+components are typically realized by one or more servers while the remaining visualization 
+tasks are handled by the client. According to their complexity clients are classified into thick, 
+medium, and thin clients (cf. Figure 2). Thick clients communicate on the feature level with 
+the server. The advantage is that the client is free to realize any – including very complex – 
+visualization and interaction schemes. The major drawback wrt. to web applications is the 
+need of a special web browser plug-in which implements these schemes. The plug-in has to be 
+downloaded and installed by users before they can start with the visualization and interaction. 
+Medium clients also need a plug-in for 3D visualization. However, if the display elements are 
+represented using international standards like VRML, X3D or SVG, existing standard plugins 
+can be used. The advantage of medium clients is that 3D plug-ins typically provide 
+functionalities for real time rendering and navigation and therefore allow a high degree of 
+interaction. Thin clients only have to cope with rendered images. Thus the most important 
+advantage of thin clients wrt. to thick and medium clients is that they do not need any plug-in 
+and can be used by standard web browsers on practically every computer system. However, 
+since images are static, possibilities for interaction and navigation in the presented 3D scene 
+are strongly limited. 
+
+ 
+
+Figure 3 — Different balancing schemes between client and server 
+
+The decision which client model is appropriate for what application depends on the specific 
+application scenario on the one hand and the availability of appropriate data and services on 
+the other hand. If 3D visualization plays only a minor role, for example, when a 3D view of a 
+sports arena has to be shown in an online ticket service application, a thin client should be 
+used. If the application focus is instead on interactive exploration, at least a medium client has 
+
+ 
+
+ 
+
+W3DS e.g. WFS WMS, WTS 
+
+
+
+OGC 05-019 
+
+ © Open Geospatial Consortium (2005) xii 
+
+to be used. A typical thin client displays bitmaps of a WMS or WTS and thick client is needed 
+for the complex data handling of a WFS. By focusing on medium clients, the W3DS fills the 
+gap between thin and thick servers (cf. Figure 3). The use of standard formats and standard 
+plug-ins allows the widespread and easy use of data visualisation including interaction by the 
+user. 
+
+Historical Background 
+
+The idea of the W3DS was developed in the context of the initiative geodata infrastructure 
+North Rhine-Westphalia (GDI-NRW), resulting in a prototype named Pilot 3D. The Pilot 3D 
+implements the interoperable geo-visualization of 3d city and regional models. Several W3DS 
+implementations are already running and experiences made during the test phase are reflected 
+in this draft specification. 
+
+
+
+OGC™ Discussion Paper OGC 05-019 
+
+ 
+
+ 
+
+ 
+
+© Open Geospatial Consortium (2005)  1 
+ 
+
+ 
+
+Web 3D Service 
+
+1 Scope 
+
+This is a proposal for a specification of a web service which delivers a 3D scene graph. This is 
+an aggregation of 3D graphical elements, which can be explored interactively by a user. 
+
+2 Conformance 
+
+Conformance with this draft specification shall be checked using all the relevant tests 
+specified in Annex A (normative) of the ISO/DIS 19128 Web Map Service standard. 
+
+3 Normative references 
+
+The following normative documents contain provisions which, through reference in this text, 
+constitute provisions of this document:  
+
+EPSG, European Petroleum Survey Group Geodesy Parameters, Lott, R., Ravanas, B., Cain, 
+J., Girbig, J.-P., and Nicolai, R., eds., http://www.epsg.org/ 
+
+IETF RFC 2045 (November 1996), Multipurpose Internet Mail Extensions (MIME) PartOne: 
+Format of Internet Message Bodies, Freed, N. and Borenstein N., eds., 
+http://www.ietf.org/rfc/rfc2045.txt 
+
+IETF RFC 2616 (June 1999), Hypertext Transfer Protocol – HTTP/1.1, Gettys, J., Mogul, J., 
+Frystyk, H., Masinter, L., Leach, P., and Berners-Lee, T., eds., 
+http://www.ietf.org/rfc/rfc2616.txt 
+
+IETF RFC 2396 (August 1998), Uniform Resource Identifiers (URI): Generic Syntax, 
+Berners-Lee, T., Fielding, N., and Masinter, L., eds., http://www.ietf.org/rfc/rfc2396.txt 
+
+ISO 8601:1988(E), Data elements and interchange formats - Information interchange - 
+Representation of dates and times. 
+
+ISO/DIS 19128 (2004), Web Map Service, Version 1.3.0, Jeff de La Beaujardiere, 
+http://portal.opengis.org/files/?artifact_id=5316 
+
+
+
+ 
+
+ © Open Geospatial Consortium (2005) 2
+
+ISO/IEC 14772-1:1997 (1997), The Virtual Reality Modeling Language (VRML97), 
+http://www.web3D.org/technicalinfo/specifications/vrml97/vrml97specification.pdf 
+
+ISO/IEC FDIS 19775:200x (2004): Information technology — Computer graphics and image 
+processing — Extensible 3D (X3D). http://www.web3d.org/x3d/specifications/ISO-IEC-
+19775-IS-X3DAbstractSpecification/ 
+
+OGC AS 12 (September 2001), The OpenGIS Abstract Specification Topic 12: OpenGIS 
+Service Architecture (Version 4.2), Kottman, C. (ed.), 
+http://www.opengis.org/techno/specs.htm 
+
+OGC (2004): OWS Common Implementation Specification, Version 0.3.0. Arliss Whiteside. 
+http://portal.opengis.org/files/?artifact_id=6324 
+
+OGC (2002), Styled Layer Descriptor Implementation Specification, Version: 1.0.0, William 
+Lalonde, OGC 02-070, https://portal.opengeospatial.org/files/?artifact_id=1188 
+
+WTS 0.5.0 (November 2003) OGC 03-081r2, Web Terrain Service Implementation Specifica-
+tion, v0.5.0, Lieberman, J., Sonnet, J., http://www.opengis.org/docs/03-081r2.pdf  
+
+XML 1.0 (October 2000), Extensible Markup Language (XML) 1.0 (2nd edition), World Wide 
+Web Consortium Recommendation, Bray, T., Paoli, J., Sperberg-McQueen, C.M., and Maler, 
+E., eds., http://www.w3.org/TR/2000/REC-xml 
+
+4 Terms and definitions 
+
+For the purposes of this document, the following terms and definitions apply. 
+
+4.1  
+client 
+software component that can invoke an operation from a server 
+
+4.2  
+coordinate reference system 
+coordinate system that is related to the real world by a datum [ISO 19111] 
+
+4.3  
+coordinate system 
+set of mathematical rules for specifying how coordinates are to be assigned to points [ISO 
+19111] 
+
+4.4  
+geographic information 
+information concerning phenomena implicitly or explicitly associated with a location relative 
+to the Earth [ISO 19101] 
+
+4.5  
+interface 
+named set of operations that characterize the behaviour of an entity [ISO 19119] 
+
+
+
+OGC 05-019 
+
+© Open Geospatial Consortium (2005)  3 
+
+4.6  
+layer 
+basic unit of geographic information that may be requested as a map from a server 
+
+4.7  
+map 
+portrayal of geographic information as a digital image file suitable for display on a computer 
+screen 
+
+4.8  
+operation 
+specification of a transformation or query that an object may be called to execute [ISO 19119] 
+
+4.9  
+portrayal 
+presentation of information to humans [ISO 19117] 
+
+5 Conventions 
+
+5.1 Symbols (and abbreviated terms) 
+
+This document uses the following abbreviated terms. 
+
+DTD  Document Type Definition 
+
+EPSG  European Petroleum Survey Group 
+
+GDI  Geodata infrastructure 
+
+GeoVRML VRML with a extension for 3D geodata 
+
+GML  Geography Markup Language 
+
+HTTP  Hypertext Transfer Protocol 
+
+IETF  Internet Engineering Task Force 
+
+MIME  Multipurpose Internet Mail Extensions 
+
+NRW  North-Rhine Westphalia 
+
+OGC  Open Geospatial Consortium 
+
+POC  Point Of Camera 
+
+POI  Point Of Interest 
+
+RFC  Request for Comments 
+
+SIG  Special Interest Group 
+
+SLD  Styled Layer Descriptor 
+
+SRS  Spatial Reference System 
+
+URL  Uniform Resource Locator 
+
+
+
+ 
+
+ © Open Geospatial Consortium (2005) 4
+
+UTC  Universal Time Coordinated 
+
+VRML  Virtual Reality Modeling Language 
+
+WCS  Web Coverage Service 
+
+WFS  Web Feature Service 
+
+WMS  Web Mapping Service 
+
+WTS  Web Terrain Service 
+
+XML  Extensible Markup Language 
+
+6 Basic service elements 
+
+6.1 Introduction 
+
+This clause specifies aspects of Web 3D Server behaviour that are independent of particular 
+operations or are common to several operations. If not further noted the service's behaviour is 
+in accordance with the ISO/DIS 19128 Web Map Service standard and OGC’s OWS. 
+
+6.2 Version numbering and negotiation 
+
+6.2.1 Version number form and value 
+
+The Web 3D Service defines a protocol version number. The version number applies to the 
+XML schema and the request encodings defined in this draft specification. The version 
+number contains three nonnegative integers, separated by decimal points, in the form "x.y.z".  
+The numbers "y" and "z" shall not exceed 99. 
+
+Implementations of this draft specification shall use the value "0.1.0" or "0.3.0" as the 
+protocol version number. 
+
+6.2.2 Version number changes 
+
+The protocol version number shall be changed with each revision of this draft specification. 
+The number shall increase monotonically and shall comprise no more than three integers 
+separated by decimal points, with the first integer being the most significant. There may be 
+gaps in the numerical sequence. Some numbers may denote draft versions. Servers and their 
+clients need not support all defined versions, but shall obey the negotiation rules below. 
+
+6.2.3. Appearance in requests and in service metadata 
+
+The version number appears in at least two places: in the service metadata, and in the 
+parameter list of client requests to a server. The version number used in a client's request of a 
+particular server shall be equal to a version number which that instance has declared it 
+supports (except during negotiation as described below). A server may support several 
+versions, whose values clients may discover according to the negotiation rules. 
+
+
+
+OGC 05-019 
+
+© Open Geospatial Consortium (2005)  5 
+
+6.2.4. Version number negotiation 
+
+A W3DS client may negotiate with a server to determine a mutually agreeable protocol 
+version. Negotiation is performed using the GetCapabilities operation (described in 7.2) 
+according to the rules described in the ISO/DIS 19128 Web Map Service standard and OGC's 
+OWS specification. 
+
+The VERSION parameter is mandatory in requests other than GetCapabilities. 
+
+6.3 General HTTP request rules 
+
+HTTP request rules are identically treated as in the ISO/DIS 19128 Web Map Service 
+standard. 
+
+6.4 General HTTP response rules 
+
+HTTP responese rules are identically treated as in the ISO/DIS 19128 Web Map Service 
+standard. 
+
+6.5 Output formats 
+
+At present the only mandatory output format MIME type is model/vrml for GetScene and 
+text/xml for the GetCapabilities request. 
+
+6.6 Request parameter rules 
+
+Request parameter rules are identically treated as in the ISO/DIS 19128 Web Map Service 
+standard. 
+
+6.7 Cascading and chaining W3DS 
+
+The principles of cascading and chaining a web services are valid for the W3DS, too. 
+Description is given at the OWS and WMS specification. The W3DS is suitable in particular 
+for the integrated visualization of adjacent city models (mosaic scenario) or into one another 
+interlocked models (hierarchy scenario). 
+
+6.8 Exceptions  
+
+At a service exception an error document will be returned to the client. The output format of 
+the error report depends on the value of the EXCEPTION parameter (clause 7.3.2.19). 
+
+7 Web 3D service operations  
+
+7.1 Introduction 
+
+The two operations defined for a Web 3D Service are GetCapabilities and GetScene. This 
+Clause specifies the implementation and use of these W3DS operations in the Hypertext 
+Transfer Protocol (HTTP) Distributed Computing Platform (DCP). 
+
+
+
+ 
+
+ © Open Geospatial Consortium (2005) 6
+
+7.2 GetCapabilities (mandatory) 
+
+7.2.1 General 
+
+The purpose of the mandatory GetCapabilities operation is to obtain service metadata, which 
+is a machine readable (and human-readable) description of the server's information content 
+and acceptable request parameter values. 
+
+The GetCapabilities operation is mandatory for all OGC web service and is extensively 
+described in the OWS Common Implementation Specification and the ISO/DIS 19128 Web 
+Map Service standard. For reasons of more comfortable reading, the main points will be 
+repeated and will be adapted for the W3DS when necessary. 
+
+7.2.2 GetCapabilities request overview 
+
+The general form of a W3DS request is defined in clause 6. When making the GetCapabilities 
+request of a W3DS server, which may offer other service types as well, it is necessary to 
+indicate that the client seeks information about the Web 3D Service in particular. Thus, the 
+SERVICE parameter of the request shall have the value "W3DS" as shown in clause 6. 
+
+Table 1 — The parameters of the GetCapabilities request URL 
+
+Name and example Mandatory/ 
+Optional 
+
+Description 
+
+VERSION=version O Request version 
+
+SERVICE=W3DS M Service type 
+
+REQUEST=GetCapabilities M Request name 
+
+FORMAT=MIME_type O Output format of service metadata 
+
+UPDATESEQUENCE=string O Sequence number of string for cache control 
+ 
+Example URL: 
+
+http://myserver.de/W3DS?SERVICE=W3DS&REQUEST=GetCapabilities 
+ 
+7.2.3 Request parameters  
+
+The GetCapabilities request parameters are FORMAT, VERSION, SERVICE, REQUEST 
+and UPDATESEQUENCE (cf. Table 1). The usage is equivalent to the ISO/DIS 19128 Web 
+Map Service standard. 
+
+7.2.4.GetCapabilities response 
+
+7.2.4.1 General 
+
+When invoked on a Web 3D Service, the response to a GetCapabilities request shall be an 
+XML document containing service metadata formatted according to the XML Schema in A.1. 
+
+
+
+OGC 05-019 
+
+© Open Geospatial Consortium (2005)  7 
+
+The schema specifies the mandatory and optional content of the service metadata and how the 
+content is formatted. The response shall be valid according to XML Schema validation rules. 
+
+The GetCapabilities response description is identical to the one from the ISO/DIS 19128 Web 
+Map Service standard. Following are particular variations to the ISO standard: 
+
+7.2.4.2 Exceptions 
+
+Upon receiving an invalid operation request, the W3DS will respond to the client using an 
+Exception Report message to describe to the client application and/or its human user the 
+reason that the request is invalid. The service will handle exceptions as described in clause 8 
+of the OWS Common Implementation Specification. 
+
+7.2.4.3 Layers  
+
+Although the W3DS is a portrayal service like WMS the layer concept is treated differently. 
+See section 7.3.2.15 for further explanation. 
+
+7.3 GetScene (mandatory) 
+
+7.3.1 General 
+
+The GetScene operation returns a 3D scene graph. Upon receiving a GetScene request, a 
+W3DS shall either satisfy the request or issue a service exception. 
+
+The required parameters for the 3D visualization of a scene by a W3DS are the instruction to 
+request a scene (REQUEST=GetScene), the selected spatial reference system (parameter 
+SRS), the delimitation of the geographical area selected by an enclosing rectangle (bounding 
+box, parameter BBOX), the desired output format, as well as parameters for the definition of a 
+predefined virtual camera. The perspective can be defined in a similar fashion like in the 
+WTS: 
+
+a) Point of Interest (POI): the exact location in x,y,z space of the viewer's focus. 
+
+b) Distance: the distance between the viewer and the POI in meters. 
+
+c) Pitch: the angle or inclination (in degrees) between the viewer and the POI (0º means 
+the viewer is looking horizontally and -90º means the viewer is looking straight down 
+on the POI). 
+
+d) Yaw: azimuth, the angle representing the "head swivel" (0º faces due north, 90º faces 
+due east, etc.). 
+
+e) Angle of view (AOV): The angle representing the breadth of landscape in the viewer's 
+scene. 
+
+f) Also commonly described as the field of view or field of vision. Corresponds to the 
+width of the scene intersecting the POI. 
+
+The volume of the scene can be limited by MINHEIGHT and MAXHEIGHT. 
+
+
+
+ 
+
+ © Open Geospatial Consortium (2005) 8
+
+The WTS allows the implicit selection of the displayed range by providing only the 
+parameters POI, DISTANCE, AOV as well as YAW and PITCH, calculating the visible area 
+from these parameters (without indicating a bounding box). For a W3DS this approach is not 
+feasible, because the position coordinate values of 3D objects are moved to a new origin. This 
+translation is needed because some SRS generate very high coordinate values, e.g. 8 digits in 
+UTM, which do not bare enough capacity for submeter precison. The new origin is defined by 
+xmin and ymin of the bounding box. Practically this means the W3DS substracts from every 
+3D coordinate of the first coordinate axis xmin and from the second ymin. If BBOX would be 
+an optional parameter and omitted in a request, the W3DS would have to compute xmin and 
+ymin. However, different W3DS implementations could calculate different values for the 
+same camera parameters. This would make the integration of the output of different W3DS in 
+the same scene impossible, because each produced scene graph would have its own origin. 
+
+ 
+
+Figure 4 — The different viewing parameters of the GetScene request 
+
+The viewing parameters are adopted and enhanced from the WTS draft specification (V0.5.0). 
+There are many possibilities to specify a virtual camera that is used as initial perspective. 
+Figure 4 shows the different viewing parameters for the W3DS. They are listed in Table 2 and 
+are described in the following paragraphs. 
+
+Additionally the W3DS will do an axes transformation from real world to computer graphics 
+coordinate systems. Real world coordinates (like UTM, Gauss Kruger or geographical 
+coordinates) are typically using left-hand Cartesian coordinate system with z indicating the 
+height above sea level. Computer graphics coordinate systems (like in VRML) are usually 
+based on a right-hand Cartesian coordinate system. Therefore a W3DS automatically changes 
+the axes of the real world SRSs as shown in Figure 5. 
+
+Pitch Roll 
+
+Yaw
+
+Distance 
+
+POC
+
+POI 
+
+AOV 
+
+BBox X 
+
+BBox Y 
+
+Pitch Roll 
+
+Yaw
+
+Distance 
+
+POC
+
+POI 
+
+AOV 
+
+BBox X 
+
+BBox Y 
+
+
+
+OGC 05-019 
+
+© Open Geospatial Consortium (2005)  9 
+
+ 
+
+Figure 5 — Axes transformation from real world coordinates (left)  
+to 3D computer graphics coordinate system (right) 
+
+7.3.2 GetScene request 
+
+7.3.2.1 Parameters 
+
+The GetScene request is the main operation of a W3DS. The basic usage is described in 
+OGC’s OWS specification and is corresponding to the GetMap request of the ISO/DIS 19128 
+Web Map Service standard. 
+
+Table 2 shows the parameters for a GetScene request. Parameters marked with “R” are 
+mandatory, “O” means they are optional and “C” is conditional, i.e. the usage of the 
+conditional rated parameters depends on the required or optional parameters. 
+
+Table 2 — Parameters of the GetScene request 
+
+URL parameter 
+Required/  
+Optional/ 
+
+Conditional 
+annotation 
+
+VERSION=<version> R requested version 
+
+REQUEST=GetScene R requested operation  
+
+SRS=namespace:identifier R spatial reference system 
+
+POI=<point_of_interest> C x,y,z point coordinates according to SRS 
+
+PITCH=<pitch> C angle of inclination [degree] 
+
+YAW=<yaw> C azimuth [degrees] 
+
+ROLL=<roll> O rotation around viewing vector [degree] 
+
+DISTANCE=<distance> C distance POI to POC [meter] 
+
+y 
+
+y 
+
+x x 
+
+-z 
+
+z 
+
+X ?   X 
+
+Y ?  -Z 
+
+Z ?   Y 
+
+
+
+ 
+
+ © Open Geospatial Consortium (2005) 10
+
+POC=x, y, z C x,y,z coordinates of camera according to SRS 
+
+AOV=<angle_of_view> C angle of view [degree] 
+
+BBOX=xmin,ymin,xmax,ymax R 2d bounding box 
+
+MINHEIGHT=<lower_limit> O displaying objects with height ≥ lower_limit 
+according to SRS 
+
+MAXHEIGHT=<upper_limit> O displaying objects with height ≤ upper_limit 
+according to SRS 
+
+LAYERS=<layer list> O comma separated list of 3D object sets 
+
+STYLES=<style list> O comma separated list of styles for each layer 
+
+FORMAT=<format> R MIME type of output 
+
+TIME=<date_and_time> O date and time 
+
+EXCEPTIONS=<excepttype> O exception format 
+
+TRANSLATE=x,y,z C translation vector that is applied to all 3D 
+coordinates 
+
+ENVIRONMENT=on / off O switch on/off background elements like sky 
+or light source  
+
+BGCOLOR=<color> O background color 
+
+BGIMAGE=<image url> O URL of background image 
+ 
+7.3.2.2 VERSION 
+
+The REQUEST parameter will be used as described in the ISO/DIS 19128 Web Map Service 
+standard. Valid values are “0.1.0” and “0.3.0”. Version negotiation is described in clause 6.2. 
+
+7.3.2.3 REQUEST 
+
+The REQUEST parameter will be used as described in the ISO/DIS 19128 Web Map Service 
+standard and discussed in clause 6.3. Usage: REQUEST=GetScene 
+
+7.3.2.4 SRS 
+
+The parameters for the spatial reference system (SRS) is defined in the ISO/DIS 19128 Web 
+Map Service standard and the WTS 0.5.0 specification. When using a 2D SRS height is 
+measured in meters above sea level. 
+
+7.3.2.5 POI 
+
+POI=x,y,z designates the target point for the virtual camera, that is used as initial viewpoint. 
+The coordinate values refer to the spatial reference system named by the SRS parameter. The 
+use of POI is conditional and may be used only in conjunction with other parameters (for 
+valid parameter combinations check the examples in appendix B.1). 
+
+
+
+OGC 05-019 
+
+© Open Geospatial Consortium (2005)  11 
+
+7.3.2.6 PITCH 
+
+PITCH defines the angle of inclination measured in degree. The up and downward looking is 
+made possible by this angle. PITCH=0 means horizontal line of sight, negative values are for 
+looking down – for looking up positive values are used. Values range from -90 to 90. 
+
+The use of PITCH is conditional and may be used only in conjunction with other parameters 
+(for valid parameter combinations check the examples in appendix B.1). If POI is indicated, 
+PITCH is interpreted in accordance with the WTS 0.5.0 specification. If the POC parameter is 
+used, PITCH refers to the angle of inclination of the camera. PITCH shall not be provided, if 
+both POI and POC are contained in the parameter list. 
+
+7.3.2.7 YAW 
+
+YAW defines the azimuth of the line of sight in degrees. The rotation around the vertical axis 
+is defined by this angle. YAW=0 means the view to the north. 
+
+The use of YAW is conditional and may be used only in conjunction with other parameters. If 
+POI is indicated, YAW is interpreted in accordance with the WTS 0.5.0 specification. If the 
+POC parameter is used, YAW refers to the angle of rotation of the camera. YAW shall not be 
+indicated, if both POI and POC are contained in the parameter list (for valid parameter 
+combinations check the examples in appendix B.1). 
+
+7.3.2.8 ROLL 
+
+ROLL indicates the angle of rotation of the camera around the view axis (the distance from 
+the camera main point to the target) in degrees. The values ranges from -180 to 180. A 
+positive angle corresponds to a turn to the left. If ROLL is not indicated, then the default 
+value of 0 degrees (horizontal) is assumed. 
+
+7.3.2.9 DISTANCE 
+
+The DISTANCE parameter indicates the distance between camera (viewer) and the POI in 
+meters. A value of 0 means the viewer is right at the place of the POI. DISTANCE may be 
+only indicated if the POI parameter is and the POC parameter is not provided (for valid 
+parameter combinations check the examples in appendix B.1).  
+
+This parameter is described in the WTS 0.5.0 specification, too. 
+
+7.3.2.10 POC 
+
+With POC=x, y, z the point of camera (POC) can be specified whereby the coordinate values 
+refer to the reference system indicated in the SRS parameter. For the clear specification of a 
+viewing perspective the camera coordinates must be used either in connection with the 
+parameter POI or the parameters PITCH, YAW and DISTANCE. POC, POI and the 
+parameters PITCH, YAW and DISTANCE may not be indicated all at the same time (for 
+valid parameter combinations check the examples in appendix B.1). 
+
+
+
+ 
+
+ © Open Geospatial Consortium (2005) 12
+
+7.3.2.11 AOV 
+
+AOV determines the angle of view of the viewer measured in degrees. In conjunction with the 
+POC parameter it designates the aperture angle in accordance with the VRML97 specification 
+for FieldOfView at the explanation of the viewpoint nodes. If only the POI parameter is 
+indicated, AOV has the same meaning as in the WTS 0.5.0 specification. 
+
+7.3.2.12 BBOX 
+
+The bounding box concept of the W3DS is handled like the one described in the ISO/DIS 
+19128 Web Map Service standard. Bounding box values specify the portion of the Earth to be 
+mapped through two pairs of coordinates in a specified layer coordinate reference system 
+(Layer CRS). The first pair specifies the minimum coordinate values in the Layer CRS, the 
+second specifies maximum coordinate values. The usage of the BBOX parameter is: 
+
+BBOX=xmin,ymin,xmax,ymax 
+ 
+
+where xmin<xmax and ymin<ymax. The coordinate values of BBOX are referring to spatial 
+reference system provided at the SRS parameter. 3D objects that lay only partially within the 
+bounding box shall be contained in the returned scene. No prescription is done whether the 
+objects are cut at the bounding limits or if they are completely entered into the scene. An 
+additional request parameter concerning this problem may be introduced in the future. 
+
+The BBOX parameter is mandatory. 
+
+7.3.2.13 MINHEIGHT 
+
+By indicating a minimum height the selection of the displayed objects can be further limited. 
+Only objects and/or partial objects are displayed, whose elevation coordinate values are larger 
+or equal to the indicated elevation value. If MINHEIGHT is omitted, there is no restriction of 
+the elevation coordinate values downward. MINHEIGHT refers to the original elevation 
+coordinates of the real world objects before any translation or other transformation takes 
+place. 
+
+7.3.2.14 MAXHEIGHT 
+
+The MAXHEIGHT parameter is analogous to MINHEIGHT but refers to objects whose 
+elevation coordinate values are lower or equal to the indicated elevation value. 
+
+7.3.2.15 LAYERS 
+
+The LAYERS parameter specifies a comma separated list of layers to be displayed. The 
+concept of the layer is a metaphor to the traditional (two-dimensional) cartography, with 
+which geo objects of different classes were drawn on different foils resulting in a map with an 
+overall view of this foils. The sequence of the layers defines which kinds of object cover the 
+others. While this makes sense for 2-dimensional maps of the WMS and the 2,5d 
+representation of the WTS, the sequence of layers in the 3D does not have a meaning, since 
+the visibility depends on the viewer's point of view, only.  
+
+
+
+OGC 05-019 
+
+© Open Geospatial Consortium (2005)  13 
+
+Apart from the drawing sequence, layers are employed to group objects. Thus, layers are used 
+as a synonym for sets of different graphical 3D elements. By using layers, the type of objects 
+can be selected. For example in a 3D city model the W3DS makes digital terrain models 
+(DTM), buildings street furniture or vegetation individually addressable. Unlike to the WTS 
+all layers are equitable 3D objects. 
+
+If the parameter is not indicated the W3DS decides which data will be delivered to the client. 
+
+This parameter is described in the ISO/DIS 19128 Web Map Service standard. 
+
+7.3.2.16 STYLES 
+
+This parameter specifies for each layer, in which style it is to be illustrated on the graphics 
+elements. The available styles are predifined by a W3DS and listed individually for each layer 
+in the capabilities document. The STYLES parameter contains a comma separated list of the 
+desired styles and it shall only be indicated if the layer parameter is given, too. The number of 
+styles must correspond to the number of indicated layers. For using of default styles leave 
+blank.  
+
+Example: 
+LAYERS=dtm,buildings,vegetation&STYLES=orthophoto,,simple 
+
+selects layers for a digital terrain model (DTM), buildings and vegetation, where the DTM is 
+covered with an orthophoto, the buildings are displayed in default styles (blank parameter) 
+and the vegetation’s style is “simple”. 
+
+This parameter is described in the ISO/DIS 19128 Web Map Service standard. 
+
+7.3.2.17 FORMAT 
+
+This parameter specifies the output format of the service as indicated in the capabilities 
+document. All W3DS shall provide model/vrml. At present other feasible formats are 
+GeoVRML and X3D. These formats are optional.  
+
+Table 3 — Feasible output formats 
+
+Format MIME Type support 
+
+VRML97 model/vrml mandatory 
+
+X3D model/x3d+xml optional  
+
+GeoVRML model/vrml optional 
+ 
+7.3.2.18 TIME 
+
+With the time parameter the specific time or timeframe of visualization can be defined. A 
+concrete date with a certain time can be selected. Thus, the position of the sun can be 
+reconstructed (among other things) and appropriate scene lighting can be generated. 
+Furthermore the TIME parameter can be used by the W3DS also for the selection of certain 
+time-dependent data. 
+
+
+
+ 
+
+ © Open Geospatial Consortium (2005) 14
+
+The specification of valid parameter values is in accordance with the ISO standard 8601 are 
+described in the ISO/DIS 19128 Web Map Service standard in appendix D.  
+
+Example: TIME=2003-10-25T14:28:43Z identifies the 25th of October 2003 at 14:28 hours 
+und 43 seconds. The added Z abbreviates „Zulu“ time which is equivalent to UTC. 
+
+7.3.2.19 EXCEPTIONS 
+
+With the EXCEPTIONS parameter a client indicates, in which way he would like to be 
+referred to errors or exceptional cases. Two different possibilities are specified in the 
+following. Closer information for the treatment of errors and exceptions is given in section 6.7 
+of the ISO/DIS 19128 Web Map Service standard. 
+
+Please note that due to serious network problems or crash of a server sometimes the client 
+may not get an answer on a request. A W3DS client should be prepared for this possibility, 
+too. 
+
+g) EXCEPTIONS=application/vnd.ogc.se_xml (default) 
+In the case of an error a XML document is sent to the Client, which contains an error 
+description. The structure of this XML document is described in appendix A.2. 
+
+h) EXCEPTIONS=application/vnd.ogc.se_blank 
+In the case of an error a response in the demanded format is generated, which contains no 
+graphic elements, i.e. no visual representation is produced. This "silent failure" is 
+meaningful when a large number of W3DS are integrated. 
+
+7.3.2.20 TRANSLATE 
+
+Depending on the used SRS coordinate values of 3D objects may become very high. For 
+example the Gauss Kruger System needs seven digits before the decimal point for meters and 
+two digits after the decimal point for accuracy in centimetres. Since most 3D viewers are 
+using floating point number with single precision (32 bit) (which means they are significant in 
+8 digits only), there will be visible errors in the visualisation because of imprecise rounding. 
+
+TRANSLATE=x,y,z defines an offset to the three coordinate axes which will be added to the 
+coordinate values to shrink them for a better handling. Integer and floating point numbers are 
+allowed values for x,y,z . 
+
+If the TRANSLATE parameter is omitted, the W3DS will automatically calculate an offset 
+based on the BBOX parameter and subtracts it from the coordinate values. If TRANSLATE is 
+indicated no automatic translation will be done. 
+
+7.3.2.21 ENVIRONMENT 
+
+A W3DS may decide to add additional graphical elements to a generated scene, like light 
+sources or background images, for a more realistic looking presentation. However, if the 
+output from different W3DSs should be merged more than one environment could be 
+irritating. So with the ENVIRONMENT parameter backgrounds etc. can be switched on or off 
+for each request. 
+
+
+
+OGC 05-019 
+
+© Open Geospatial Consortium (2005)  15 
+
+7.3.2.22 BGCOLOR 
+
+With the BGCOLOR parameter the background colour of the scene can be specified, if the 
+output format selected by FORMAT supports this option. 
+
+The color value is coded hexadecimal: 0xRRGGBB, where RR is the red, GG the green and 
+BB the blue value from 00 to FF (0-255 decimal). While the hexadecimal numbers may be 
+indicated in large or small letters, the "x" of the prefix must be small case. 
+
+7.3.2.23 BGIMAGE 
+
+With BGIMAGE the URL of a raster image can be posted to the W3DS, which is embedded 
+or referenced in the returned scene as background image. A typical application is the 
+indication of an image illustrating the scene’s sky. It depends thereby among other things on 
+the selected output format whether and how this parameter is to be considered. 
+
+7.3.3 GetScene response 
+
+The response to a valid GetScene request is a 3D scene graph of the specified geographical 
+area in the requested format and spatial reference system, whereby the 3D coordinates are 
+accordingly moved by the BBOX offset or the TRANSLATE parameter. Additionally 
+coordinate axis will be shifted to computer graphics coordinate axis as shown in figure 4. 
+
+A scene graph is a general data structure commonly used by vector-based graphics editing 
+applications. The scene graph contains the pictorial data items being organized in a tree 
+structure. Each node in a scene graph represents some atomic unit of the document1. For 
+further reading about interactive 3D computer graphics [5] is recommended. 
+
+If one or more layers were specified, then the scene shows only the objects, which are 
+contained in these layers. If styles were indicated to these layers, then the objects of the 
+individual layers are portrayed according to the respective style. If the output format allows 
+the possibility of camera definition, a default camera is contained in the resulting file, whose 
+placement is derived from the provided view parameters. If the resulting file contains 
+references to further files e.g. textures, then it must be ensured that these files are accessible 
+over the Internet. 
+
+In case of an incorrect request or an occurring error while generating the scene, the response 
+must be supplied in the requested format for exceptional cases (parameters EXCEPTION) by 
+the server. With a request via HTTP the MIME type of the returned document must be set by 
+the server according to contents of the resulting file. 
+
+                                                 
+
+1 Taken from Wikipedia http://en.wikipedia.org/wiki/Scene_graph. For further reading see or ISO/IEC 14772 
+and ISO/IEC FDIS 19775 and [5]. 
+
+
+
+ 
+
+ © Open Geospatial Consortium (2005) 16
+
+Annex A 
+(normative) 
+
+ 
+XML schemas 
+
+A.1 W3DS capabilities schema 
+
+This is the XML Schema fragment for encoding a generic GetCapabilities operation request 
+is: 
+
+<?xml version="1.0" encoding="UTF-8"?> 
+<W3DS_Capabilities version="0.3.0" xmlns="http://www.opengis.net/w3ds"  
+xmlns:xlink="http://www.w3.org/1999/xlink"  
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+xsi:schemaLocation="http://www.opengis.net/w3ds  
+http://schemas.opengis.net/w3ds/0.3.0/W3DS_capabilities_0_3_0.xsd"> 
+ <!-- Service Metadata --> 
+ <Service> 
+  <!-- The WMT-defined name for this type of service --> 
+  <Name>W3DS</Name> 
+  <!-- Human-readable title for pick lists --> 
+  <Title>IKG Web 3D Server</Title> 
+  <!-- Narrative description providing additional information --> 
+  <Abstract>Web 3D Server maintained by Institue for Cartography and  
+Geoinformation, University of Bonn.  Contact: quadt@ikg.uni-bonn.de. 3D  
+City models of Bonn including buildings, roads, street furniture,  
+vegetation and dtm in LOD4.</Abstract> 
+  <KeywordList> 
+   <Keyword>city model</Keyword> 
+   <Keyword>3D</Keyword> 
+   <Keyword>scene graph</Keyword> 
+  </KeywordList> 
+  <!-- Top-level web address of service or service provider.  See also 
+OnlineResource elements under  <DCPType>. --> 
+  <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink"  
+xlink:type="simple" xlink:href="http://hostname/"/> 
+  <!-- Contact information --> 
+  <ContactInformation> 
+   <ContactPersonPrimary> 
+    <ContactPerson>Udo Quadt</ContactPerson> 
+    <ContactOrganization>Institue for Cartography and 
+Geoinformation, University of Bonn</ContactOrganization> 
+   </ContactPersonPrimary> 
+   <ContactPosition>PhD student</ContactPosition> 
+   <ContactAddress> 
+    <AddressType>postal</AddressType> 
+    <Address>Meckenheimer Allee 172</Address> 
+    <City>Bonn</City> 
+    <StateOrProvince/> 
+    <PostCode>53115</PostCode> 
+    <Country>Germany</Country> 
+   </ContactAddress> 
+   <ContactVoiceTelephone>+49 228 73 6334</ContactVoiceTelephone> 
+
+
+
+OGC 05-019 
+
+© Open Geospatial Consortium (2005)  17 
+
+   <ContactElectronicMailAddress>quadt@ikg.uni-
+bonn.de</ContactElectronicMailAddress> 
+  </ContactInformation> 
+  <!-- Fees or access constraints imposed. --> 
+  <Fees>none</Fees> 
+  <AccessConstraints>none</AccessConstraints> 
+ </Service> 
+ <Capability> 
+  <Request> 
+   <GetCapabilities> 
+    <Format>text/xml</Format> 
+    <DCPType> 
+     <HTTP> 
+      <Get> 
+       <OnlineResource 
+xmlns:xlink="http://www.w3.org/1999/xlink"  
+xlink:type="simple" xlink:href="http://hostname/path?"/> 
+      </Get> 
+      <Post> 
+       <OnlineResource 
+xmlns:xlink="http://www.w3.org/1999/xlink"  
+xlink:type="simple" xlink:href="http://hostname/path?"/> 
+      </Post> 
+     </HTTP> 
+    </DCPType> 
+   </GetCapabilities> 
+   <GetScene> 
+    <Format>model/vrml</Format> 
+    <Format>model/x3d+xml</Format> 
+    <DCPType> 
+     <HTTP> 
+      <Get> 
+       <!-- The URL here for invoking GetScene using HTTP GET  
+            is only a prefix to which a query string is appended. --> 
+       <OnlineResource 
+xmlns:xlink="http://www.w3.org/1999/xlink"  
+xlink:type="simple" xlink:href="http://hostname/path?"/> 
+      </Get> 
+     </HTTP> 
+    </DCPType> 
+   </GetScene> 
+  </Request> 
+  <Exception> 
+   <Format>XML</Format> 
+   <Format>BLANK</Format> 
+  </Exception> 
+  <Layer> 
+   <Title>IKG Web 3D Server</Title> 
+   <CRS>CRS:84</CRS> 
+    <EX_GeographicBoundingBox> 
+     <westBoundLongitude>7.037</westBoundLongitude> 
+     <eastBoundLongitude>7.200</eastBoundLongitude> 
+     <southBoundLatitude>50.650</southBoundLatitude> 
+     <northBoundLatitude>50.770</northBoundLatitude> 
+    </EX_GeographicBoundingBox> 
+   <!-- all layers are available in at least this CRS --> 
+   <AuthorityURL name="DIF_ID"> 
+
+
+
+ 
+
+ © Open Geospatial Consortium (2005) 18
+
+    <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink"  
+xlink:type="simple"  
+xlink:href="http://www.ikg.uni-bonn.de/w3ds/ID_maker.html"/> 
+   </AuthorityURL> 
+   <!--Example layer of a digital terrain model including a style--> 
+   <Layer> 
+    <Name>DTM</Name> 
+    <Title>Digital Terrain Model of Bonn, Germany</Title> 
+    <CRS>EPSG:31466</CRS> 
+    <BoundingBox CRS="EPSG:31466" minx="2598000" miny="5684000"  
+maxx="2610000" maxy="5696000" /> 
+    <Style> 
+     <Name>DTMstyle</Name> 
+     <Title>Example style for a DTM</Title> 
+     <Abstract>This is an example style for a typical 
+DTM</Abstract> 
+    </Style> 
+   </Layer> 
+   <!--Example layer for buildings--> 
+   <Layer> 
+    <Name>BUILDINGS</Name> 
+    <Title>3D Model of buildings of the Univerity of Bonn</Title> 
+    <CRS>EPSG:31466</CRS> 
+    <BoundingBox CRS="EPSG:31466" minx="2598000" miny="5684000"  
+maxx="2610000" maxy="5696000" /> 
+    <Style> 
+     <Name>plain</Name> 
+     <Title>Plain facade of buildings</Title> 
+    </Style> 
+    <Style> 
+     <Name>textured</Name> 
+     <Title>Textured facade layed on building</Title> 
+    </Style> 
+   </Layer> 
+  </Layer> 
+ </Capability> 
+</W3DS_Capabilities> 
+
+A.2 Service exception schema 
+
+<?xml version="1.0" encoding="UTF-8"?> 
+<xsd:schema targetNamespace="http://www.opengis.net/ogc" 
+xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+xmlns:ogc="http://www.opengis.net/ogc" elementFormDefault="qualified"> 
+ <xsd:element name="ServiceExceptionReport"> 
+  <xsd:complexType> 
+   <xsd:sequence> 
+    <xsd:element name="ServiceException" 
+type="ogc:ServiceExceptionType" minOccurs="0" maxOccurs="unbounded"/> 
+   </xsd:sequence> 
+   <xsd:attribute name="version" type="xsd:string" fixed="0.3.0"/> 
+  </xsd:complexType> 
+ </xsd:element> 
+ <!--A list of possible exception codes will be provided in the future--> 
+ <xsd:complexType name="ServiceExceptionType"> 
+  <xsd:simpleContent> 
+   <xsd:extension base="xsd:string"> 
+
+
+
+OGC 05-019 
+
+© Open Geospatial Consortium (2005)  19 
+
+    <xsd:attribute name="code" type="xsd:string"/> 
+    <xsd:attribute name="locator" type="xsd:string"/> 
+   </xsd:extension> 
+  </xsd:simpleContent> 
+ </xsd:complexType> 
+</xsd:schema> 
+ 
+
+
+
+ 
+
+ © Open Geospatial Consortium (2005) 20
+
+Annex B 
+(informative) 
+
+  
+Examples 
+
+B.1 Example requests of GetScene operation (URL) 
+
+Example 1 
+Get a scene constrained by a bounding box (BBOX) without specific initial view point. The 
+SRS EPSG:31466 specifies Gauss Kruger coordinates (UTM projection) in 2nd Central 
+Meridian (Germany). The coordinates are manually moved by (-2580000, -5720000, 0). 
+
+http://www.myserver.de/W3DS?VERSION=0.3.0&REQUEST=GetScene&SRS=EPSG:
+31466&FORMAT=model/vrml&BBOX=2583150,5720600,2584000,5722000&TR
+ANSLATE=-2580000,-5720000,0 
+
+ 
+Example 2 
+The view is defined by a point-of-interest (POI), the viewing angles PITCH and YAW, the 
+distance to the camera and its angle-of-view (AOV). 
+
+http://www.myserver.de/W3DS?VERSION=0.3.0&REQUEST=GetScene&SRS=EPSG:
+31466&FORMAT=model/vrml&POI=2583150.0,5720600.0,52.5&PITCH=45&Y
+AW=45&DISTANCE=100&AOV=90&BBOX=2583150,5720600,2584000,5722000 
+
+ 
+Example 3 
+The view is calculated from a point-of-interest (POI), the point-of-camera (POC) and the 
+angle-of-view (AOV).  
+
+http://www.myserver.de/W3DS?VERSION=0.3.0&REQUEST=GetScene&SRS=EPSG:
+31466&FORMAT=model/vrml&POI=2583150.0,5720600.0,52.5&POC=255438
+4.38,5676500,100&AOV=90&BBOX=2583150,5720600,2584000,5722000 
+
+ 
+Example 4 
+ The view is calculated from a point-of-camera (POC), the concerned viewing angles PITCH 
+and YAW and the angle-of-view (AOV). 
+
+http://www.myserver.de/W3DS?VERSION=0.3.0&REQUEST=GetScene&SRS=EPSG:
+31466&FORMAT=model/vrml&POC=2554384.38,5676500,100&AOV=90&YAW=2
+3&PITCH=-45&BBOX=2583150,5720600,2584000,5722000 
+
+ 
+Example 5 
+ The view is defined by a point-of-interest (POI), the concerned viewing angles PITCH and 
+YAW, the distance to the camera and the angle-of-view (AOV). 
+
+
+
+OGC 05-019 
+
+© Open Geospatial Consortium (2005)  21 
+
+http://www.myserver.de/servlet/W3DS?VERSION=0.3.0&REQUEST=GetScene&S
+RS=EPSG:31466&FORMAT=model/vrml&BBOX=2583150,5720600,2584000,57
+22000&POI=2583150.0,5720600.0,52.5&PITCH=45&YAW=45&DISTANCE=100
+&AOV=90 
+
+ 
+
+B.2 Example request of GetCapabilities operation (URL) 
+
+Example request to get the capabilities of the W3DS. Example taken and modified from the 
+OWS Common Implementation: 
+
+http://myserver.de/W3DS?SERVICE=W3DS&REQUEST=GetCapabilities&FORMAT=
+text/xml 
+
+B.3 Sample W3DS service metadata (XML) 
+
+<?xml version="1.0" encoding="UTF-8"?> 
+<W3DS_Capabilities version="0.3.0" xmlns="http://www.opengis.net/w3ds" 
+xmlns:xlink="http://www.w3.org/1999/xlink" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.opengis.net/w3ds 
+http://schemas.opengis.net/w3ds/0.3.0/W3DS_capabilities_0_3_0.xsd"> 
+ <!-- Service Metadata --> 
+ <Service> 
+  <!-- The WMT-defined name for this type of service --> 
+  <Name>W3DS</Name> 
+  <!-- Human-readable title for pick lists --> 
+  <Title>IKG Web 3D Server</Title> 
+  <!-- Narrative description providing additional information --> 
+  <Abstract>Web 3D Server maintained by Institue for Cartography and 
+Geoinformation, University of Bonn.  Contact: quadt@ikg.uni-bonn.de. 3D 
+City models of Bonn including buildings, roads, street furniture, 
+vegetation and dtm in LOD4.</Abstract> 
+  <KeywordList> 
+   <Keyword>city model</Keyword> 
+   <Keyword>3D</Keyword> 
+   <Keyword>scene graph</Keyword> 
+  </KeywordList> 
+  <!-- Top-level web address of service or service provider.  See also 
+OnlineResource 
+  elements under <DCPType>. --> 
+  <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" 
+xlink:type="simple" xlink:href="http://hostname/"/> 
+  <!-- Contact information --> 
+  <ContactInformation> 
+   <ContactPersonPrimary> 
+    <ContactPerson>Udo Quadt</ContactPerson> 
+    <ContactOrganization>Institue for Cartography and 
+Geoinformation, University of Bonn</ContactOrganization> 
+   </ContactPersonPrimary> 
+   <ContactPosition>PhD student</ContactPosition> 
+   <ContactAddress> 
+    <AddressType>postal</AddressType> 
+    <Address>Meckenheimer Allee 172</Address> 
+    <City>Bonn</City> 
+
+
+
+ 
+
+ © Open Geospatial Consortium (2005) 22
+
+    <StateOrProvince/> 
+    <PostCode>53115</PostCode> 
+    <Country>Germany</Country> 
+   </ContactAddress> 
+   <ContactVoiceTelephone>+49 228 73 6334</ContactVoiceTelephone> 
+   <ContactElectronicMailAddress>quadt@ikg.uni-
+bonn.de</ContactElectronicMailAddress> 
+  </ContactInformation> 
+  <!-- Fees or access constraints imposed. --> 
+  <Fees>none</Fees> 
+  <AccessConstraints>none</AccessConstraints> 
+ </Service> 
+ <Capability> 
+  <Request> 
+   <GetCapabilities> 
+    <Format>text/xml</Format> 
+    <DCPType> 
+     <HTTP> 
+      <Get> 
+       <OnlineResource 
+xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" 
+xlink:href="http://hostname/path?"/> 
+      </Get> 
+      <Post> 
+       <OnlineResource 
+xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" 
+xlink:href="http://hostname/path?"/> 
+      </Post> 
+     </HTTP> 
+    </DCPType> 
+   </GetCapabilities> 
+   <GetScene> 
+    <Format>model/vrml</Format> 
+    <Format>model/x3d+xml</Format> 
+    <DCPType> 
+     <HTTP> 
+      <Get> 
+       <!-- The URL here for invoking GetScene using HTTP GET 
+            is only a prefix to which a query string is appended. --> 
+       <OnlineResource 
+xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" 
+xlink:href="http://hostname/path?"/> 
+      </Get> 
+     </HTTP> 
+    </DCPType> 
+   </GetScene> 
+  </Request> 
+  <Exception> 
+   <Format>XML</Format> 
+   <Format>BLANK</Format> 
+  </Exception> 
+  <Layer> 
+   <Title>IKG Web 3D Server</Title> 
+   <CRS>CRS:84</CRS> 
+    <EX_GeographicBoundingBox> 
+     <westBoundLongitude>7.037</westBoundLongitude> 
+     <eastBoundLongitude>7.200</eastBoundLongitude> 
+
+
+
+OGC 05-019 
+
+© Open Geospatial Consortium (2005)  23 
+
+     <southBoundLatitude>50.650</southBoundLatitude> 
+     <northBoundLatitude>50.770</northBoundLatitude> 
+    </EX_GeographicBoundingBox> 
+   <!-- all layers are available in at least this CRS --> 
+   <AuthorityURL name="DIF_ID"> 
+    <OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" 
+xlink:type="simple" xlink:href="http://www.ikg.uni-
+bonn.de/w3ds/ID_maker.html"/> 
+   </AuthorityURL> 
+   <!--Example layer of a digital terrain model including a style--> 
+   <Layer> 
+    <Name>DTM</Name> 
+    <Title>Digital Terrain Model of Bonn, Germany</Title> 
+    <CRS>EPSG:31466</CRS> 
+    <BoundingBox CRS="EPSG:31466" minx="2598000" miny="5684000" 
+maxx="2610000" maxy="5696000" /> 
+    <Style> 
+     <Name>DTMstyle</Name> 
+     <Title>Example style for a DTM</Title> 
+     <Abstract>This is an example style for a typical 
+DTM</Abstract> 
+    </Style> 
+   </Layer> 
+   <!--Example layer for buildings--> 
+   <Layer> 
+    <Name>BUILDINGS</Name> 
+    <Title>3D Model of buildings of the Univerity of Bonn</Title> 
+    <CRS>EPSG:31466</CRS> 
+    <BoundingBox CRS="EPSG:31466" minx="2598000" miny="5684000" 
+maxx="2610000" maxy="5696000" /> 
+    <Style> 
+     <Name>plain</Name> 
+     <Title>Plain facade of buildings</Title> 
+    </Style> 
+    <Style> 
+     <Name>textured</Name> 
+     <Title>Textured facade layed on building</Title> 
+    </Style> 
+   </Layer> 
+  </Layer> 
+ </Capability> 
+</W3DS_Capabilities> 
+ 
+
+B.4 Sample service exception (XML) 
+
+<?xml version="1.0" encoding="UTF-8"?> 
+<ServiceExceptionReport version="0.3.0" xmlns="http://www.opengis.net/ogc" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.opengis.net/ogc 
+http://schemas.opengis.net/w3ds/0.3.0/exceptions_0_3_0.xsd"> 
+ <ServiceException> 
+Plain text message about an error. 
+</ServiceException> 
+ <ServiceException code="InvalidUpdateSequence"> 
+Another error message, this one with a service exception code supplied. 
+</ServiceException> 
+
+
+
+ 
+
+ © Open Geospatial Consortium (2005) 24
+
+ <ServiceException><![CDATA[ 
+Error in module <foo.c>, line 42 
+ 
+A message that includes angle brackets in text 
+must be enclosed in a Character Data Section 
+as in this example.  All XML-like markup is 
+ignored except for this sequence of three 
+closing characters: 
+]]></ServiceException> 
+ <ServiceException><![CDATA[ 
+<Module>foo.c</Module> 
+<Error>An error occurred</Error> 
+<Explanation>Similarly, actual XML 
+can be enclosed in a CDATA section. 
+A generic parser will ignore that XML, 
+but application-specific software may choose 
+to process it.</Explanation> 
+]]></ServiceException> 
+</ServiceExceptionReport> 
+
+ 
+
+
+
+OGC 05-019 
+
+© Open Geospatial Consortium (2005)  25 
+
+Bibliography 
+
+[1] Doyle, A., Cuthbert, A. (1998): Essential Model of Interactive Portrayal. OpenGIS 
+Project Document, 98-061. http://www.opengis.org 
+
+[2] IEC 60027 (all parts), Letter symbols to be used in electrical technology. 
+
+[3] ISO 1000, SI units and recommendations for the use of their multiples and of certain 
+other units. 
+
+[4] Altmaier, A., Kolbe, T. H. (2003): Applications and Solutions for Interoperable 3d 
+Geo-Visualization. In: D. Fritsch (ed.): Proceedings of the Photogrammetric Week 
+2003 in Stuttgart, Wichmann Verlag, Germany 
+
+[5] J. Foley, A. van Dam, S. Feiner, J. Hughes (1995), Computer Graphics, Principles and 
+Practice, Addison Wesley Longman, 2nd Edition. 
+
+ 
+
+ 
+
+ 
+
+

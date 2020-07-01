@@ -1,0 +1,1518 @@
+
+  
+ 
+
+ 
+
+Open Geospatial Consortium, Inc. 
+
+Date: 2008-09-06 
+
+Reference number of this document: OGC 07-169 
+
+Version: 0.9.0 
+
+Category: Engineering Report 
+
+Editor: Steven Keens 
+
+OGC
+®
+ OWS-5 Sub-setting Engineering Report 
+
+ 
+
+ 
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+
+To obtain additional rights of use, visit http://www.opengeospatial.org/legal/. 
+
+ 
+
+Warning 
+
+This document is not an OGC Standard. This document presents a discussion of 
+
+technology issues considered in an initiative of the OGC Interoperability Program. 
+
+This document does not represent an official position of the OGC. It is subject to 
+
+change without notice and may not be referred to as an OGC Standard. However, 
+
+the discussions in this document could very well lead to the definition of an OGC 
+
+Standard. Recipients of this document are invited to submit, with their comments, 
+
+notification of any relevant patent rights of which they are aware and to provide 
+
+supporting documentation. 
+
+http://www.opengeospatial.org/legal/
+
+
+OGC 07-169 
+
+ii Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+Preface 
+
+Suggested additions, changes, and comments on this draft report are welcome and 
+
+encouraged. Such suggestions may be submitted by email message or by making 
+
+suggested changes in an edited copy of this document. 
+
+The changes made in this document version, relative to the previous version, are tracked 
+
+by Microsoft Word, and can be viewed if desired. If you choose to submit suggested 
+
+changes by editing this document, please first accept all the current changes, and then 
+
+make your suggested changes with change tracking on. 
+
+ 
+
+
+
+OGC 07-169 
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. iii 
+ 
+
+Contents Page 
+
+1 Introduction ......................................................................................................... 1 
+
+1.1 Scope .............................................................................................................. 1 
+
+1.2 Document contributor contact points ............................................................... 1 
+
+1.3 Revision history............................................................................................... 1 
+
+1.4 Future work ..................................................................................................... 1 
+
+2 References ........................................................................................................... 2 
+
+3 Terms and definitions .......................................................................................... 2 
+
+4 Conventions ......................................................................................................... 3 
+
+4.1 Abbreviated terms ........................................................................................... 3 
+
+5 Georeferencable Coverages & JPIP in a WCS-T .................................................. 3 
+
+5.1 WCS-T Transactions ....................................................................................... 3 
+
+5.1.1 WCS-T XML Schema Modifications .......................................................... 3 
+
+5.1.2 MTOM and SwA ........................................................................................ 4 
+
+5.2 Adding a single JPIP based coverage to a WCS-T ........................................... 4 
+
+5.2.1 WCS-T JPIP Transaction Request ............................................................... 6 
+
+5.2.2 WCS-T JPIP Transaction Acknowledgement .............................................. 7 
+
+5.2.2.1 Achnowledgement TransactionId .................................................................... 7 
+
+5.2.3 WCS-T JPIP Transaction Final Transaction Response ................................. 8 
+
+5.2.3.1 New Coverage’s Identifier ............................................................................... 8 
+
+5.2.3.2 Final Response TransactionId .......................................................................... 9 
+
+5.3 ImageCRS & Transformations ......................................................................... 9 
+
+5.3.1 Grid and Image CRSes .............................................................................. 10 
+
+5.4 Subsetting a JPIP based coverage .................................................................. 12 
+
+5.4.1 WCS Interpolations Methods and JPIP Resolutions ................................... 12 
+
+5.4.2 JPIP GetCoverage Use Case – Fractional resolution levels ........................ 12 
+
+5.5 SWE, WCS, GML, and GMLJP2 harmonization ........................................... 13 
+
+Annex A  XML Schema Documents .............................................................................. 14 
+
+Annex B  Example files ................................................................................................. 15 
+
+Bibliography ................................................................................................................. 16 
+
+ 
+
+
+
+OGC 07-169 
+
+iv Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+Figures Page 
+
+Figure 1: JPIP image offsets and dimensions. .......................................................................... 6 
+
+Figure 2 – Object diagram: sub-sampled images based upon same source image ................ 10 
+
+Figure 3 – Object diagram: sub-sampled images based upon different source images......... 11 
+
+Figure 4 – Sub-sampled images: no rotation .......................................................................... 11 
+
+Figure 5 – Sub-sampled images – having a rotation............................................................... 12 
+
+Tables Page 
+
+Table 1 – WCS-T XML Schema Documents ............................................................................ 4 
+
+Table 2 – Items required to add a JPIP Coverage to a WCS-T ............................................... 5 
+
+Table 4 – Example JPIP resolution levels for Figure 6 .......................................................... 12 
+
+Table 3 – Example files used in OWS-5 SWE and descriptions ............................................ 15 
+
+ 
+
+ 
+
+
+
+OpenGIS
+®
+ 
+ 
+Implementation Specification OGC 07-169 
+
+ 
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 1 
+ 
+
+OGC
+®
+ OWS-5 Sub-setting Engineering Report 
+
+1 Introduction 
+
+1.1 Scope 
+
+This OGC
+®
+ document represents an OWS-5 SWE thread Engineering Report on 
+
+subsetting georeferencable imagery.  It discusses how to handle georeferencable imagery 
+
+in the JPEG2000 format as well as using JPIP within the WCS-T and the SWE set of 
+
+services. 
+
+Attention is drawn to the possibility that some of the elements of this document may be 
+
+the subject of patent rights. The OGC shall not be held responsible for identifying any or 
+
+all such patent rights. 
+
+1.2 Document contributor contact points 
+
+All questions regarding this document should be directed to the editor or the contributors: 
+
+Name Organization 
+
+Steven Keens PCI Geomatics 
+
+  
+
+  
+
+ 
+
+1.3 Revision history 
+
+Date Release Editor Primary clauses 
+modified 
+
+Description 
+
+2007-11-28 0.0.1 S. Keens All Initial revision 
+
+2007-12-10 0.0.1 S. Keens Most Added subclauses related to JPIP and WCS 
+Transactions – pretty much everything. 
+
+2008-03-06     
+
+ 
+
+1.4 Future work 
+
+Improvements in this document are desirable to [text]. 
+
+ 
+
+
+
+OGC 07-169 
+
+2 Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+2 References 
+
+The following documents are referenced in this document. For dated references, 
+
+subsequent amendments to, or revisions of, any of these publications do not apply. For 
+
+undated references, the latest edition of the normative document referred to applies. 
+
+OGC 03-013, Web Object Service Implementation Specification (0.0.3) 
+
+OGC 03-105r1, OpenGIS® Geography Markup Language (GML) Encoding 
+
+Specification 3.1.1 
+
+OGC 05-047r3, OpenGIS® GML in JPEG 2000 for Geographic Imagery Encoding 
+
+Specification 1.0.0 
+
+OGC 06-111, GML 3.1.1 Grid CRSs Profile Corrigendum (1.0.1)  
+
+OGC 06-121r3, OpenGIS
+®
+ Web Services Common Specification 
+
+OGC 07-036, OpenGIS® Geography Markup Language (GML) Encoding Specification 
+
+3.2.1 
+
+OGC 07-067r2, OpenGIS® Web Coverage Service (WCS) Implementation Specification 
+
+Corrigendum 1 (1.1.1 c1) 
+
+In addition to this document, this report includes several XML Schema Document files as 
+
+specified in Annex B. 
+
+3 Terms and definitions 
+
+For the purposes of this report, the definitions specified in Clause 4 of the OGC 
+
+referenced documents listed in clause 2 shall apply.  In addition, the following terms and 
+
+definitions apply. 
+
+4.1  
+
+georeferencable imagery 
+
+Imagery that is itself not rectified but may be rectified because of the metadata associated 
+
+to the imagery. 
+
+4.2  
+
+term name 
+
+synonym 
+
+text of the definition 
+
+NOTE  Note text. 
+
+
+
+OGC 07-169 
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 3 
+ 
+
+4 Conventions 
+
+4.1 Abbreviated terms 
+
+JP2 JPEG 2000 
+
+JPIP JPEG 2000 Interactive Protocol – JPEG2000 Part 9 
+
+MTOM SOAP Message Transmission Optimization Mechanism 
+
+SensorML Sensor Model Language 
+
+SwA SOAP with Attachments 
+
+SWE Sensor Web Enablement 
+
+WCPS Web Coverage Processing Service 
+
+WCS Web Coverage Service 
+
+WCS-T Web Coverage Service Transactional 
+
+WCTS Web Coordinate Transformation Service 
+
+WOS Web Object Service 
+
+WPS Web Processing Service 
+
+5 Georeferencable Coverages & JPIP in a WCS-T 
+
+The goal of the OWS-5 georeferencable workflow is to learn about the issues when using 
+
+unrectified JPIP based coverages directly within workflows involving the WCS-T and the 
+
+SWE set of services.  The workflows are described in [7]. 
+
+5.1 WCS-T Transactions 
+
+The OWS-5 SWE workflows require a WCS-T for disseminating JPIP imagery.  The 
+
+JPIP images are added to the WCS-T via the workflow.  The JPIP images are then 
+
+available to a WCS client able to read JPIP. 
+
+The WCS-T extension to the WCS 1.1.1 described in [2] is a good first attempt at adding 
+
+transactions to the WCS.  However, it has several flaws that could make it simpler to 
+
+implement and easier to understand.  The main flaw is that the WCS-T schemas are 
+
+tightly bound to the WCS 1.1.1 schemas. 
+
+5.1.1 WCS-T XML Schema Modifications 
+
+The WCS-T XML Schemas from [2] are tightly coupled with the WCS 1.1.1 XML 
+
+Schemas [OGC 07-067r2].  The current WCS-T schemas use constructs from the WCS 
+
+1.1.1 schemas, as well as the WCS-T schemas are in the same namespace. 
+
+The current WCS-T schemas are functional but should be modified to get better reuse 
+
+from other versions of the WCS.  To achieve that the WCS-T schemas should be 
+
+
+
+OGC 07-169 
+
+4 Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+completely independent of the WCS schemas: by changing the namespace, and by using 
+
+tags that are more meaningful. 
+
+The WCS-T XML Schemas went through two modifications.  The first was a simple 
+
+namespace change.  The second was a complete overhaul.  Note that due to time 
+
+constraints the original WCS-T schemas from [2] were used in OWS-5. 
+
+Table 2 lists the XML Schema documents develop during OWS-5 for the WCS-T 
+
+transactions.  Those documents are contained in the ZIP package in which this file is 
+
+contained. 
+
+Table 1 – WCS-T XML Schema Documents 
+
+WCS-T 
+XML Schema Document 
+
+Changes 
+
+wcsTransaction07068r1.xsd 
+
+(Used in OWS-5 workflow) 
+
+None 
+
+Original from WCS-T extension specification [2]. 
+
+wcsTransactionNewXmlNS.xsd 
+ 
+ 
+
+Only changed the target namespace: 
+From: http://www.opengis.net/wcs/1.1.1 
+To: http://www.opengis.net/wcs-t/1.0.0 
+
+wcsTransactionDecoupled.xsd Major changes to be more like transactions from Web 
+Object Service (WOS). 
+
+Completely eliminated the tight coupling between the WCS-
+T and the WCS 1.1.1.  This new WCS-T schema should be 
+usable by any WCS. 
+
+Uses MTOM instead of SwA.  See 5.1.2. 
+
+Changed the target namespace: 
+From: http://www.opengis.net/wcs/1.1.1 
+To: http://www.opengis.net/wcs-t/1.0.0 
+
+wcsAllTrans.xsd New schema document to load all WCS-T schema 
+documents. 
+
+ 
+
+5.1.2 MTOM and SwA 
+
+The OW-5 SWE thread participants discussed using MTOM and SwA in the WCS-T.  
+
+They agreed to use MTOM where new XML Schemas were required and to continue to 
+
+use SwA where it is already used. 
+
+The difference between MTOM and SwA are discussed in [6]. 
+
+5.2 Adding a single JPIP based coverage to a WCS-T 
+
+Note: the information here (the text and examples) are based upon the draft WCS-T 
+
+extension [2]. 
+
+To add a Virtual JPIP Coverage to the WCS-T via a Transaction request the items listed 
+
+in Table 2 are needed. 
+
+http://www.opengis.net/wcs-t/1.0.0
+
+
+OGC 07-169 
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 5 
+ 
+
+Table 2 – Items required to add a JPIP Coverage to a WCS-T 
+
+Item/Sub-Item Why and How 
+
+CoverageDescription A coverage description is used to avoid requiring that the WCS-T 
+access the JPIP image to extract metadata (which may be in a non-
+recognized format).  Ideally that metadata should be given to the WCS 
+in a standard format.  That is best by using constructs the WCS 
+already knows – in this case a coverage description. 
+
+That is done via a <Reference> element pointing to an XML 
+instance document valid against the 
+wcsCoverageDescription.xml containing a single 
+<CoverageDescription> element. 
+
+The <Reference> can point to a remote location or to an attachment 
+in a SwA request. 
+
+CoverageDescription/ 
+ImageCRS 
+
+An <ImageCRS> is required because the workflow is for 
+georeferencable imagery.  The WCS uses an ImageCRS to indicate 
+that the offered coverage is unrectified.  The ImageCRS contains the 
+image’s size. 
+
+CoverageDescription/ 
+Transformation 
+
+A Transformation is required because the workflow is for 
+georeferencable imagery (unrectified).  The transformation indicates 
+how to transform the unrectified coverage to a rectified coverage. 
+
+For OWS-5 the wcsCoverageDescription.xml schema has 
+been modified because the <Transformation> element lacked the 
+ability to reference a SensorML XML fragment containing a different 
+encoding of the transformation.  The modifications are in the file 
+wcsDescribeCoverageOws5.xsd. 
+
+The difference between wcsCoverageDescription.xml and 
+wcsDescribeCoverageOws5.xsd is the addition of the choice 
+between the original <Transformation> element and the 
+<OtherTransformation> element. 
+
+See subclause 5.3 for more details.  
+
+JPIP Image/URL The WCS server needs to identify the actual JPIP image the coverage is 
+based upon. 
+
+That's done via the following XML fragment in the transaction: 
+<Reference 
+  xlink:role="urn:ogc:def:role:WCS:1.1:Pixels" 
+  xlink:href="JPIP URL GOES HERE"> 
+  <Format>image/jp2; 
+
+type=urn:ogc:def:wcs:jp2:1.0.0:jpip</Format> 
+  </Format> 
+</Reference> 
+
+The JPIP URL is identified by the xlink:role value 
+urn:ogc:def:role:WCS:1.1:Pixels 
+
+Example URL: 
+http://www.jpipserver.com/image.jp2?fsiz=5000,4000&roff=100,50 
+
+ 
+
+JPIP Image/Subset Indicate the subset of the JPIP image that is represented by the 
+coverage. That's done within the coverage description using the 
+bounding box in the Image CRS.  
+
+Set the bounding box in the ImageCRS to (0, 0, sx, sy). 
+
+fsize=fx,fy parameter is the source image's full frame size at resolution 
+level 0. That's needed to convert the GetCoverage request spatial 
+
+
+
+OGC 07-169 
+
+6 Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+domain subset to the corresponding window in the image on the JPIP 
+server. The fsize parameter corresponds to the frame sizes, fx and fy, 
+in the diagram below.  It goes in the JPIP URL. 
+
+roff=ox,oy parameter is the offset of the virtual coverage within the 
+JPIP frame. This value is needed so that we can use relative 
+coordinates (starting at 0, 0) within the coverage description.   It goes 
+in the JPIP URL 
+
+  
+
+ 
+
+ 
+
+Figure 1: JPIP image offsets and dimensions. 
+
+ 
+
+5.2.1 WCS-T JPIP Transaction Request 
+
+Example 1 shows an XML encoded WCS-T Transaction request for adding a JPIP based 
+
+Coverage where the coverage description is on a remote server.  
+
+EXAMPLE 1 Add JPIP based coverage where Coverage Description is remote 
+
+<?xml version="1.0" encoding="UTF-8"?> 
+
+<soap:Envelope 
+
+xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"> 
+
+<soap:Body> 
+
+ 
+
+<Transaction service="WCS" version="1.1.1" 
+
+    xmlns="http://www.opengis.net/wcs-t/1.0.0" 
+
+    xmlns:wcst="http://www.opengis.net/wcs-t/1.0.0" 
+
+    xmlns:wcs="http://www.opengis.net/wcs/1.1.1" 
+
+    xmlns:ows="http://www.opengis.net/ows/1.1" 
+
+    xmlns:xlink="http://www.w3.org/1999/xlink" 
+
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+
+    xsi:schemaLocation="http://www.opengis.net/wcs/1.1.1 
+
+                        ../wcsTransaction.xsd"> 
+
+  <InputCoverages> 
+
+    <wcs:Coverage> 
+
+      <ows:Title>Add</ows:Title> 
+
+      <ows:Reference 
+
+
+
+OGC 07-169 
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 7 
+ 
+
+          
+
+xlink:href="http://www.jpipserver.com/image.jp2?fsiz=5000,4000&ro
+
+ff=100,50" 
+
+          xlink:role="urn:ogc:def:role:WCS:1.1:Pixels"> 
+
+        <ows:Format>image/jp2; 
+
+type=urn:ogc:def:wcs:jp2:1.0.0:jpip</ows:Format> 
+
+      </ows:Reference> 
+
+      <ows:Reference 
+
+          xlink:href="http://someserver/coveragedescription.xml" 
+
+          
+
+xlink:role="urn:ogc:def:role:WCS:1.1:CoverageDescription"/> 
+
+    </wcs:Coverage> 
+
+  </InputCoverages> 
+
+</Transaction> 
+
+ 
+
+</soap:Body> 
+
+</soap:Envelope> 
+
+ 
+
+Note the <ows:Format>image/jp2; 
+
+type=urn:ogc:def:wcs:jp2:1.0.0:jpip</ows:Format> element. It exists to 
+
+tell the server that the image being added is a JPIP based image and that the server 
+
+shouldn't retrieve the image. It just needs to keep the reference.  
+
+5.2.2 WCS-T JPIP Transaction Acknowledgement 
+
+Example 1 shows an acknowledgement that does not contain a copy of the transaction 
+
+request.  The acknowledgement is used when an asynchronous response is requested. 
+
+EXAMPLE 1 Acknowledgement response when for asynchronous transaction. 
+
+<?xml version="1.0" encoding="UTF-8"?> 
+
+<soap:Envelope 
+
+xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"> 
+
+<soap:Body> 
+
+ 
+
+<wcst:Acknowledgement 
+
+    xmlns:wcst="http://www.opengis.net/wcs-t/1.0.0" 
+
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+
+    xsi:schemaLocation="http://www.opengis.net/wcs-t/1.0.0 
+
+                        ../wcsTransaction.xsd"> 
+
+  <wcst:TimeStamp>21-12-17T09:30:47-05:00</wcst:TimeStamp> 
+
+  <wcst:TransactionId>T-ABCD-1</wcst:TransactionId> 
+
+</wcst:Acknowledgement> 
+
+ 
+
+</soap:Body> 
+
+</soap:Envelope> 
+
+ 
+
+5.2.2.1 Achnowledgement TransactionId 
+
+The acknowledgement requires some form of session or transaction identifier.  The 
+
+reason is that when the WCS-T sends a final response (see 5.2.3) the client may need to 
+
+
+
+OGC 07-169 
+
+8 Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+be able to associate the final response with the request.  The WCS-T draft does not 
+
+contain such a mechanism. 
+
+The draft XML Schema document, wcsTransactionDecoupled.xsd, adds a 
+
+mandatory <TransactionId> element in the acknowledgement.  The TransactionId is 
+
+used to associate the request to this acknowledgment and to the final response for 
+
+asynchronous transactions. 
+
+5.2.3 WCS-T JPIP Transaction Final Transaction Response 
+
+This example shows the XML for a WCS-T Transaction response after adding a Virtual 
+
+JPIP Coverage.  This is the final response from a WCS-T to a transaction request and is 
+
+sent to the client either synchronously or asynchronously. 
+
+<?xml version="1.0" encoding="UTF-8"?> 
+
+<soap:Envelope xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"> 
+
+<soap:Body> 
+
+ 
+
+<Coverages transactionId=”T-ABCD-1” 
+
+    xmlns="http://www.opengis.net/wcs/1.1.1" 
+
+    xmlns:xlink="http://www.w3.org/1999/xlink" 
+
+    xmlns:ows="http://www.opengis.net/ows/1.1" 
+
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+
+    xsi:schemaLocation="http://www.opengis.net/wcs/1.1.1 
+
+                        ../wcsCoverages.xsd  
+
+                        http://www.opengis.net/ows/1.1 
+
+                        ../../../ows/1.1.0/owsAll.xsd"> 
+
+  <Coverage> 
+
+    <ows:Title>Add</ows:Title> 
+
+    <ows:Reference xlink:href="null" 
+
+      xlink:role="urn:ogc:def:role:WCS:1.1:CoverageDescription"> 
+
+      <ows:Identifier>new_cov_desc_identifier</ows:Identifier> 
+
+    </ows:Reference> 
+
+  </Coverage> 
+
+</Coverages> 
+
+ 
+
+</soap:Body> 
+
+</soap:Envelope> 
+
+ 
+
+5.2.3.1 New Coverage’s Identifier 
+
+Notice that the new coverage identifier is in the 
+
+<ows:Identifier>new_cov_desc_identifier</ows:Identifier> element.  That is a 
+
+change from what the WCS-T extension specification [2] dictates.  The reason for the 
+
+change is that it: 
+
+a) Eliminates the need to transmit the coverage description in the transaction 
+response. 
+
+b) Allows the client to retrieve the coverage description from the server using a 
+preferred request encoding. 
+
+http://www.opengis.net/ows/1.1
+
+
+OGC 07-169 
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 9 
+ 
+
+5.2.3.2 Final Response TransactionId 
+
+For asynchronous transactions the final response needs to contain a reference to the 
+
+TransactionId.  The transaction identifier associates the final response, the request, and 
+
+the acknowledgement.  
+
+To that end the new element <TransactionId> has been added to another new element 
+
+<Coverages> in the wcsTransactionNewXmlNs.xsd XML Schema document. 
+
+The fully decoupled version has a <TransactionResponse> element containing the 
+
+Transaction identifier. 
+
+5.3 ImageCRS & Transformations 
+
+The OWS-5 SWE scenario requires the use of georeferencable imagery; and the WCS 
+
+1.1.1 specification mandates that a coverage description for unrectified imagery use an 
+
+ImageCRS and Transformation.  To also support other SWE services the OWS-5 SWE 
+
+thread participants agreed to use a SensorML based Transformation instead of the GML 
+
+based Transformation element in a coverage descriptions domain.  This caused a problem 
+
+because the WCS 1.1.1 coverage description’s domain <Transformation> element 
+
+was not substitutable nor could it reference an external XML document without abusing 
+
+the semantics of an existing child element. 
+
+A discussion between the OWS-5 SWE participants and the WCS 1.2 SWG occurred that 
+
+clarified many issues related to ImageCRS.  In fact Arliss Whiteside created a change 
+
+request for WCS 1.1.1 that has been incorporated into the WCS 1.1.2 corrigendum [8].  It 
+
+clarifies many issues but it does not incorporate the <OtherTransformation> element 
+
+discussed in this document.  The <OtherTransformation> element was a solution 
+
+devised early in the project before the WCS SWG was involved and the design was too 
+
+far advanced to change to something else.  This brings up the issue of SWE and WCS 
+
+harmonization which is discussed in subclause 5.5. 
+
+
+
+OGC 07-169 
+
+10 Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+5.3.1 Grid and Image CRSes 
+
+ 
+
+Figure 2 – Object diagram: sub-sampled images based upon same source image 
+
+Figure 2 depicts is an object diagram use case where two new images are created from a 
+
+single image.  The new images are the result of two different requested GridCRSes.   
+
+An application should be able to overlap the two new images correctly since they are 
+
+derived from the same source.  Currently, it is impossible to know that the images 
+
+imgSubset1 and imgSubset2 originated by subsetting the same source image namely, 
+
+sourceImg because the original GridCRS information is lost. 
+
+ 
+
+ 
+
+sourceImageCrs
+
+: 
+
+ImageCRS 
+
+gridCrs1 
+
+:  
+
+GridCRS 
+
+gridCrs2 
+
+:  
+
+GridCRS 
+
+imgSubset2 
+
+:  
+
+Image 
+
+imgSubset1 
+
+:  
+
+Image 
+
+sourceImg : 
+
+Image 
+
+GridBaseCRS GridBaseCRS 
+
+imgSubset2crs
+
+: 
+
+ImageCRS 
+
+imgSubset1crs 
+
+: 
+
+ImageCRS 
+
+gridCrs1:  
+
+GridCRS 
+
+ 
+
+imageCrs1:  
+ImageCRS 
+
+ 
+
+sourceImage1:  
+Image 
+
+subImage1:  
+Image 
+
+ 
+
+GridBaseCRS 
+
+gridCrs2:  
+
+GridCRS 
+
+ 
+
+imageCrs2:  
+
+ImageCRS 
+
+ 
+
+sourceImage2:  
+
+Image 
+
+subImage2:  
+
+Image 
+
+ 
+
+GridBaseCRS 
+
+
+
+OGC 07-169 
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 11 
+ 
+
+Figure 3 – Object diagram: sub-sampled images based upon different source images 
+
+Figure 3 depicts a use case where two image subsets are created from different source 
+
+images.  In this use case it is impossible to overlay the two image subsets unless metadata 
+
+external to the images is used. 
+
+ 
+
+NOTE 1 Small, black, and italicized coordinates are absolute coordinates from J0. 
+
+Figure 4 – Sub-sampled images: no rotation 
+
+ 
+
+ 
+
+NOTE 1 Small, black, and italicized coordinates are absolute coordinates from J0. 
+
+0, 0 
+
+J1 
+
+Source JPIP Image 
+
+Virtual Coverage V0 
+
+V1 
+
+R0 R1 
+
+5
+0
+ 
+
+1
+0
+
+0
+ 
+
+100 
+
+200 
+
+4
+0
+
+0
+0
+ 
+
+2
+0
+
+0
+0
+ 
+
+3000 
+
+J0 
+
+0, 0 
+
+100, 50 
+
+5000 
+
+5000, 4000 
+
+500 
+
+700 
+
+P0 
+
+P1 
+
+100. 50 
+
+x?,y? 
+
+x?,y? 
+
+x?,y? 
+
+0, 0 
+
+J1 
+
+Virtual Coverage V0 
+
+V1 
+
+R0 
+
+R1 
+
+5
+0
+ 
+
+1
+0
+
+0
+ 
+
+100 
+
+200 
+
+4
+0
+
+0
+0
+ 
+
+2
+0
+
+0
+0
+ 
+
+3000 
+
+J0 
+
+0, 0 
+
+100, 50 
+
+5000 
+
+5000, 4000 
+
+5
+0
+
+0
+ 
+
+700 
+
+x?,y? 
+
+100, 50 
+
+x?,y? 
+
+x?,y? 
+
+
+
+OGC 07-169 
+
+12 Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+Figure 5 – Sub-sampled images – having a rotation 
+
+Requests for sub-sampled and rotated images were not discussed in great detail in the 
+
+OWS-5 initiative.  It is a subject that could be considered in future OWS initiatives. 
+
+5.4 Subsetting a JPIP based coverage 
+
+5.4.1 WCS Interpolations Methods and JPIP Resolutions 
+
+JPEG2000 and JPIP images can carry different resolution levels.  Resolution levels are 
+
+required to always be in powers of 2.  Resolution level 0 contains the best resolution.   
+
+Note that resolution levels are synonymous to pyramids within geospatial circles. 
+
+ 
+
+Figure 6 – JPIP Resolution Levels 
+
+ 
+
+Table 3 – Example JPIP resolution levels for Figure 6 
+
+Resolution 
+Level 
+
+ 
+X 
+
+ 
+Y 
+
+R0 12000 8000 
+
+R1 6000 4000 
+
+R2 3000 2000 
+
+R3 1500 1000 
+
+R4 750 500 
+
+ 
+
+5.4.2 JPIP GetCoverage Use Case – Fractional resolution levels 
+
+The requirement that JPEG2000 and JPIP images contain resolution levels in powers of 2 
+
+renders use cases that produce fractional resolution levels impossible to implement 
+
+without modifications to the WCS.  The reason is that the WCS offers functionality that 
+
+can produce fractional resolution levels. 
+
+For example: A WCS offers a coverage based upon an image available on a JPIP server 
+
+matching Figure 6 and Table 3.  A WCS client determines that the offered 
+
+coverage contains the region of interest but determines that R1 is too 
+
+detailed and R2 is too obscure and thus decides to build a request such that 
+
+the resulting coverage would be between R1 and R2. 
+
+ 
+
+ 
+
+ 
+
+ 
+
+R0 
+
+ 
+
+R1 
+
+ 
+ 
+
+R4 
+
+
+
+OGC 07-169 
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 13 
+ 
+
+It is impossible for a WCS client to make a GetCoverage request such that 
+
+the resulting image’s size and resolution be somewhere between R1 and 
+
+R2 – something like R1.3 approximately 4873x3249.  The reason is that 
+
+JPIP resolution levels are discrete.  A standard JPIP server can not return 
+
+resolution levels that are between advertised resolution levels. 
+
+Possible solutions are: 
+
+1) WCS server responds with closest and lowest resolution level, in this case R1.  It 
+means that the response doesn’t exactly match the request.  That’s a new paradigm to 
+
+the OGC.  The repercussion is that the response must contain enough metadata so that 
+
+clients can correctly interpret the result. 
+
+2) WCS server performs the interpolation itself.  To do so it must first retrieve the JPIP 
+image data at the best matching resolution level and interpolate from that.  It then 
+
+responds with the image created.  The repercussion to this is that the response is no 
+
+longer a JPIP based image and thus the client can’t use the wonderful capabilities of 
+
+JPIP.  A solution is that the WCS server uploads the generated coverage to the JPIP 
+
+server and references that new image in the response. 
+
+3) Client requests R1 and down-samples to the level equivalent to R1.3.  This is similar 
+to #1 but puts the onus on the client to choose the most appropriate resolution level. 
+
+4) An extension to the WCS coverage description indicates that the coverage is JPIP 
+based.  The client then knows that it can not make requests that result in fractional 
+
+resolution levels.  The problem with this is that a generic WCS client not aware of the 
+
+restriction would still be able to make bad requests.  In such a case the server should 
+
+respond with an exception. 
+
+5.5 SWE, WCS, GML, and GMLJP2 harmonization 
+
+The work in the OWS-5 SWE thread has exposed the need to harmonize SensorML, 
+
+WCS, GML, and GMLJP2.  The lack of harmonization was a big source of problems and 
+
+should be dealt with quickly.  The problem will worsen if the SWE, WCS, and GML 
+
+don’t start harmonization efforts. 
+
+It is suggested that the next OWS focus some activity on SWE, WCS, GML, and 
+
+GMLJP2 harmonization. 
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+
+OGC 07-169 
+
+14 Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+Annex A 
+ 
+
+XML Schema Documents 
+
+In addition to this document, this report includes several XML Schema Documents. 
+
+These XML Schema Documents are bundled in a zip file with the present document.  
+
+The WCS and WCS-T abilities specified in this document use OWS-5 specific XML 
+
+Schema Documents included in the zip file with this document. The XML Schema 
+
+Documents are also available via the OGC’s Subversion repository at 
+
+https://svn.opengeospatial.org/ogc-projects/ows/.  
+
+These XML Schema Documents combine the XML schema fragments listed in various 
+
+subclauses of this document, eliminating duplications. These XML Schema Documents 
+
+roughly match the WCS and WCS-T UML packages described in Annex B, and are 
+
+named: 
+
+wcsAll.xsd – used in OWS-5 
+
+wcsAllTrans.xsd 
+
+wcsCommon.xsd 
+
+wcsContents.xsd 
+
+wcsCoverages.xsd 
+
+wcsDescribeCoverage.xsd 
+
+wcsDescribeCoverageOws5.xsd 
+
+wcsGetCapabilities.xsd 
+
+wcsGetCoverage.xsd 
+
+wcsGridCRS.xsd 
+
+wcsGridCRSold.xsd 
+
+wcsInterpolationMethod.xsd 
+
+wcsTransaction.xsd – used in OWS-5: original from draft extension document 
+
+wcsTransactionDecoupled.xsd – not use:  proposed change to WCS-T 
+
+wcsTransactionNewXmlNS.xsd - not used: first attempt at decoupling 
+
+ 
+
+https://svn.opengeospatial.org/ogc-projects/ows/
+
+
+OGC 07-169 
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 15 
+ 
+
+Annex B 
+ 
+
+Example files 
+
+Table 4 lists files containing examples of WCS-T requests and responses.  All example 
+
+files are contained are bundled in a zip file with the present document. 
+
+Table 4 – Example files used in OWS-5 SWE and descriptions 
+
+Filename Description 
+
+./WCS-T SOAP Transaction 
+Example.txt 
+
+Full SOAP example containing the full HTTP request 
+(including headers and body) for adding a JPIP based 
+coverage description to a WCS-T. 
+
+./Schemas/wcs/1.1.1/Examp
+
+les/Ows5JpipCoverageDes
+criptionExampleInlineSe
+nsorML_RPCs.xml 
+
+A coverage description containing inline SensorML for 
+the domains transformation.  The transformation is RPC 
+based and is in an <OtherTransformation> 
+element. 
+
+./Schemas/wcs/1.1.1/Examp
+les/Ows5JpipCoverageDes
+criptionExampleRemoteSe
+nsorML_RPCs.xml 
+
+A coverage description pointing to remote a SensorML 
+document for the domains transformation.  The 
+transformation is RPC based and is in an 
+<OtherTransformation> element. 
+
+  
+
+  
+
+  
+
+ 
+
+
+
+OGC 07-169 
+
+16 Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+Bibliography 
+
+[1] OGC 05-047r3, OpenGIS® GML in JPEG 2000 for Geographic Imagery 
+Encoding Specification 1.0.0 
+
+[2] OGC 07-068r1, WCS - Transaction operation extension (1.1.1) 
+
+[3] OGC 07-145, WCS Application Profile for JPEG 2000 Coverage 
+
+[4] OGC 07-146, WCS Application Profile for JPIP Coverage Encoding 
+
+[5] OGC 03-013, Web Object Service Implementation Specification (0.0.3) 
+
+[6] OGC 08-009, OWS 5 SOAP/WSDL Common Engineering Report 
+
+[7] OGC xx-yyy, OWS-5 Workflow Engineering Report 
+
+[8] OGC 07-067r3, Web Coverage Service (WCS) version 1.1 Corrigendum 2 
+
+[9] OGC 07-066r3, WCS 1.1.1 to 1.1.2 Revision Notes 
+
+[10] OGC 07-173r2, WCS change request - Summarize CRS uses 
+
+[11] OGC 07-149r2, WCS change request - Allow non-georeferenced images 
+
+ 
+
+
+	Introduction
+	Scope
+	Document contributor contact points
+	Revision history
+	Future work
+
+	References
+	Terms and definitions
+	Conventions
+	Abbreviated terms
+
+	Georeferencable Coverages & JPIP in a WCS-T
+	WCS-T Transactions
+	WCS-T XML Schema Modifications
+	MTOM and SwA
+
+	Adding a single JPIP based coverage to a WCS-T
+	WCS-T JPIP Transaction Request
+	WCS-T JPIP Transaction Acknowledgement
+	Achnowledgement TransactionId
+
+	WCS-T JPIP Transaction Final Transaction Response
+	New Coverage’s Identifier
+	Final Response TransactionId
+
+
+	ImageCRS & Transformations
+	Grid and Image CRSes
+
+	Subsetting a JPIP based coverage
+	WCS Interpolations Methods and JPIP Resolutions
+	JPIP GetCoverage Use Case – Fractional resolution levels
+
+	SWE, WCS, GML, and GMLJP2 harmonization
+
+

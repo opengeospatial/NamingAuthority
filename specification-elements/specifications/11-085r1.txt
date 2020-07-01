@@ -1,0 +1,1121 @@
+
+  
+
+ i 
+ 
+
+Open Geospatial Consortium 
+Date: November 7, 2011 
+
+Reference number of this document: OGC 11-085r1 
+
+ 
+
+Category: Public Engineering Report 
+
+Editor: Panagiotis (Peter) A. Vretanos 
+
+OGC® OWS-8 Bulk Geodata Transfer Using GML 
+Engineering Report 
+
+.  
+
+ 
+
+ 
+
+Copyright © 2011 Open Geospatial Consortium. 
+To obtain additional rights of use, visit http://www.opengeospatial.org/legal/. 
+
+Warning 
+
+This document is not an OGC Standard. This document is an OGC Public 
+Engineering Report created as a deliverable in an OGC Interoperability Initiative 
+and is not an official position of the OGC membership. It is distributed for review 
+and comment. It is subject to change without notice and may not be referred to as 
+an OGC Standard. Further, any OGC Engineering Report should not be referenced 
+as required or mandatory technology in procurements. 
+
+ 
+
+ 
+Document type:  OGC® Engineering Report 
+Document subtype: NA 
+Document stage:  Approved for public release 
+Document language:  English 
+
+
+
+OGC 11-085r1 
+
+ii  
+ 
+
+Preface 
+
+This document describes methods and apparatus for the bulk transfer of geo-data between 
+systems that may or may not be connected by a network.  Two approaches for satisfying 
+this requirement are described in this document and it is anticipated that this document 
+shall eventually be submitted to OGC to become an adopted technical standard.  
+
+This document is a deliverable for the OGC Web Services 8 (OWS-8) testbed activity. 
+OWS testbeds are part of OGC's Interoperability Program, a global, hands-on and 
+collaborative prototyping program designed to rapidly develop, test and deliver proven 
+candidate standards or revisions to existing standards into OGC's Standards Program, 
+where they are formalized for public release. In OGC's Interoperability Initiatives, 
+international teams of technology providers work together to solve specific geoprocessing 
+interoperability problems posed by the Initiative's sponsoring organizations. OGC 
+Interoperability Initiatives include test beds, pilot projects, interoperability experiments 
+and interoperability support services - all designed to encourage rapid development, 
+testing, validation and adoption of OGC standards. 
+
+The OWS-8 sponsors are organizations seeking open standards for their interoperability 
+requirements. After analyzing their requirements, the OGC Interoperability Team 
+recommend to the sponsors that the content of the OWS-8 initiative be organized around 
+the following threads: 
+
+    * Observation Fusion 
+
+    * Geosynchronization (Gsync) 
+
+    * Cross-Community Interoperability (CCI) 
+
+    * Aviation 
+
+More information about the OWS-8 testbed can be found at: 
+
+http://www.opengeospatial.org/standards/requests/74 
+
+OGC Document [11-139] “OWS-8 Summary Report” provides a summary of the OWS-8 
+testbed and is available for download:  
+
+https://portal.opengeospatial.org/files/?artifact_id=46176  
+
+. 
+
+ 
+
+
+
+  
+
+ iii 
+ 
+
+Contents Page
+
+Contents	  
+1	   Introduction ............................................................................................................. 1	  
+
+1.1	   Scope .................................................................................................................. 1	  
+1.2	   Document contributor contact points ................................................................. 1	  
+1.3	   Revision history .................................................................................................. 1	  
+1.4	   Future work ........................................................................................................ 2	  
+
+1.4.1	   Geodata Bulk Transfer format ....................................................................... 2	  
+1.5	   Forward .............................................................................................................. 2	  
+
+2	   References ............................................................................................................... 2	  
+
+3	   Terms and definitions ............................................................................................. 3	  
+4	   Conventions ............................................................................................................ 7	  
+
+4.1	   Abbreviated terms .............................................................................................. 7	  
+4.2	   UML notation ..................................................................................................... 8	  
+
+5	   Geodata Bulk Transfer format ................................................................................ 8	  
+5.1	   Introduction ........................................................................................................ 8	  
+5.2	   GBT File Format ................................................................................................ 9	  
+5.3	   The manifest file ............................................................................................... 10	  
+5.4	   The global metadata file ................................................................................... 12	  
+5.5	   The components of a feature set ....................................................................... 12	  
+
+5.5.1	   Introduction .................................................................................................. 12	  
+5.5.2	   XML schema ................................................................................................ 12	  
+5.5.3	   GML feature collection ................................................................................ 12	  
+5.5.4	   ISO 19115 metadata ..................................................................................... 12	  
+5.5.5	   Styled Layer Descriptor ............................................................................... 13	  
+
+5.6	   Components of a named topology set .............................................................. 13	  
+5.6.1	   Introduction .................................................................................................. 13	  
+5.6.2	   Topology schema ......................................................................................... 13	  
+5.6.3	   Topology data .............................................................................................. 13	  
+5.6.4	   Topology metadata ....................................................................................... 14	  
+
+5.7	   Exporting .......................................................................................................... 14	  
+5.8	   Importing .......................................................................................................... 15	  
+
+ 
+
+
+
+OGC 11-085r1 
+
+iv  
+ 
+
+License Agreement 
+
+Permission is hereby granted by the Open Geospatial Consortium, Inc. ("Licensor"), free of charge and subject to the terms set forth 
+below, to any person obtaining a copy of this Intellectual Property and any associated documentation, to deal in the Intellectual 
+Property without restriction (except as set forth below), including without limitation the rights to implement, use, copy, modify, 
+merge, publish, distribute, and/or sublicense copies of the Intellectual Property, and to permit persons to whom the Intellectual 
+Property is furnished to do so, provided that all copyright notices on the intellectual property are retained intact and that each person to 
+whom the Intellectual Property is furnished agrees to the terms of this Agreement. 
+
+If you modify the Intellectual Property, all copies of the modified Intellectual Property must include, in addition to the above 
+copyright notice, a notice that the Intellectual Property includes modifications that have not been approved or adopted by LICENSOR. 
+
+THIS LICENSE IS A COPYRIGHT LICENSE ONLY, AND DOES NOT CONVEY ANY RIGHTS UNDER ANY PATENTS 
+THAT MAY BE IN FORCE ANYWHERE IN THE WORLD. 
+
+THE INTELLECTUAL PROPERTY IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR 
+PURPOSE, AND NONINFRINGEMENT OF THIRD PARTY RIGHTS. THE COPYRIGHT HOLDER OR HOLDERS INCLUDED 
+IN THIS NOTICE DO NOT WARRANT THAT THE FUNCTIONS CONTAINED IN THE INTELLECTUAL PROPERTY WILL 
+MEET YOUR REQUIREMENTS OR THAT THE OPERATION OF THE INTELLECTUAL PROPERTY WILL BE 
+UNINTERRUPTED OR ERROR FREE. ANY USE OF THE INTELLECTUAL PROPERTY SHALL BE MADE ENTIRELY AT 
+THE USER’S OWN RISK. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR ANY CONTRIBUTOR OF 
+INTELLECTUAL PROPERTY RIGHTS TO THE INTELLECTUAL PROPERTY BE LIABLE FOR ANY CLAIM, OR ANY 
+DIRECT, SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING 
+FROM ANY ALLEGED INFRINGEMENT OR ANY LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF 
+CONTRACT, NEGLIGENCE OR UNDER ANY OTHER LEGAL THEORY, ARISING OUT OF OR IN CONNECTION WITH 
+THE IMPLEMENTATION, USE, COMMERCIALIZATION OR PERFORMANCE OF THIS INTELLECTUAL PROPERTY. 
+
+This license is effective until terminated. You may terminate it at any time by destroying the Intellectual Property together with all 
+copies in any form. The license will also terminate if you fail to comply with any term or condition of this Agreement. Except as 
+provided in the following sentence, no such termination of this license shall require the termination of any third party end-user 
+sublicense to the Intellectual Property which is in force as of the date of notice of such termination. In addition, should the Intellectual 
+Property, or the operation of the Intellectual Property, infringe, or in LICENSOR’s sole opinion be likely to infringe, any patent, 
+copyright, trademark or other right of a third party, you agree that LICENSOR, in its sole discretion, may terminate this license 
+without any compensation or liability to you, your licensees or any other party. You agree upon termination of any kind to destroy or 
+cause to be destroyed the Intellectual Property together with all copies in any form, whether held by you or by any third party. 
+
+Except as contained in this notice, the name of LICENSOR or of any other holder of a copyright in all or part of the Intellectual 
+Property shall not be used in advertising or otherwise to promote the sale, use or other dealings in this Intellectual Property without 
+prior written authorization of LICENSOR or such copyright holder. LICENSOR is and shall at all times be the sole entity that may 
+authorize you or any third party to use certification marks, trademarks or other special designations to indicate compliance with any 
+LICENSOR standards or specifications. 
+
+This Agreement is governed by the laws of the Commonwealth of Massachusetts. The application to this Agreement of the United 
+Nations Convention on Contracts for the International Sale of Goods is hereby expressly excluded. In the event any provision of this 
+Agreement shall be deemed unenforceable, void or invalid, such provision shall be modified so as to make it valid and enforceable, 
+and as so modified the entire Agreement shall remain in full force and effect. No decision, action or inaction by LICENSOR shall be 
+construed to be a waiver of any rights or remedies available to it. 
+
+None of the Intellectual Property or underlying information or technology may be downloaded or otherwise exported or reexported in 
+violation of U.S. export laws and regulations. In addition, you are responsible for complying with any local laws in your jurisdiction 
+which may impact your right to import, export or use the Intellectual Property, and you represent that you have complied with any 
+regulations or registration procedures required by applicable law to make this license enforceable 
+
+ 
+
+
+
+OpenGIS® Engineering Report OGC 11-085r1 
+
+ 
+
+ 1 
+ 
+
+OGC® OWS-8 Bulk Geodata Transfer 
+
+1 Introduction 
+
+1.1 Scope 
+
+This document describes the work done during the OWS-8 test bed investigating methods 
+and apparatus for distributing individual geospatial data sets and/or collections of data 
+sets in a consistent manner between machines that may or may not be connected via a 
+network.  The investigation focuses on the initialization of a target WFS, from a source 
+WFS, for the purpose of GeoSynchronization.  Data, schema, metadata and/or topology 
+are exported from a source WFS, transferred to a target WFS (either electronically or 
+physically via some media) and then imported into the target WFS.  From that point on, 
+the two WFS's are maintained in synchrony using a Geosynchronization Service (see 
+OGC 10-069r2). 
+
+Two approaches for the bulk transfer of geo-data were investigated. 
+
+The first approach, called Geodata Bulk Transfer (GBT), defines a container format that 
+is ZIP compressed and contains feature data, feature schema and topology encoded using 
+GML and metadata encoded using ISO19115. 
+
+The second approach, called Geodatabase API, uses ESRI's file Geodatabase format 
+which is accessed using the newly published Geodatabase API. This approach is 
+described in a separate OGC Engineering Report. 
+
+1.2 Document contributor contact points 
+
+All questions regarding this document should be directed to the editor or the contributors: 
+
+Name Organization Email 
+Keith Pomakis CubeWerx Inc. pomakis[at]cubewerx.com 
+Panagiotis (Peter) A. Vretanos CubeWerx Inc. pvretano[at]cubewerx.com 
+   
+ 
+
+1.3 Revision history 
+
+Date Release Editor Primary clauses 
+modified 
+
+Description 
+
+2011-07-18 0.0.1 PAV All Initial creation. 
+
+
+
+ 
+
+ 
+
+     
+     
+
+ 
+
+1.4 Future work 
+
+1.4.1 Geodata Bulk Transfer format 
+
+For the GBT format, the work in the OWS-8 test bed primarily focused on transferring 
+feature schema and data from a source WFS to a target WFS to initialize the WFS for 
+GeoSynchronization.  Other aspects of bulk geo-data transfer – transferring topology and 
+metadata – were not exercised during the test bed because the available topology was not 
+available is a form easily encoded in GML and metadata, while desirable, was not 
+primarily necessary in achieving the goal of initializing a target WFS for 
+GeoSynchronization. 
+
+The disconnect in transferring topology was related to the fact that GML topology is 
+based on encoding nodes, edges and faces while the available topology was rules-based 
+which GML does not currently support.  Future work might involve proposing an 
+extension to GML for encoding rule-based topology. 
+
+1.5 Forward 
+
+Attention is drawn to the possibility that some of the elements of this document may be 
+the subject of patent rights. The Open Geospatial Consortium Inc. shall not be held 
+responsible for identifying any or all such patent rights. 
+
+Recipients of this document are requested to submit, with their comments, notification of 
+any relevant patent claims or other intellectual property rights of which they may be 
+aware that might be infringed by any implementation of the standard set forth in this 
+document, and to provide supporting documentation. 
+
+2 References 
+
+The following documents are referenced in this document. For dated references, 
+subsequent amendments to, or revisions of, any of these publications do not apply. For 
+undated references, the latest edition of the normative document referred to applies. 
+
+ISO/TS 19103:2005, Geographic information — Conceptual schema language  
+
+ISO 19136:2007, Geographic information — Geography Markup Language (GML)  
+
+ISO 19143:2010, Geographic information — Filter Encoding  
+
+OGC 06-121r3, OGC Web Services Common Specification, OGC® Implementation 
+Standard (9 February 2009)  
+
+OGC 07-092r3, Definition identifier URNs in OGC namespace, OGC® Best Practices 
+(15 January 2009)  
+
+
+
+OpenGIS® Engineering Report OGC 11-085r1 
+
+ 
+
+ 3 
+ 
+
+OGC 09-025r1, Web Feature Service 2.0 Interface Standard (02 November 2010) 
+
+W3C Extensible Markup Language (XML) 1.0 (Fifth Edition) (26 November 2008) 
+
+W3C XML Namespaces, Namespaces in XML, W3C Recommendation (14 January 
+1999)  
+
+W3C XML Schema Part 1, XML Schema Part 1: Structures, W3C Recommendation (2 
+May 2001)  
+
+W3C XML Schema Part 2, XML Schema Part 2: Datatypes, W3C Recommendation (2 
+May 2001) 
+
+In addition to this document, this report includes several XML Schema Document files as 
+specified in Annex A. 
+
+3 Terms and definitions 
+
+For the purposes of this report, the definitions specified in Clause 4 of the OWS Common 
+Implementation Specification [OGC 06-121r3] shall apply. In addition, the following 
+terms and definitions apply. 
+
+3.1 
+attribute <XML>  
+name-value pair contained in an element (4.6)  
+[ISO 19136:2007, definition 4.1.3] 
+NOTE In this document an attribute is an XML attribute unless otherwise specified.  
+
+3.2  
+client  
+software component that can invoke an operation (4.17) from a server (4.28) 
+[ISO 19128:2005, definition 4.1]  
+
+3.3  
+coordinate  
+one of a sequence of n numbers designating the position of a point in n-dimensional 
+space 
+[ISO 19111:2007, definition 4.5]  
+
+3.4  
+coordinate reference system  
+coordinate system (4.5) that is related to an object by a datum 
+[ISO 19111:2007, definition 4.8]  
+
+
+
+ 
+
+ 
+
+3.5  
+coordinate system  
+set of mathematical rules for specifying how coordinates (4.3) are to be assigned to points 
+[ISO 19111:2007, definition 4.10]  
+
+3.6  
+element <XML>  
+basic information item of an XML document containing child elements, attributes (4.1) 
+and character data 
+[ISO 19136:2007, definition 4.1.23]  
+
+3.7  
+feature  
+abstraction of real world phenomena 
+[ISO 19101:2002, definition 4.11] 
+NOTE A feature can occur as a type or an instance. The term "feature type" or "feature 
+instance" should be used when only one is meant.  
+
+3.8  
+feature identifier  
+identifier that uniquely designates a feature (4.7) instance  
+ 
+3.9  
+filter expression  
+predicate expression encoded using XML 
+[ISO 19143, definition 4.11]  
+
+3.10  
+interface  
+named set of operations (4.17) that characterize the behaviour of an entity 
+[ISO 19119:2005, definition 4.2] 
+
+3.11  
+join predicate  
+filter expression (4.9) that includes one or more clauses that constrain properties from 
+two different entity types 
+[ISO 19143, definition 4.16] 
+NOTE In this International Standard, the entity types will be feature (4.7) types. 
+
+3.12  
+join tuple  
+set of two or more object instances that satisfy a filter that includes join predicates (4.11) 
+NOTE In this International Standard, the object instances will be feature (4.7) instances. 
+
+3.13  
+local resource  
+resource that is under the direct control of a system 
+NOTE In this International Standard, the system is a web feature service and the resource 
+is held in a data store that is directly controlled by that service. 
+
+
+
+OpenGIS® Engineering Report OGC 11-085r1 
+
+ 
+
+ 5 
+ 
+
+3.14  
+locator attribute  
+attribute (4.1) whose values is a reference to a local resource (4.13) or remote resource 
+(4.20) 
+NOTE In XML, this attribute is commonly called an href and contains a URI reference to 
+the remote resource (see W3C XLink). 
+
+3.15  
+Multipurpose Internet Mail Extensions (MIME) type  
+media type and subtype of data in the body of a message that designates the native 
+representation (canonical form) of such data 
+[IETF RFC 2045:1996] 
+
+3.16  
+namespace <XML>  
+collection of names, identified by a URI reference which are used in XML documents as 
+element (4.6) names and attribute (4.1) names 
+[W3C XML Namespaces:1999]  
+
+3.17  
+operation  
+specification of a transformation or query that an object may be called to execute 
+[ISO 19119:2005, definition 4.3]  
+
+3.18  
+property  
+facet or attribute of an object, referenced by a name 
+[ISO 19143:2010, definition 4.21] 
+
+3.19  
+resource  
+asset or means that fulfils a requirement 
+[ISO 19143, definition 4.23] 
+NOTE In this International Standard, the resource is a feature (4.7), or any identifiable 
+component of a feature (e.g. a property of a feature)  
+
+3.20  
+remote resource  
+resource that is not under direct control of a system 
+NOTE In this International Standard, the system is a web feature service. The resource is 
+not held in any data store that is directly controlled by that service and thus cannot be 
+directly retrieved by the service. 
+
+
+
+ 
+
+ 
+
+3.21  
+request  
+invocation of an operation (4.17) by a client (4.2) 
+[ISO 19128:2005, definition 4.10]  
+
+3.22  
+relocate  
+<reference> update a reference to a resource that has been moved or copied to a new 
+location 
+EXAMPLE A server (4.28) is generating a response (4.24) to a GetFeature request 
+(4.21), it has to copy a referenced feature (4.7) into the response document and the server 
+has to "relocate" the original link contained in the referencing feature to the copy placed 
+in the response document.  
+
+3.23  
+resolve  
+retrieval of a referenced resource and its insertion into a server-generated response 
+document 
+NOTE The insertion may be accomplished by either replacing the reference in-line with a 
+copy of the resource or by relocating the reference to point to a copy of the resource that 
+has been placed in the response document.  
+
+3.24  
+response  
+result of an operation (4.17) returned from a server (4.28) to a client (4.2) 
+[ISO 19128:2005, definition 4.11]  
+
+3.25  
+response model  
+schema (4.26) defining the properties of each feature (4.7) type that can appear in the 
+response (4.24) to a query operation (4.17) 
+NOTE This is the schema of feature types that a client (4.2) can obtain using the 
+DescribeFeatureType operation (see Clause 9).  
+
+3.26  
+schema  
+formal description of a model 
+[ISO 19101:2002, definition 4.25] 
+NOTE In general, a schema is an abstract representation of an object's characteristics and 
+relations to other objects. An XML schema represents the relationship between the 
+attributes (4.1) and elements (4.6) of an XML object (for example, a document or a 
+portion of a document).  
+
+3.27  
+schema <XML Schema>  
+collection of schema (4.26) components within the same target namespace (4.16) 
+[ISO 19136:2007, definition 4.1.54] 
+EXAMPLE Schema components of W3C XML Schema are types, elements (4.16), 
+attributes (4.1), groups, etc.  
+
+
+
+OpenGIS® Engineering Report OGC 11-085r1 
+
+ 
+
+ 7 
+ 
+
+3.28  
+server  
+particular instance of a service (4.29) 
+[ISO 19128:2005, definition 4.12] 
+
+3.29  
+service  
+distinct part of the functionality that is provided by an entity through interfaces (4.10) 
+[ISO 19119:2005, definition 4.1]  
+
+3.30  
+service metadata  
+metadata describing the operations (4.17) and geographic information available at a 
+server (4.28) 
+[ISO 19128:2005, definition 4.14]  
+
+3.31  
+traversal  
+<XML> using or following an XLink link for any purpose 
+[W3C XLink:2001] 
+
+3.32  
+tuple  
+ordered list of values 
+[ISO 19136:2007, definition 4.1.63] 
+NOTE In this International Standard, the order list will generally be a finite sequence for 
+features (4.7), each of a specific feature type. 
+
+3.33  
+Uniform Resource Identifier  
+unique identifier for a resource, structured in conformance with IETF RFC 2396 
+[ISO 19136:2007, definition 4.1.65] 
+NOTE The general syntax is <scheme>::<scheme-specified-part>. The hierarchical 
+syntax with a namespace (4.16) is <scheme>://<authority><path>?<query> 
+
+4 Conventions 
+
+4.1 Abbreviated terms 
+
+API    Application Program Interface 
+
+CRS   Coordinate Reference System  
+
+DCP   Distributed Computing Platform  
+
+EPSG   European Petroleum Survey Group  
+
+
+
+ 
+
+ 
+
+FES   Filter Encoding Specification  
+
+GBT   Geodata Bulk Transfer format 
+
+GML   Geography Markup Language  
+
+HTTP   Hypertext Transfer Protocol  
+
+HTTPS   Secure Hypertext Transfer Protocol  
+
+IETF   Internet Engineering Task Force  
+
+MIME   Multipurpose Internet Mail Extensions  
+
+OGC   Open Geospatial Consortium  
+
+OWS   OGC Web Service  
+
+UML   Unified Modeling Language  
+
+URI   Uniform Resource Identifier  
+
+URL   Uniform Resource Locator  
+
+URN   Uniform Resource Name  
+
+WFS   Web Feature Service  
+
+XML   Extensible Markup Language 
+
+4.2 UML notation 
+
+T.B.D. 
+
+5 Geodata Bulk Transfer format 
+
+5.1 Introduction 
+
+Results from previous GSS activities indicate that introducing a WFS service into a GSS 
+framework can be a very complicated and time-consuming task.  This is further 
+complicated when the initialization process involves loading a large volume of Geodata 
+on a WFS service over an unreliable Web network with poor or very low bandwith. In 
+such a situation, a “sneaker network” may be the only alternative to supporting the 
+initialization process. 
+
+In order to support this scenario, CubeWerx has developed a Geodata Bulk Transfer 
+(GBT) file format.  The intent is that a data set can be exported from the source WFS into 
+a GBT file.  This GBT file can then be transferred to the site of the destination WFS by 
+whatever means available, and then imported into the destination WFS. 
+
+This mechanism requires the existence of a GBT export utility at or near the site of the 
+source WFS and a GBT import utility at or near the site of the destination WFS.  While 
+
+
+
+OpenGIS® Engineering Report OGC 11-085r1 
+
+ 
+
+ 9 
+ 
+
+implementations of such utilities have been developed by CubeWerx over the course of 
+the project and are being made available to demonstrate the GBT mechanism, it is not the 
+purpose of this proposal to promote or define any particular implementation.  In the 
+context of the GBT transfer mechanism, the source WFS, the destination WFS, the GBT 
+export utility and the GBT import utility are all multi-vendor black boxes.  Therefore, this 
+proposal focuses only on the GBT file format itself. 
+
+ 
+
+ 
+
+Figure 1 – GBT export/import chain 
+
+5.2 GBT File Format 
+
+A GBT file is a standard ZIP archive file that contains the following set of files (with no 
+directory structure): 
+
+ 
+ ows-manifest.xml 
+ 
+   gbt_metadata.xml 
+ 
+ featureSet1.gml 
+ featureSet1.xsd 
+ featureSet1_meta.xml 
+ 
+ featureSet2.gml 
+ featureSet2.xsd 
+ featureSet2_meta.xml 
+ 
+ [...] 
+ 
+   namedTopology1.gml 
+   namedTopology1.xsd 
+   namedTopology_meta.xml 
+ 
+   namedTopology2.gml 
+   namedTopology2.xsd 
+   namedTopology2_meta.xml 
+ 
+   [...] 
+
+ 
+
+
+
+ 
+
+ 
+
+The ZIP archive format was chosen for a number of reasons: 
+
+1. There is extensive support for this type of archive format, and it has a rich history 
+of being co-opted for specific-purpose archives.  For example, it is the archive 
+format used by the OpenDocument, Java Archive (JAR) and EPUB standards. 
+
+2. ZIP archives contain 32-bit CRC checksum information to support data integrity. 
+
+3. Compression (on a file-by-file basis) is natively supported by the ZIP archive 
+format. 
+
+4. Files within a ZIP archive can be randomly accessed without having to UNZIP 
+the entire archive.  This allows for efficient extraction of a subset of the feature 
+sets contained within a GBT file. 
+
+5. Even when a GBT import utility is not available, it is possible to make effective 
+use of a GBT file by manually UNZIPing it and performing the necessary import 
+steps by hand. 
+
+Compression of the files within a GBT file is optional but recommended.  GBT files shall 
+have the extension “.gbt”, and the proposed internet MIME type for communicating the 
+type of this file is “application/vnd.opengeospatial.gbt”.  The final MIME type shall be 
+developed in consultation with the OGC Naming Authority. 
+
+Within a GBT file, the ows-manifest.xml file must have that exact filename.  The other 
+filenames presented here, however, are recommendations only.  Any filenames may be 
+used, as long as they are properly referenced in the ows-manifest.xml file.  The files can 
+exist in any order. 
+
+ZIP files have the ability to contain a comment.  It is recommended that this comment be 
+filled in with a short description of the contents of the GBT file in order to make the 
+purpose of the GBT file clear at a glance, and to provide an indication of the GBT nature 
+of the file to users of general-purpose ZIP tools. 
+
+5.3 The manifest file 
+
+The manifest file, called “ows-manifest.xml”, is an XML document describing the 
+contents of the GBT file.  The structure of this manifest file is specified in section 13.3 of 
+the OGC Web Services Common Standard version 2.0.0 (OGC 06-121r9).  It contains an 
+optional textual description (title, abstract and/or keywords) of the contents, and a 
+<ReferenceGroup> element for each of the feature or topology sets. 
+
+Each <ReferenceGroup> element contains an identifier identifying the feature or 
+topology set it represents, an optional textual description (title, abstract and/or keywords) 
+of that feature or topology  set, and a <Reference> element for each of the files associated 
+with that feature or topology set.  Each <Reference> element provides an href, role, 
+MIME type format, and optional title for the file it references.  Every referenced file must 
+exist in the GBT file.  Clauses 5.4 and 5.5 specify a set of standardized roles and their 
+meanings. 
+
+
+
+OpenGIS® Engineering Report OGC 11-085r1 
+
+ 
+
+ 11 
+ 
+
+For feature sets, the value of the <Identifier> element of a <ReferenceGroup>, which 
+identifies the feature type that the <ReferenceGroup> represents, should be interpreted as 
+a QName so that the namespace of the feature type is properly communicated. 
+
+The following is an example ows-manifest.xml file: 
+
+ <?xml version="1.0" encoding="UTF-8"?> 
+ <Manifest xmlns="http://www.opengis.net/ows/2.0" 
+  xmlns:xlink="http://www.w3.org/1999/xlink" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xsi:schemaLocation="http://www.opengis.net/ows/2.0 
+   http://schemas.opengis.net/ows/2.0.0/owsAll.xsd"> 
+  <Title xml:lang="en">example GBT</Title> 
+  <Abstract xml:lang="en">example Geodata Bulk Transfer 
+file</Abstract> 
+  <ReferenceGroup xmlns:vmap0="http://cubewerx.com/ns/vmap0"> 
+   <Identifier>vmap0:coastl_1m</Identifier> 
+   <Title>Coastlines</Title> 
+   <Reference xlink:href="coastl_1m.gml" 
+    xlink:role="gmlFeatureCollection" 
+    xlink:title="GML feature collection"> 
+    <Format>application/gml+xml; version="3.2"</Format> 
+   </Reference> 
+   <Reference xlink:href="coastl_1m.xsd" 
+xlink:role="xmlSchema" 
+    xlink:title="XML schema"> 
+    <Format>text/xml</Format> 
+   </Reference> 
+  </ReferenceGroup> 
+  <ReferenceGroup xmlns:vmap0="http://cubewerx.com/ns/vmap0"> 
+   <Identifier>vmap0:polbndl_1m</Identifier> 
+   <Title>Political Boundary Lines</Title> 
+   <Reference xlink:href="polbndl_1m.gml" 
+    xlink:role="gmlFeatureCollection" 
+    xlink:title="GML feature collection"> 
+    <Format>application/gml+xml; version="3.2"</Format> 
+   </Reference> 
+   <Reference xlink:href="polbndl_1m.xsd" 
+                    xlink:role="xmlSchema" 
+    xlink:title="XML schema"> 
+    <Format>text/xml</Format> 
+   </Reference> 
+  </ReferenceGroup> 
+ </Manifest> 
+ 
+GBT import utilities should use the manifest file as its source of information about what 
+the GBT archive provides. 
+
+
+
+ 
+
+ 
+
+5.4 The global metadata file 
+
+role: iso19115Metadata 
+format: text/xml; version=”3.1” 
+recommended title: ISO 19115 Metadata 
+recommended filename: gbt_metadata.xml 
+optionality: Optional 
+This optional file contains ISO 19115 metadata information about the GBT file as a 
+whole.  ISO 19115 metadata information associated with components of a GBT are 
+discussed in clauses 5.5.4 and 5.6.4. 
+
+5.5 The components of a feature set 
+
+5.5.1 Introduction 
+
+Each feature set within a GBT file is represented by two or more files, each with a 
+specific role, and each referenced by a <Reference> element within the 
+<ReferenceGroup> for that feature set in the manifest file.  A set of standardized roles 
+and their meanings is specified below.  However, files with non-standard roles are 
+allowed to exist in a GBT file (to allow for vendor-specific functionality).  GBT import 
+utilities are required to ignore files with unrecognized roles. 
+
+5.5.2 XML schema 
+
+role: xmlSchema 
+format: text/xml 
+recommended title: XML Schema 
+recommended filename: featureSetName.xsd 
+optionality: Required 
+This required file contains the XML schema of the feature set.  This XML schema 
+document can optionally contain textual descriptions of the feature set and its properties 
+by placing ows:DescriptionType elements within <xsd:annotation><xsd:appinfo> 
+elements as described in the (see Schema Creation Change Proposal for WFS). 
+
+5.5.3 GML feature collection 
+
+role: gmlFeatureCollection 
+format: application/gml+xml; version=”3.1” 
+
+application/gml+xml; version=”3.2” 
+recommended title: GML Feature Collection 
+recommended filename: featureSetName.gml 
+optionality: Required 
+This required file contains the features of the feature set, encoded as a GML feature 
+collection.  If this file contains a schema reference, it must be a relative reference to the 
+corresponding XML schema in the GBT file. 
+
+5.5.4 ISO 19115 metadata 
+
+role: iso19115Metadata 
+
+
+
+OpenGIS® Engineering Report OGC 11-085r1 
+
+ 
+
+ 13 
+ 
+
+format: text/xml; version=”3.1” 
+recommended title: ISO 19115 Metadata 
+recommended filename: featureSetName_meta.xml 
+optionality: Optional 
+This optional file contains ISO 19115 metadata information about the feature set. 
+
+5.5.5 Styled Layer Descriptor 
+
+role: Sld 
+format: application/vnd.ogc.sld+xml; version=”1.0” 
+
+application/vnd.ogc.sld+xml; version=”1.1” 
+recommended title: Styled Layer Descriptor (SLD) 
+recommended filename: featureSetName.sld 
+optionality: Optional 
+This optional file contains a styled layer descriptor (SLD) for the feature set, effectively 
+providing the definition of one or more layers that can be used to visualize the feature set. 
+
+5.6 Components of a named topology set 
+
+5.6.1 Introduction 
+
+Each named topology within a GBT file is represented by one or more files, each with a 
+specific role, and each referenced by a <Reference> element within the 
+<ReferenceGroup> for that named topology in the manifest file.  A set of standardized 
+roles and their meanings is specified below.  However, files with non-standard roles are 
+allowed to exist in a GBT file (to allow for vendor-specific functionality).  GBT import 
+utilities are required to ignore files with unrecognized roles. 
+
+5.6.2 Topology schema 
+
+role: xmlSchema 
+format: text/xml 
+recommended title: XML Schema 
+recommended filename: topologyName.xsd 
+optionality: optional 
+This optional file contains the GML application schema of the topology. 
+
+5.6.3 Topology data 
+
+role: namedTopology 
+format: application/gml+xml; version=”3.1” 
+
+application/gml+xml; version=”3.2” 
+recommended title: Named Topology  
+
+
+
+ 
+
+ 
+
+recommended filename: topologyName.gml 
+optionality: Required 
+This required file contains the topology, encoded using GML.  If this file contains a 
+schema reference, it must be a relative reference to the corresponding XML schema in 
+the GBT file. 
+
+Editor's Note:  The GBT file format canonically uses GML to represent topology.  GML topology is based 
+on ISO19107 which defines a topology based on nodes, edges and faces.  However, other types of topology 
+exist, such as rule-based topology.  Although not described in this document, such topologies can be 
+accommodated within the GBT file by using an encoding other than GML for the topology.  In this case, 
+the content type would need to be adjusted accordingly.  
+
+5.6.4 Topology metadata 
+
+role: iso19115Metadata 
+format: text/xml; version=”3.1” 
+recommended title: ISO 19115 Metadata 
+recommended filename: topologyName_meta.xml 
+optionality: optional 
+This optional file contains ISO 19115 metadata information about the topology. 
+
+5.7 Exporting 
+
+Although the specific intent of the GBT mechanism, with respect to OWS-8, is to transfer 
+of feature sets from one WFS to another, it has been designed to be generic enough to 
+allow the transfer of feature sets from any feature-set-oriented service or repository to 
+another.  As such, no specific sequence of operations is mandated for exporting into a 
+GBT file.  However, here is the recommended sequence of operations for exporting from 
+a WFS into a GBT file: 
+
+1. Fetch the capabilities document of the WFS to perform WFS version negotiation, 
+to determine the base URL and supported formats, etc., of the required operations, 
+and to either verify that the requested feature sets are present or to collect the list 
+of all available feature sets. 
+
+2. Then, for each feature set to be exported: 
+
+a. Prepare a <ReferenceGroup> element in the manifest for the feature set. 
+
+b. Fetch the schema of that feature set by making a DescribeFeatureType 
+request to the WFS. The response can be packaged verbatim into the GBT 
+file and added to the manifest as a <Reference> with a role of 
+“xmlSchema”. 
+
+c. Fetch the features of the feature set by making a GetFeature request to the 
+WFS.  The GetFeature request may fetch all available features or a subset 
+of features using a Filter expression.  The response must be translated 
+from a <wfs:FeatureCollection> document to a GML document of the 
+desired GML version.  The resulting GML document can then be 
+packaged into the GBT file and added to the manifest as a <Reference> 
+with a role of “gmlFeatureCollection”. 
+
+
+
+OpenGIS® Engineering Report OGC 11-085r1 
+
+ 
+
+ 15 
+ 
+
+The WFS 1.0.0 and WFS 1.1.0 specifications state that in the absence of a 
+MAXFEATURES parameter, the response to a GetFeature request should return all 
+matching features.  However, despite this, most WFS servers implement a hard upper 
+limit on how many features are returned in a GetFeature response.  This may affect the 
+ability for a GBT export utility to successfully export an entire feature set from a WFS.  
+This engineering report does not offer a solution for this issue.  The WFS 2.0.0 
+GetFeature operation, however, has STARTINDEX and COUNT parameters.  A GBT 
+export utility that is exporting features from a WFS version 2.0.0 can therefore 
+successfully request all features of a feature set by making successive GetFeature 
+requests with appropriate values for STARTINDEX and COUNT. 
+
+Since the test bed focused on the bulk transfer and initialization of feature schema and 
+data from a source WFS to a target WFS, not tests were performed transferring ISO 
+19115 metadata or styled layer descriptors and so the “iso19115Metadata” and “sld” 
+<Reference> roles were typically not present in a GBT files exported from a WFS.   
+
+NOTE:  
+
+There is no standard way of retrieving ISO 19115 or styled layer descriptors from a WFS, an export utility 
+would need to obtains this information in some other manner.  The most obvious approach is to have the 
+export utility act as a CSW client and fetch associated ISO 19115 metadata and/or styled layer descriptors 
+for a catalogue.  Alternatively, for ISO 19115 metadata, the export utility could see if a MetadataURL 
+element is included in the feature type metadata and include that content in the GBT. 
+
+5.8 Importing 
+
+As with exporting, no specific sequence of operations is mandated for importing from a 
+GBT file.  However, here is the recommended sequence of operations for importing from 
+a GBT file into a WFS: 
+
+1. Read the GBT file. 
+
+2. Fetch the capabilities document of the WFS to perform WFS version negotiation, 
+to determine the base URL and supported formats, etc., of the required operations, 
+and to verify that the feature sets to be imported are not already present. 
+
+Then, for each feature set to be imported: 
+
+3. Insert the schema of the feature set into the WFS by invoking the CreateSchema 
+operation as described in the (see Schema Creation Change Proposal for WFS). 
+
+It may be necessary to convert from one version of GML to another, depending on the 
+capabilities of the WFS. 
+
+Alternatively, in lieu of support for this operation, the WFS administrator could manually 
+insert the schema and the GBT importer could skip this step. 
+
+4. Insert the features into the WFS by executing a Transaction operation containing 
+one or more Insert actions. 
+
+
+
+ 
+
+ 
+
+Since there is no standard way of pushing ISO 19115 metadata or styled layer descriptors 
+to a WFS, any “iso19115Metadata” and “sld” <Reference> roles are typically ignored in 
+a GBT file that is being imported into a WFS.  
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+
+
+OGC 11-085 
+
+ 17 
+ 
+
+Annex A 
+ 
+
+Abstract Test Suite 
+
+
+
+OGC 11-085 
+
+18  
+ 
+
+Annex B 
+ 
+
+XML Schema Documents 
+
+
+
+OGC 11-085 
+
+ 19 
+ 
+
+Annex C 
+ 
+
+UML model 
+
+
+
+OGC 11-085 
+
+20  
+ 
+
+Bibliography 
+
+[1] Guidelines for Successful OGC Interface Standards, OGC document 00-014r1 
+
+

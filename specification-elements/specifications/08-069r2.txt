@@ -1,0 +1,591 @@
+
+    /*}]]>*/
+  
+  
+    
+
+      
+        
+      
+    
+
+    Annex A - Abstract Test Suite for the Web Coverage Processing Service
+
+    
+    
+    	Peter Baumann
+	Editor
+	Jacobs University Bremen
+	p.baumann@jacobs-university.de
+
+
+    
+
+    
+    
+      	Revision History
+	Revision 0.1	2008-03-24
+	Revision 0.2	2008-04-29
+	Revision 1.0	2009-01-16
+
+
+
+    
+
+    
+    
+      Overview
+
+      This document is an abstract test suite (ATS): a compendium of test 
+      assertions applicable to all implementations of the Web Coverage Processing Service (WCPS) specification. 
+      An ATS provides a basis for developing an executable test suite (ETS) to 
+      verify that the implementation under test (IUT) conforms to all relevant 
+      functional specifications.
+
+      The abstract test cases (assertions) are organized into test groups 
+      that correspond to distinct conformance classes or sets of capabilities
+      defined in the WCPS specification (see below for the version it applies to).
+      The following mandatory test groups are defined:
+
+      	ProcessCoverages - core WCPS request type
+
+
+   
+
+    
+    
+      Source documents
+
+      	
+        OGC Web Coverage Processing Service (WCPS) Language, version 1.0.0 (OGC 08-068r2)
+	
+        OGC Web Coverage Service (WCS) - Processing extension (WCPS), version 1.0.0 (OGC 08-059r3)
+	
+        OGC Web Coverage Service (WCS) Implementation Specification, Corrigendum 2, Version 1.1.2 (OGC 08-067r5)
+
+
+    
+
+
+What is tested
+
+	ProcessCoverages request type
+
+
+
+Test prerequisites
+
+
+
+In preparation of the test the following prerequisites a WCPS service with the following features shall be installed:
+
+
+	WCPS supports at least one data format for which a WCS encoding format extension exists
+	WCPS contains at least one georeferenced coverage which supports at least one CRS beyond its ImageCRS
+	WCPS coverage(s) further fulfill the requirements listed below
+
+
+
+Further, a WCPS client shall be available for testing which allows to submit requests and protocol results (best in batch mode).
+
+
+
+
+
+Test Data
+
+
+The following test data set shall be available in the WCPS server under test.
+
+
+	coverage objects:
+
+	dimension	axes	cell type	CRSs
+	1-D	x	(unsigned) char	ImageCRS
+	1-D	x	float	ImageCRS
+	1-D	x	RGB	ImageCRS
+	1-D	x	complex	ImageCRS
+	1-D	y	(unsigned) char	ImageCRS
+	1-D	z	(unsigned) char	ImageCRS
+	1-D	time	(unsigned) char	ImageCRS
+	2-D	x/y	(unsigned) char	ImageCRS; WGS84-2D
+	2-D	x/z	(unsigned) char	ImageCRS
+	2-D	x/time	(unsigned) char	ImageCRS
+	3-D	x/y/z	(unsigned) char	ImageCRS
+	3-D	x/y/time	(unsigned) char	ImageCRS
+	4-D	x/y/z/time	(unsigned) char	ImageCRS; WGS84-3D + time
+
+
+  	all coverages have the same size (domain extent) per domain axis: 0..300; this defines their ImageCRS.
+  
+	coverage contents:
+
+	for coverages with cell type char: for coordinates x, y, z, t in [0..300]: cell[x,y,z,t] = (x+y+z+t) mod 256
+    
+	for coverages with cell type RGB: for coordinates x, y, z, t in [0..300]: cell[x,y,z,t] = (x+y+z+t) mod 256;
+    cell.green[x,y,z,t] = (x+y+z+t+1) mod 256;
+    cell.blue[x,y,z,t] = (x+y+z+t+2) mod 256
+    
+	for coverages with cell type float: for coordinates t in [0..300]: cell[t] = t * 1,000,000 - 150,000,000
+  
+
+
+
+
+Schemas
+
+
+
+  No schema is needed by this ATS for validation.
+  However, for executing the tests a carrier protocol is needed which is specified in WCS Processing Extensions document.
+		
+    
+
+
+
+  Table of Contents
+
+
+  	for loops
+	coverage filtering
+	response storage
+	data format encoding
+	scalar operations
+	metadata retrieval
+	metadata manipulation
+	coverage identifier
+	induced operations
+	coordinate addressing
+	subsetting
+	scaling
+	transformation
+	coverage constructor
+	coverage constant
+	aggregation
+	operator precedence
+	type extension
+	exception
+
+
+
+
+
+
+
+
+
+  
+    
+      
+        3. ProcessCoverages
+
+      
+
+    
+  
+  Purpose
+
+  The ProcessCoverages test group consists of the assertions
+  that validate the ProcessCoverages request type of the WCPS specification.
+  
+
+  
+
+
+
+
+  
+    
+    Table 3.. ProcessCoverages - for loop	Test case identifier	WCPS.ProcessCoverage-for
+	Test purpose	A for loop iterating over a specified list of coverages must apply its evaluation to every coverage enumerated in proper sequence.
+          
+	Test method	
+            Send a request against more than one test coverages and check whether the responses matches in the number of elements returned as well as the value of each element.
+            Pass if assertions hold; fail otherwise.
+            
+
+            In particular, this involves testing of these cases:
+            	loop with a single variable, iterating over one coverage: check that result is valid for processing this coverage.
+              
+	loop with a single variable, iterating over >1 coverages: check that results are valid for the resp. coverages.
+              
+	loop with at least two (nested) variables, iterating over more than one coverages each: check that each coverage is evaluated, and combination of variables in the expression is evaluated correctly.
+            
+
+
+          
+	Reference	
+            	WCPS specification, Section 7.1.1
+
+
+          
+	Test type	Capability
+
+
+  
+
+
+  
+    
+    Table 3.. ProcessCoverages - coverage filtering	Test case identifier	WCPS.ProcessCoverage-where
+	Test purpose	Verify that the where clause fires properly.
+          
+	Test method	Send requests against more than one of the test coverages containing a where clause. Test the following cases:
+            	"... where true ... "
+              
+	"... where false ... "
+              
+	"... where P ... " with P being a predicate which evaluates to true on at least one coverage given and to false on at least one coverage given
+            
+
+
+            Pass if assertions hold; fail otherwise.
+          
+	Reference	
+            	WCPS specification, Section 7.1.1
+
+
+          
+	Test type	Capability
+
+
+  
+
+
+  
+    
+    Table 3.. ProcessCoverages - response storage	Test case identifier	WCPS.ProcessCoverage-store
+	Test purpose	If a request contains a store() function invocation then the server must store the response and deliver a URL under which said response can be retrieved.
+          
+	Test method	Send a request against one of the test coverages applying the store() function on the result. Check the URL retrieved whether (i) it can be opened to deliver a data file and (ii) the file retrieved contains the proper contents.
+            Pass if assertions hold; fail otherwise.
+          
+	Reference	
+            	WCPS specification, Section 7.1.3 and 7.4
+
+
+          
+	Test type	Capability
+
+
+  
+
+
+  
+    
+    Table 3.. ProcessCoverages - data format encoding	Test case identifier	WCPS.ProcessCoverage-encode
+	Test purpose	The server must properly encode a coverage-valued response in any of the data formats advertised in its capabilities.
+          
+	Test method	For each encoding format listed in the server's capabilities, send a request against one of the test coverages (whose dimension and range allows encoding in that format) applying the encode() function on the result using that data format.
+           Check whether the result stream (i) can be opened using a standard tool and (ii) contains the proper contents.
+           Pass if assertions hold; fail otherwise.
+          
+	Reference	
+            	WCPS specification, Section 7.1.4 and 7.4
+
+
+          
+	Test type	Capability
+
+
+  
+
+
+  
+    
+    Table 3.. ProcessCoverages - scalar operations	Test case identifier	WCPS.ProcessCoverage-scalar
+	Test purpose	Scalar operations must return correct results.
+          
+	Test method	For each of the boolean, numeric, and string scalar operations defined, send requests against one of the test coverages containing invocation of one such operation.
+            Check the result whether it is correct.
+            Pass if assertions hold; fail otherwise.
+          
+	Reference	
+            	WCPS specification, Section 7.1.5
+
+
+          
+	Test type	Capability
+
+
+  
+
+
+  
+    
+    Table 3.. ProcessCoverages - metadata retrieval	Test case identifier	WCPS.ProcessCoverage-metadata-retrieval
+	Test purpose	Metadata stored with a coverage must be delivered properly.
+          
+	Test method	
+            Send requests against one of the test coverages which in turn invoke each of the metadata functions.
+            Check the result retrieved whether it contains the correct value.
+            Pass if assertions hold; fail otherwise.
+          
+	Reference	
+            	WCPS specification, Section 7.1.10
+
+
+          
+	Test type	Capability
+
+
+  
+
+
+  
+    
+    Table 3.. ProcessCoverages - metadata manipulation	Test case identifier	WCPS.ProcessCoverage-metadata-manipulation
+	Test purpose	Metadata set for a coverage must be delivered properly.
+          
+	Test method	
+            Send requests against one of the test coverages which first sets a metadata property and then retrieves it.
+            For several properties setting happens directly via the resp. metadata functions,
+            for others - like the coverage's domain extent - an appropriate coverage manipulation has to be performed, such as trimming or slicing.
+            Check the result retrieved whether it contains the correct value.
+            Pass if assertions hold; fail otherwise.
+          
+	Reference	
+            	WCPS specification, Section 7.1.11
+
+
+          
+	Test type	Capability
+
+
+  
+
+
+  
+    
+    Table 3.. ProcessCoverages - identifier	Test case identifier	WCPS.ProcessCoverage-identifier
+	Test purpose	Coverages must be addressable by their name, which is published in the server's capabilities.
+          
+	Test method	For each coverage offered by the server, send a request which accesses this coverage by its identifier.
+            Check the result retrieved whether it contains the correct value. Pass if assertions hold; fail otherwise.
+          
+	Reference	
+            	WCPS specification, Section 7.1.12
+
+
+          
+	Test type	Capability
+
+
+  
+
+
+  
+    
+    Table 3.. ProcessCoverages - induced operations	Test case identifier	WCPS.ProcessCoverage-induced
+	Test purpose	Both unary and binary induced operations must modify the cell values in the specified manner.
+          
+	Test method	Send requests against one of the test coverages which apply each induced function in turn to the coverage.
+            Check the result retrieved whether it contains the correct value. Pass if assertions hold; fail otherwise.
+          
+	Reference	
+            	WCPS specification, Section 7.1.13
+
+
+          
+	Test type	Capability
+
+
+  
+
+
+  
+    
+    Table 3.. ProcessCoverages - coordinate addressing	Test case identifier	WCPS.ProcessCoverage-coordinates
+	Test purpose	Coverage domain subsetting must be performed properly on different CRSs supported.
+          
+	Test method	Send requests against that test coverage which supports both ImageCRS and WGS84-2D subsetting. 
+            Send subsetting requests expressed in ImageCRS and WGS84-2D for each of the functions trim, extend, and slice.
+            Check the result retrieved whether it contains the correct value. Pass if assertions hold; fail otherwise.
+          
+	Reference	
+            	WCPS specification, Section 7.1.23
+
+
+          
+	Test type	Capability
+
+
+  
+
+
+  
+    
+    Table 3.. ProcessCoverages - subsetting	Test case identifier	WCPS.ProcessCoverage-subsetting
+	Test purpose	Subsetting must be performed properly with all functions and on any-dimensional coverages.
+          
+	Test method	For a 1-D, a 2-D, a 3-D, and a 4-D coverage, send requests calling the functions trim, extend, and slice, resp. Check the result retrieved whether it contains the correct value. Pass if assertions hold; fail otherwise.
+          
+	Reference	
+            	WCPS specification, Section 7.1.23
+
+
+          
+	Test type	Capability
+
+
+  
+
+
+  
+    
+    Table 3.. ProcessCoverages - scaling	Test case identifier	WCPS.ProcessCoverage-scaling
+	Test purpose	Scaling of coverages must be performed properly.
+          
+	Test method	Send requests against 1-D to 4-D test coverages applying the scale() function. Test with different interpolation methods.
+            Check the result retrieved whether it contains the correct value. Pass if assertions hold; fail otherwise.
+          
+	Reference	
+            	WCPS specification, Section 7.1.27
+
+
+          
+	Test type	Capability
+
+
+  
+
+
+  
+    
+    Table 3.. ProcessCoverages - transformation	Test case identifier	WCPS.ProcessCoverage-transformation
+	Test purpose	Coverages must be transformed into different CRSs correctly.
+          
+	Test method	Retrieve one of each 1-D to 4-D coverages in different CRSs.
+            Check the result retrieved whether it contains the correct value. Pass if assertions hold; fail otherwise.
+          
+	Reference	
+            	WCPS specification, Section 7.1.28
+
+
+          
+	Test type	Capability
+
+
+  
+
+
+  
+    
+    Table 3.. ProcessCoverages - coverage constructor	Test case identifier	WCPS.ProcessCoverage-constructor
+	Test purpose	Derived coverages must be constructed properly.
+          
+	Test method	Send a coverage request. 
+            Check the result retrieved whether it contains the correct value. Pass if assertions hold; fail otherwise.
+          
+	Reference	
+            	WCPS specification, Section 7.1.29
+
+
+          
+	Test type	Capability
+
+
+  
+
+
+  
+    
+    Table 3.. ProcessCoverages - coverage constant	Test case identifier	WCPS.ProcessCoverage-constant
+	Test purpose	Coverages embedded in a query must be constructed properly.
+          
+	Test method	Send a coverage request. 
+            Send queries which contain coverage constants and deliver these as results.
+            Check the result retrieved whether it contains the correct value.
+            Pass if assertions hold; fail otherwise.
+          
+	Reference	
+            	WCPS specification, Section 7.1.30
+
+
+          
+	Test type	Capability
+
+
+  
+
+
+  
+    
+    Table 3.. ProcessCoverages - aggregation	Test case identifier	WCPS.ProcessCoverage-aggregate
+	Test purpose	Metadata stored with a coverage must be delivered properly.
+          
+	Test method	Send requests against one of the test coverages which apply each condense operation in turn.
+            Check the result retrieved whether it contains the correct value. Pass if assertions hold; fail otherwise.
+          
+	Reference	
+            	WCPS specification, Section 7.1.31
+
+
+          
+	Test type	Capability
+
+
+  
+
+
+  
+    
+    Table 3.. ProcessCoverages - operator precedence	Test case identifier	WCPS.ProcessCoverage-precedence
+	Test purpose	In face of several operators applied to coverages, the operator precedence must be correct.
+          
+	Test method	Send requests containing nested coverage expressions with different situations wrt. operator precedence, both with and without parentheses. 
+            Check the result retrieved whether it contains the correct value. Pass if assertions hold; fail otherwise.
+          
+	Reference	
+            	WCPS specification, Sections 7.2.2, 7.2.3, and 7.2.4
+
+
+          
+	Test type	Capability
+
+
+  
+
+
+  
+    
+    Table 3.. ProcessCoverages - type extension	Test case identifier	WCPS.ProcessCoverage-extension
+	Test purpose	Cell (range) types must be treated properly wrt. their data types.
+          
+	Test method	Send requests against a char, a float, and an RGB coverage applying both implicit and explicit type conversion.
+            Check the result retrieved whether it contains the correct value. Pass if assertions hold; fail otherwise.
+          
+	Reference	
+            	WCPS specification, Section 7.2.5
+
+
+          
+	Test type	Capability
+
+
+  
+
+
+  
+    
+    Table 3.. ProcessCoverages - exception	Test case identifier	WCPS.ProcessCoverage-exceptions
+	Test purpose	Exceptions must be thrown in the specified error conditions.
+          
+	Test method	Send requests provoking each of the specified exception types.
+            Check the result retrieved whether it contains the correct value. Pass if assertions hold; fail otherwise.
+          
+	Reference	
+            	WCPS specification, Section 7.3
+
+
+          
+	Test type	Capability
+
+
+  
+
+
+
+  
+
+

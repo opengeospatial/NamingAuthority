@@ -1,0 +1,613 @@
+
+Open Geospatial Consortium  
+Date:  2010-10-27 
+
+Reference number of this OpenGIS® Project Document: OGC 09-148r1 
+
+Version: 1.0.0 
+
+Category: OpenGIS® Interface Standard 
+
+Editor:  Peter Baumann 
+
+OGC® Web Coverage Service 2.0 Interface Standard - 
+XML/POST Protocol Binding Extension 
+
+ 
+
+Copyright © 2010 Open Geospatial Consortium, Inc. 
+To obtain additional rights of use, visit http://www.opengeospatial.org/legal/. 
+
+ 
+
+ 
+
+ 
+
+ 
+
+Warning 
+
+This document is an OGC Member approved international standard. This document is avail-
+able on a royalty free, non-discriminatory basis. Recipients of this document are invited to 
+submit, with their comments, notification of any relevant patent rights of which they are 
+aware and to provide supporting documentation. 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+Document type: OpenGIS® Interface Standard 
+Document subtype: Extension 
+Document stage: Approved OGC Standard 
+Document language: English 
+
+ 
+
+http://www.opengeospatial.org/legal/
+
+
+OGC 09-148r1 
+
+Contents Page 
+1 Scope ............................................................................................................................. 1 
+2 Compliance .................................................................................................................. 1 
+3 Normative references .................................................................................................. 1 
+4 Terms and definitions ................................................................................................. 2 
+5 Conventions ................................................................................................................. 2 
+5.1 UML notation .............................................................................................................. 2 
+5.2 Data dictionary tables ................................................................................................. 2 
+6 HTTP/POST with XML ............................................................................................. 2 
+6.1 General ......................................................................................................................... 2 
+6.2 GetCapabilities ............................................................................................................ 2 
+6.3 DescribeCoverage ........................................................................................................ 3 
+6.4 GetCoverage ................................................................................................................ 3 
+7 Exceptions .................................................................................................................... 4 
+Bibliography ............................................................................................................................. 5 
+Annex A (normative)  Abstract test suite .............................................................................. 6 
+A.1 Conformance Test Class: WCS XML/POST protocol ............................................ 6 
+A.1.1 Extension identification .............................................................................................. 6 
+A.1.2 Correct service metadata ............................................................................................ 6 
+A.1.3 Correct GetCapabilities request structure ................................................................. 7 
+A.1.4 Correct DescribeCoverage request structure ............................................................ 7 
+A.1.5 Correct GetCoverage request structure ..................................................................... 7 
+A.1.6 Exceptions .................................................................................................................... 7 
+
+ 
+
+Tables Page 
+Table 1 — Exception codes for XML/POST operations ....................................................... 4 
+ 
+
+ii Copyright © 2010 Open Geospatial Consortium
+ 
+
+
+
+OGC 09-148r1 
+
+Copyright © 2010 Open Geospatial Consortium  iii
+ 
+
+i. Preface 
+
+This document specifies an extension to the OGC Web Coverage Service (WCS) 2.0 core to 
+allow for client/server communication using HTTP POST with XML encoding.  
+
+ii. Terms and definitions 
+
+This document uses the specification terms defined in Subclause 5.3 of [OGC 06-121r9], 
+which is based on the ISO/IEC Directives, Part 2, Rules for the structure and drafting of In-
+ternational Standards. In particular, the word “shall” (not “must”) is the verb form used to 
+indicate a requirement to be strictly followed to conform to this standard. 
+
+iii. Submitting organizations 
+
+The following organizations have submitted this Implementation Specification to the Open 
+Geospatial Consortium, Inc.: 
+
+• Jacobs University Bremen 
+• National Center for Atmospheric Re-
+
+search (NCAR) 
+• Oracle USA 
+• PCI Geomatics Inc. 
+• ERDAS, Inc. 
+
+• EOX IT Services GmbH 
+• Spot Image 
+• BAE Systems - C3I Systems 
+• Natural Environment Research Council 
+
+(NERC) 
+• George Mason University 
+
+ 
+
+
+
+ OGC 09-148r1
+
+ 
+
+Copyright © 2010 Open Geospatial Consortium iv 
+
+iv. Document Contributor Contact Points 
+
+  
+ 
+
+Name Organization  
+Peter Baumann Jacobs University Bremen, 
+
+rasdaman GmbH 
+ 
+
+v. Revision history 
+Date Release Author Paragraph modified Description 
+
+2009-11-02 0.0.1 PB All Created
+
+vi. Changes to the OpenGIS® Abstract Specification 
+
+The OpenGIS® Abstract Specification does not require any changes to accommodate the 
+technical contents of this (part of this) document. 
+
+vii.  Future Work 
+
+Nothing foreseen currently. 
+
+
+
+OGC 09-148r1 
+ 
+
+Foreword 
+
+Some of the elements of this document may be the subject of patent rights. Open Geospatial 
+Consortium Inc. shall not be held responsible for identifying any such patent rights. 
+
+Attention is drawn to the possibility that some of the elements of this document may be the 
+subject of patent rights. The Open Geospatial Consortium Inc. shall not be held responsible 
+for identifying any or all such patent rights. 
+
+Recipients of this document are requested to submit, with their comments, notification of any 
+relevant patent claims or other intellectual property rights of which they may be aware that 
+might be infringed by any implementation of the standard set forth in this document, and to 
+provide supporting documentation. 
+
+ 
+
+Copyright © 2010 Open Geospatial Consortium  v
+ 
+
+
+
+OGC 09-148r1 
+ 
+
+vi Copyright © 2010 Open Geospatial Consortium
+ 
+
+Introduction 
+
+The OGC Web Coverage Service (WCS) supports electronic retrieval of geospatial data as 
+"coverages" – that is, digital geospatial information representing space/time-varying phe-
+nomena. 
+
+This document specifies an extension to the OGC Web Coverage Service (WCS) 2.0 core to 
+allow for client/server communication using HTTP POST with XML encoding.  
+
+ 
+
+
+
+OGC 09-148r1 
+ 
+
+OGC® Web Coverage Service 2.0 Interface Standard - 
+XML/POST Protocol Binding Extension 
+
+1 Scope  
+
+This document specifies how Web Coverage Service (WCS) clients and servers can commu-
+nicate over the Internet using HTTP POST with XML encoding. 
+
+2 Conformance 
+
+Standardization target are WCS 2.0 implementations (currently: servers).  
+
+This document establishes a single requirements class, post-xml, of URI 
+http://www.opengis.net/spec/WCS_protocol-binding_post-xml/1.0/req/post-xml with a single 
+pertaining conformance class, post-xml, of URI http://www.opengis.net/spec/WCS_protocol-
+binding_post-xml/1.0/conf /post-xml. Requirements and conformance test URIs defined in 
+this document are relative to http://www.opengis.net/spec/ WCS_protocol-binding_post-
+xml/1.0/. 
+
+Annex A lists the conformance tests which shall be exercised on any software artefact claim-
+ing to implement an OGC WCS using this extension.  
+
+3 Normative references 
+
+This OGC WCS 2.0 XML POST Protocol Binding Extension specification consists of the 
+present document and an XML Schema. The complete specification is identified by OGC 
+URI http://www.opengis.net/spec/WCS_protocol-binding_post-xml/1.0, the document has 
+OGC URI http://www.opengis.net/doc/ISx/WCS_protocol-binding_post-xml/1.0.  
+
+The complete specification is available for download from 
+http://www.opengeospatial.org/standards/wcs; additionally, the XML Schema is posted on-
+line at http://schemas.opengis.net/wcs/ 2.0 as part of the OGC schema repository. In the event 
+of a discrepancy between bundled and schema repository versions of the XML Schema files, 
+the schema repository shall be considered authoritative. 
+
+The following normative documents contain provisions that, through reference in this text, 
+constitute provisions of this specification. For dated references, subsequent amendments to, 
+or revisions of, any of these publications do not apply. For undated references, the latest edi-
+tion of the normative document referred to applies. 
+
+OGC 06-121r9, OGC Web Service Common Specification, version 2.0 
+Conformance classes used: 
+
+• HTTP POST 
+OGC 09-110r3, OGC® Web Coverage Service 2.0 Interface Standard - Core, version 2.0 
+
+Conformance classes used: 
+• Core 
+
+Copyright © 2010 Open Geospatial Consortium  1
+ 
+
+http://www.opengis.net/spec/WCS_protocol-binding_post-xml/1.0/req/post-xml
+http://www.opengis.net/spec/WCS_protocol-binding_post-xml/1.0/conf-class/post-xml
+http://www.opengis.net/spec/WCS_protocol-binding_post-xml/1.0/conf-class/post-xml
+http://www.opengis.net/spec/%20WCS_protocol-binding_post-xml/1.0/
+http://www.opengis.net/spec/%20WCS_protocol-binding_post-xml/1.0/
+http://www.opengis.net/spec/WCS_protocol-binding_post-xml/1.0
+http://www.opengis.net/doc/ISx/WCS_protocol-binding_post-xml/1.0
+http://www.opengeospatial.org/stan%1fdards/wcs
+http://schemas.opengis.net/wcs/%202.0
+
+
+OGC 09-148r1 
+ 
+
+4 Terms and definitions 
+
+For the purposes of this document, the terms and definitions given in the above references 
+apply. 
+
+5 Conventions 
+
+5.1 UML notation 
+
+All the diagrams that appear in this specification are presented using the Unified Modeling 
+Language (UML) static structure diagram, as described in Subclause 5.2 of OGC Web Ser-
+vice Common [OGC 06-121r9]. 
+
+5.2 Data dictionary tables 
+
+The UML model data dictionary is specified herein in a series of tables. The contents of the 
+columns in these tables are described in Subclause 5.5 of [OGC 06-121r9]. The contents of 
+these data dictionary tables are normative, including any table footnotes. 
+
+6 HTTP/POST with XML 
+
+6.1 General 
+
+Requirement 1 /req/post-xml/extension-identifier: 
+A WCS service implementing this extension shall include the following URI in the Profile 
+element of the ServiceIdentification in a GetCapabilities response: 
+  http://www.opengis.net/spec/ 
+   WCS_protocol-binding_post-xml/1.0 
+
+Requirement 2  /req/post-xml/wcsServiceMetadata: 
+For those WCSServiceMetadata elements inherited from OWSServiceMetadata, the 
+following rules shall apply: 
+- WCS servers shall specify the HTTP POST request encodings accepted by 
+including an ows:Constraint element, with “PostEncoding” as the value of the name 
+attribute and a value “XML” to indicate that XML encoding is allowed, but without SOAP 
+message encapsulation. 
+- If the HTTP POST connect point URL is different for different encodings of the 
+operation requests, this ows:Constraint element shall be included in each POST element. 
+When the connect point URL is the same for all encodings of all operation requests, this 
+ows:Constraint element shall be included in the OperationsMetadata element. 
+
+NOTE In addition, [OGC 06-121r9] applies. 
+
+To allow WCS extensions to add further parameters the XML Schema wcs:Request-
+BaseType contains an optional element <extension> with unbounded cardinality. This 
+way, extensions can add their individual request parameters without (syntactic) interference. 
+
+2 Copyright © 2010 Open Geospatial Consortium
+ 
+
+
+
+OGC 09-148r1 
+ 
+
+6.2 GetCapabilities 
+
+Requirement 3 /req/post-xml/getCapabilities-request-structure: 
+A GetCapabilities request using POST/XML shall consist of an XML document of type 
+wcs:GetCapabilities. 
+
+Example The following is a minimum GetCapabilities request encoded in XML: 
+
+<?xml version="1.0" encoding="UTF-8"?> 
+<GetCapabilities 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+  xmlns:ows="http://www.opengis.net/ows/1.1"  
+  xmlns:wcs="http://www.opengis.net/wcs/2.0"  
+  xsi:schemaLocation= 
+    "http://schemas.opengis.net/wcs/2.0 ../wcsAll.xsd" 
+  service="WCS"> 
+  <ows:AcceptVersions> 
+    <ows:Version>2.0.0</ows:Version> 
+  </ows:AcceptVersions> 
+</GetCapabilities> 
+
+6.3 DescribeCoverage 
+
+Requirement 4 /req/post-xml/describeCoverage-request-structure: 
+A DescribeCoverage request using POST/XML shall consist of an XML document of type 
+wcs:DescribeCoverage. 
+
+Example The following XML document requests information about the coverages with identifiers 
+cov1, cov2, and cov3, resp.: 
+
+<?xml version="1.0" encoding="UTF-8"?> 
+<DescribeCoverage 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xmlns:wcs="http://www.opengis.net/wcs/2.0" 
+  xmlns:gml="http://www.opengis.net/gml/3.2" 
+  xsi:schemaLocation= 
+    "http://schemas.opengis.net/wcs/2.0 ../wcsAll.xsd" 
+  service="WCS" version="2.0.0"> 
+  <wcs:CoverageId>C0001</wcs:CoverageId > 
+  <wcs:CoverageId>C0002</wcs:CoverageId > 
+  <wcs:CoverageId>C0003</wcs:CoverageId> 
+</DescribeCoverage> 
+
+6.4 GetCoverage 
+
+Requirement 5 /req/post-xml/getCoverage-request-structure: 
+A GetCoverage request using POST/XML shall consist of an XML document of type 
+wcs:GetCoverage. 
+
+Example The following XML document requests a subset of coverage “rgb”, applying trim operations in 
+x and y dimension. 
+
+<?xml version="1.0" encoding="UTF-8"?> 
+<wcs:GetCoverage  
+
+Copyright © 2010 Open Geospatial Consortium  3
+ 
+
+
+
+OGC 09-148r1 
+ 
+
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xmlns:wcs="http://www.opengis.net/wcs/2.0" 
+  xmlns:gml="http://www.opengis.net/gml/3.2" 
+  xsi:schemaLocation= 
+    "http://schemas.opengis.net/wcs/2.0 ../wcsAll.xsd" 
+  service="WCS" version="2.0.0"> 
+  <wcs:CoverageId>C0002</wcs:CoverageId> 
+  <wcs:trimDimension> 
+    <wcs:dimension>Long</wcs:dimension> 
+    <wcs:trimLow>20</wcs:trimLow> 
+    <wcs:trimHigh>29</wcs:trimHigh> 
+  </wcs:trimDimension> 
+  <wcs:trimDimension> 
+    <wcs:dimension>Lat</wcs:dimension> 
+    <wcs:trimLow>20</wcs:trimLow> 
+    <wcs:trimHigh>30</wcs:trimHigh> 
+  </wcs:trimDimension> 
+</wcs:GetCoverage> 
+
+7 Exceptions 
+
+Requirement 6 /req/post-xml/exceptions: 
+When a WCS server encounters an error described in column “meaning of exception code” 
+inTable 1 then it shall return the corresponding exception report message with the contents of 
+the locator parameter value as specified in the right column of  Table 1. 
+
+Table 1 — Exception codes for XML/POST operations 
+
+exceptionCode value HTTP 
+code 
+
+Meaning of code locator value 
+
+InvalidEncodingSyntax 400 Document received does not 
+conform with protocol syntax. 
+
+Name of violating 
+element 
+
+ 
+
+4 Copyright © 2010 Open Geospatial Consortium
+ 
+
+
+
+OGC 09-148r1 
+ 
+
+Bibliography 
+
+[1] IETF RFC 2387, The MIME Multipart/Related Content-type. IETF, 1998 
+
+[2] IETF RFC 2396, Uniform Resource Identifiers (URI): Generic Syntax. IETF, 1998 
+
+[3] W3C Note 11, SOAP Messages with Attachments. W3C Note 11, 2000 
+
+ 
+
+Copyright © 2010 Open Geospatial Consortium  5
+ 
+
+
+
+OGC 09-148r1 
+ 
+
+Annex A 
+(normative) 
+
+ 
+Abstract test suite 
+
+A WCS implementing this extension shall pass all of the following tests, plus those of the 
+WCS core [OGC 09-110r3], to be conformant with this specification. 
+
+A.1 Conformance Test Class: post-xml 
+
+The OGC URI identifier of this conformance class is: 
+http://www.opengis.net/spec/WCS_protocol-binding_post-xml/1.0/conf-class/post-xml.  
+
+Test identifiers below are relative to http://www.opengis.net/spec/WCS_protocol-
+binding_post-xml/1.0/. 
+
+A.1.1 Extension identification 
+
+Test id: /conf/post-xml/extension-identifier 
+
+Test Purpose: Requirement /req/post-xml/extension-identifier: 
+A WCS service implementing this extension shall include the following 
+URI in the Profile element of the ServiceIdentification in a 
+GetCapabilities response: 
+  http://www.opengis.net/spec/ 
+   WCS_protocol-binding_post-xml 
+
+Test method: Send a GetCapabilities request to server under test, verify that the response 
+contains a Profile element with said URI. 
+
+A.1.2 Correct service metadata 
+
+Test id: /conf/post-xml/wcsServiceMetadata 
+
+Test Purpose: Requirement  /req/post-xml/wcsServiceMetadata: 
+For those WCSServiceMetadata elements inherited from 
+OWSServiceMetadata, the following rules shall apply: 
+
+- WCS servers shall specify the HTTP POST request encodings ac-
+cepted by including an ows:Constraint element, with “PostEn-
+coding” as the value of the name attribute and a value “XML” to 
+indicate that XML encoding is allowed, but without SOAP message 
+encapsulation. 
+
+- If the HTTP POST connect point URL is different for different en-
+codings of the operation requests, this ows:Constraint element 
+shall be included in each POST element. When the connect point 
+URL is the same for all encodings of all operation requests, this 
+ows:Constraint element shall be included in the 
+
+6 Copyright © 2010 Open Geospatial Consortium
+ 
+
+http://www.opengis.net/spec/WCS_protocol-binding_post-xml/1.0/conf-class/post-xml
+http://www.opengis.net/spec/WCS_protocol-binding_post-xml/1.0/
+http://www.opengis.net/spec/WCS_protocol-binding_post-xml/1.0/
+
+
+OGC 09-148r1 
+ 
+
+OperationsMetadata element.  
+
+Test method: Send a GetCapabilities request to server under test, verify that the response 
+satisfies the constraints. 
+
+A.1.3 Correct GetCapabilities request structure 
+
+Test id: /conf/post-xml/getCapabilities-request-structure 
+
+Test Purpose: Requirement /req/post-xml/getCapabilities-request-structure: 
+A GetCapabilities request using POST/XML shall consist of an XML 
+document of type wcs:GetCapabilities. 
+
+Test method: Send syntactically legal and illegal GetCapabilities requests to server under 
+test, verify that the server responds appropriately. 
+
+A.1.4 Correct DescribeCoverage request structure 
+
+Test id: /conf/post-xml/describeCoverage-request-structure 
+
+Test Purpose: Requirement /req/post-xml/describeCoverage-request-structure: 
+A DescribeCoverage request using POST/XML shall consist of an XML 
+document of type wcs:DescribeCoverage. 
+
+Test method: Send syntactically legal and illegal DescribeCoverage request to server 
+under test, verify that the server responds appropriately. 
+
+A.1.5 Correct GetCoverage request structure 
+
+Test id: /conf/post-xml/getCoverage-request-structure 
+
+Test Purpose: Requirement /req/post-xml/getCoverage-request-structure: 
+A GetCoverage request using POST/XML shall consist of an XML docu-
+ment of type wcs:GetCoverage. 
+
+Test method: Send syntactically legal and illegal GetCoverage request to server under 
+test, verify that the server responds appropriately. 
+
+A.1.6 Exceptions 
+
+Test id: /conf/post-xml/exceptions 
+
+Test Purpose: Requirement /req/post-xml/exceptions: 
+When a WCS server encounters an error described in column “meaning of 
+exception code” inTable 1 then it shall return the corresponding exception 
+report message with the contents of the locator parameter value as speci-
+
+Copyright © 2010 Open Geospatial Consortium  7
+ 
+
+
+
+OGC 09-148r1 
+ 
+
+8 Copyright © 2010 Open Geospatial Consortium
+ 
+
+fied in the right column of  Table 1. 
+
+Test method: Send requests of all types supported to the server under test. Each request 
+shall include all (mandatory and) optional parameters and shall be valid 
+except for one parameter which shall contain an encoding error described in 
+the exception specification. Test passes if exception is reported according to 
+requirement. 
+
+ 
+
+-- end of ATS -- 
+
+
+	1 Scope 
+	2 Conformance
+	3 Normative references
+	4 Terms and definitions
+	5 Conventions
+	5.1 UML notation
+	5.2 Data dictionary tables
+	6 HTTP/POST with XML
+	6.1 General
+	6.2 GetCapabilities
+	6.3 DescribeCoverage
+	6.4 GetCoverage
+	7 Exceptions
+	Bibliography
+	Annex A(normative)Abstract test suite
+

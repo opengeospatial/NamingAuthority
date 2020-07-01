@@ -1,0 +1,1212 @@
+
+OGC 02-019r1 
+
+ 
+
+ 
+
+ 
+
+Open GIS Consortium Inc.  
+Date:   2002-02-29 
+
+Reference number of this OpenGIS© Project Document:    OGC 02-019r1 
+
+Version: 0.0.2 
+
+Category: OpenGIS© OGC Interoperability Program Report-Engineering Specification 
+
+Editor:   Jeff Lansing 
+
+OWS1 Coverage Portrayal Service 
+
+ 
+
+ 
+
+ 
+
+Copyright notice 
+
+This OGC document is a draft and is copyright-protected by OGC. While the reproduction of drafts 
+in any form for use by participants in the OGC Interoperability Program is permitted without prior 
+permission from OGC, neither this document nor any extract from it may be reproduced, stored or 
+transmitted in any form for any other purpose without prior written permission from OGC. 
+
+ 
+
+File name: 02-019r1 Attachment B
+ 
+
+
+
+OGC 02-019r1 
+
+Warning 
+
+This document is not an OGC Standard or Specification. This document presents a discussion of 
+technology issues considered in an Interoperability Initiative of the OGC Interoperability Program. 
+The content of this document is presented to create discussion in the geospatial information industry 
+on this topic; the content of this document is not to be considered an adopted specification of any 
+kind. This document does not represent the official position of the OGC nor of the OGC Technical 
+Committee.  It is subject to change without notice and may not be referred to as an OGC Standard or 
+Specification. However, the discussions in this document could very well lead to the definition of an 
+OGC Implementation Specification. 
+
+Recipients of this document are invited to submit, with their comments, notification of any relevant 
+patent rights of which they are aware and to provide supporting documentation. 
+
+Document type:    OpenGIS© Interoperability Program Report-Engineering Specification 
+Document stage:    Final 
+Document language:  English 
+
+ii © OGC 2002 – All rights reserved
+ 
+
+
+
+OGC 02-019r1 
+
+Contents 
+
+i. Preface.....................................................................................................................v 
+
+ii. Submitting organizations ......................................................................................v 
+
+iii. Document Contributor Contact Points................................................................v 
+
+iv. Revision history......................................................................................................v 
+
+v. Changes to the OpenGIS Abstract Specification............................................ vi 
+
+Foreword.......................................................................................................................... vii 
+
+Introduction.................................................................................................................... viii 
+
+1 Scope........................................................................................................................1 
+
+2 Conformance ..........................................................................................................1 
+
+3 Normative references.............................................................................................1 
+
+4 Terms and definitions ............................................................................................1 
+
+5 Conventions ............................................................................................................2 
+5.1 Symbols (and abbreviated terms).........................................................................2 
+
+6 Coverage Portrayal Service ..................................................................................3 
+6.1 Abstract...................................................................................................................3 
+6.2 Purpose....................................................................................................................3 
+6.3 The CPS Operational Concept .............................................................................3 
+6.4 Use Case ..................................................................................................................4 
+6.4.1 Description..............................................................................................................4 
+6.4.2 Pre-conditions.........................................................................................................4 
+6.4.3 Post-conditions .......................................................................................................5 
+6.4.4 Flow of events .........................................................................................................5 
+6.5 CPS and SLD..........................................................................................................6 
+6.5.1 Histograms and mapping bands to colors ...........................................................6 
+6.5.2 Mapping of categories via a color lookup table...................................................7 
+6.5.3 Thematic map rendering.......................................................................................8 
+6.5.4 Other portrayal options.........................................................................................8 
+6.6 CPS and WCS ........................................................................................................8 
+6.7 CPS and coverage transfer formats ...................................................................10 
+
+7 CPS Service Interfaces ........................................................................................13 
+7.1 GetCapabilities.....................................................................................................13 
+7.2 GetMap .................................................................................................................13 
+7.2.1 GetMap example ..................................................................................................14 
+8 Future Work.........................................................................................................17 
+
+© OGC 2002 – All rights reserved 
+ 
+
+
+
+OGC 02-019r1 
+
+8.1 Separation of Concerns. ......................................................................................17 
+8.2 Capabilities Definition.........................................................................................17 
+8.3 WCS Interaction ..................................................................................................17 
+ 
+
+iv © OGC 2002 – All rights reserved
+ 
+
+
+
+OGC 02-019r1 
+
+ 
+
+i. Preface 
+
+ii. Submitting organizations 
+
+This Interoperability Program Report – Engineering Specification is being submitted to 
+the OGC Interoperability Program by the following organizations: 
+
+Polexis, Inc. 
+
+iii. Document Contributor Contact Points 
+
+All questions regarding this submission should be directed to the editor or the submitters: 
+
+CONTACT COMPANY ADDRESS PHONE/FAX EMAIL 
+
+Jeff Lansing Polexis, inc 2815 Camino del 
+Rio So., San Diego 
+CA, 92103 
+
+619 542 7225 jeff@polexis.com 
+
+     
+
+     
+
+     
+
+     
+
+     
+
+     
+
+iv. Revision history 
+
+Date Release Author Paragraph modified Description 
+
+2001-12-14 0.0.1 JL  Initial version. 
+
+© OGC 2002 – All rights reserved 
+ 
+
+
+
+OGC 02-019r1 
+
+2002-03-29 0.0.2 JL  Minor cleanup of entire document. 
+
+     
+
+v. Changes to the OpenGIS Abstract Specification 
+
+The OpenGIS© Abstract Specification does not require changes to accommodate the 
+technical contents of this document.  
+
+ 
+
+vi © OGC 2002 – All rights reserved
+ 
+
+
+
+OGC 02-019r1 
+
+Foreword 
+
+OGC 01-xxx consists of the following parts, under the general title OGC Web Services — 
+Coverage Portrayal Service: 
+
+− � Part 1: Main body 
+
+ 
+
+ 
+
+ 
+
+© OGC 2002 – All rights reserved 
+ 
+
+
+
+OGC 02-019r1 
+
+Introduction 
+
+ 
+
+This document describes a service -- called a Coverage Portrayal Service -- composed of 
+standard interfaces that makes it possible to portray coverage data. The service is 
+intended to operate within the context of existing OGC services and their clients. It 
+operates as a client of an existing service that supplies coverage data. And it operates as a 
+service for an existing type of geospatial client. 
+
+By bundling together the client sides of some interfaces, and the server sides of other 
+interfaces, the Coverage Portrayal Service becomes an intermediary service. As an 
+intermediary service, this service raises interesting questions about how services  can 
+and/or should be connected together. How much should a client of an intermediary 
+service have to know about the remote service which it connects to? And how can it find 
+out what it needs to know? 
+ 
+
+viii © OGC 2002 – All rights reserved
+ 
+
+
+
+OGC Interoperability Program Report - Engineering 
+Specification 
+
+OGC 02-019r1
+
+ 
+
+OWS1 Coverage Portrayal Service (CPS) 
+
+1 Scope 
+
+The Coverage Portrayal Service is intended to operate within the context of OGC Web 
+Services. 
+
+2 Conformance 
+
+Conformance and Interoperability Testing for this OGC Interoperability Program Report 
+may be checked using all the relevant tests specified in Annex A (normative). The 
+framework, concepts, and methodology for testing, and the criteria to be achieved to 
+claim conformance are specified in ISO 19105: Geographic information — Conformance 
+and Testing. 
+
+3 Normative references 
+
+The following normative documents contain provisions which, through reference in this 
+text, constitute provisions of this part of OGC 01-xxx. For dated references, subsequent 
+amendments to, or revisions of, any of these publications do not apply. However, parties 
+to agreements based on this part of OGC 01-xxx are encouraged to investigate the 
+possibility of applying the most recent editions of the normative documents indicated 
+below. For undated references, the latest edition of the normative document referred to 
+applies. 
+
+Abstract Specification Topic 0: Overview, OGC document 99-100r1 
+
+Guidelines for Successful OGC Interface Specifications, OGC document 00-014r1 
+
+4 Terms and definitions 
+
+For the purposes of this document, the following terms and definitions apply. 
+
+4.1  
+coverage 
+object that associates one or more attribute values to any direct position within its 
+spatiotemporal domain 
+
+© OGC 2002 – All rights reserved 
+ 
+
+
+
+OGC 02-019r1 
+
+4.2  
+coverage component 
+synonyms: band, dimension 
+
+a notional sub-part of a coverage, associated either with its attribute values, or with the 
+positions within its spatiotemporal domain 
+
+4.3  
+coverage data 
+data which is represented as a coverage 
+ 
+4.4  
+coverage transfer format 
+an encoding for coverages, used to transfer the coverages from one computer or another 
+(examples are HDF-EOS, NITF, and netCDF) 
+
+ 
+4.5  
+data 
+reinterpretable representation of information in a formalized manner suitable for 
+communication, interpretation, or processing 
+
+4.6  
+portrayal 
+presentation of information to humans 
+ 
+
+5 Conventions 
+
+5.1 Symbols (and abbreviated terms) 
+
+The following symbols and abbreviated terms are used in this document. 
+
+OGC Open GIS Consortium 
+
+XML eXtended Markup Language 
+
+CPS Coverage Portrayal Service 
+
+WMS Web Map Service 
+
+SLD Styled Layer Descriptor 
+
+WCS Web Coverage Service 
+
+WFS Web Feature Service 
+
+2 © OGC 2002 – All rights reserved
+ 
+
+
+
+OGC 02-019r1 
+
+SRS Spatial Reference System 
+
+BBOX Bounding Box 
+
+6 Coverage Portrayal Service 
+
+6.1 Abstract 
+
+The CPS is an OGC Processing Service that adds value to the products of a Web 
+Coverage Service. The CPS links together WMS clients and WCS services, using SLD as 
+a service language. The CPS interfaces are slight extensions or restrictions of the 
+corresponding WMS interfaces. 
+
+6.2 Purpose 
+
+The purpose of the CPS is to provide a standard interface for producing visual 
+pictures from coverage data. 
+
+6.3 The CPS Operational Concept 
+
+The CPS integrates into the OGC architecture by implementing two standard OGC 
+interfaces, the WMS interface and the WCS interface.  Figure 6.3.1 shows this 
+integration. The Engineering View format that this figure uses is taken from the OGC 
+Services Abstract Specification1 and the OGC Web Services Initiative - Reference 
+Architecture for Phase 1 Testbed DIPR. The dashed lines in the figure represent 
+networks. 
+
+                                                 
+
+1 Topic 12 - The OpenGIS Service Architecture, Versions 4.3, http://www.opengis.org/techno/abstract/02-112.pdf 
+
+© OGC 2002 – All rights reserved   3
+ 
+
+
+
+OGC 02-019r1 
+
+ 
+Map Viewer 
+
+Client 
+
+WCS
+
+Imagery  
+Client 
+
+Coverage
+Portrayal
+Service 
+
+Map 
+Viewer 
+
+Generator
+
+Client Services 
+
+Server-Side  
+Client  
+Applications 
+
+Processing 
+Services 
+
+Data 
+Services 
+
+= OGC/IP Interface 
+
+WCS 
+
+WMS 
+
+ 
+
+Figure 6.3.1. 
+
+Figure 6.3.1 shows how a thin WMS map viewer client, which has been generated on the 
+fly by a server-side client generator, can use the services of a WCS by connecting 
+through a CPS. 
+6.4 Use Case 
+
+6.4.1 Description 
+
+This use case presents the steps that might take place during a typical CPS session. 
+
+6.4.2 Pre-conditions 
+
+In this use case there are three components: 
+
+- A WCS that provides a swath coverage 
+
+- A CPS that styles a swath coverage 
+
+- A client that knows how to define an SLD for a coverage, can make WMS-SLD 
+GetMap requests, and can display the GetMap request to a human. 
+
+4 © OGC 2002 – All rights reserved
+ 
+
+
+
+OGC 02-019r1 
+
+ 
+
+6.4.3 Post-conditions 
+
+The result is a visual representation of the swath coverage in a form that can be overlaid 
+with additional WMS map layers. Figure 6.4.1 shows an example of a georectified swath 
+coverage that has been overlaid with an additional map layer showing watercourses. This 
+map layer has been requested from a separate WMS.  
+
+ 
+
+Figure 6.4.1. Layering of watercourses over a portrayed coverage  
+
+6.4.4 Flow of events 
+
+1) A Web Coverage Service (WCS) publishes a layer containing a multi-band swath of 
+data located in some region. 
+
+2) A client finds that the published layer overlaps with its current region of interest and 
+wishes to view the data in that layer graphically in order to determine if it bears further 
+analysis, or further processing. 
+
+3) The client finds a CPS and decides to ask it to provide a view of the data that can be 
+overlaid with familiar map features. 
+
+© OGC 2002 – All rights reserved   5
+ 
+
+
+
+OGC 02-019r1 
+
+4) The client builds a Styled Layer Descriptor (SLD) raster descriptor that assigns red to 
+band 3 of the swath data from the WCS in question, green to band 2, and blue to band 1. 
+
+5) The client formulates a Web Map Service (WMS) request which includes (alternately, 
+refers to) the raster descriptor, together with a WIDTH, HEIGHT, BBOX, SRS, and so 
+on. 
+
+6) The client issues the WMS request to the CPS. 
+
+7) The CPS receives the WMS request from the client, fetches the SLD if need be, and 
+formulates a WCS request for the data from the bands which were mentioned in the SLD 
+that covers the BBOX which was mentioned in the WMS request, and submits the WCS 
+request. 
+
+8) The WCS returns the requested coverage data to the CPS. If necessary the CPS 
+geolocates the data in the requested BBOX and SRS, applies the SLD to produce an 
+image of the requested sort, with the requested WIDTH and HEIGHT, and returns the 
+image to the client. 
+
+6.5 CPS and SLD 
+
+The CPS uses SLD as a language to request a specific portrayal. In addition to request 
+parameters, which serve to qualify the request action, additional information has to be 
+provided to the CPS for it to be able to do its work. This additional information can tell 
+the CPS  
+
+1. where to get the coverage that the client is interested in, 
+
+2. what part or parts of the coverage data to work with, and 
+
+3. how the client wants the CPS to portray that data. 
+
+SLD is used to express this additional information. The rationale for this is that (3) above 
+is a sort of user-defined "styling" of (part of) the coverage data. 
+
+There is a parallel between the way that a client can direct a CPS to use data from a 
+WCS, and the way that a client can direct a WMS to use data from a WFS. Using SLD 
+for both CPS requests and WMS requests exploits this parallel. 
+
+The parts of the SLD that affect (3) above are contained in the SLD RasterSymbolizer 
+element. The following subsections discuss some relevant aspects of this element. 
+
+6.5.1 Histograms and mapping bands to colors  
+
+Regarding the question of how selecting the histogram option affects the mapping of 
+bands to RGB, the current SLD has this documentation: 
+
+6 © OGC 2002 – All rights reserved
+ 
+
+
+
+OGC 02-019r1 
+
+ContrastEnhancement: Defines contrast enhancement for a channel of a false-color 
+image or for a color image.  In the case of a color image, the relative greyscale 
+brightness of a pixel color is used.  "Normalize" means to stretch the contrast so 
+that the dimmest color is stretched to black and the brightest color is stretched to 
+white, with all colors in between stretched out uniformly.  "Histogram" means to 
+stretch the contrast based on a histogram of how many colors are at each brightness 
+level on input, with the goal of producing equal number of pixels in the image at 
+each brightness level on output.  This has the effect of revealing many subtle 
+ground features. 
+
+This document adopts the position that histogram equalization should be applied 
+independently to each channel. In this way, assigning colors and doing histogram 
+equalization are independent ("orthogonal") operations. 
+
+The RasterSymbolizer allows independent contrast enhancement per channel and contrast 
+enhancement for the final image as a whole.  The per-channel contrast enhancement is 
+selected using the "RasterSymbolizer/ChannelSelection/*/ContrastEnhancement" and the 
+overall contrast enhancement is selected with RasterSymbolizer/ContrastEnhancement". 
+
+The exact method of histogramming the overall image is up to the implementation, but a 
+suggested interpretation is to assign intensities to pixels based on the usual formula 
+
+0.299 * red + 0.587 * green + 0.114 * blue 
+
+and to change the result intensity by multiplying all components of an RGB pixel by the 
+same amount. 
+
+6.5.2 Mapping of categories via a color lookup table 
+
+The SLD 0.7.2 documentation says this: 
+
+ColorMap: Defines either the colors of a pallet-type raster source or the mapping of 
+numeric pixel values to colors.  For example, a DEM raster giving elevations in 
+meters above sea level can be translated to a colored image with a ColorMap.  
+ColorMap entries should be in order of increasing numeric quantity so that 
+intermediate numeric values can be matched to a color (or be interpolated between 
+two colors).  Labels may be used for legends or may be used in the future to match 
+character values. Not all systems can support opacity in colormaps.  The default 
+"opacity" is 1.0 (fully opaque).  Defaults for "quantity" and "label" are system-
+dependent. 
+
+So if the categories are indexed numerically, then they can be handled by SLD. 
+
+© OGC 2002 – All rights reserved   7
+ 
+
+
+
+OGC 02-019r1 
+
+6.5.3 Thematic map rendering 
+
+The CPS needs to get the category classification from WCS for a thematic map in order 
+to be used for thematic map rendering. Distinction needs to be done between nominal 
+classification and ordinal classification. 
+
+This information may be available to the CPS if the WCS supports a 
+GetCoverageLayerDescription interface. That interface would return a coverage layer 
+description encoded in XML that would include RangeDimension information (sample 
+dimension) associated with a reference system (nominal, ordinal, interval or ratio). 
+
+6.5.4 Other portrayal options 
+
+There are other portrayal options, such as hillshading and contouring of coverage data, 
+that are not included here. 
+
+6.6 CPS and WCS 
+
+If a CPS is to portray coverages using a user-defined styling, it is necessary to understand 
+what is to be the source of the coverage data. Different relations between this data source 
+and the CPS should be permitted.  For example a CPS might portray coverage data stored 
+in a remote Web Coverage Server (WCS) or it might only be able to style data from a 
+specific default coverage store. 
+
+SLD allows a user to direct the CPS to use a remote WCS; this represents the simplest 
+relationship between a CPS and a WCS.  However there is a wide range of other possible 
+relationships.  To clarify the discussion, this document introduces the concept of 
+‘component’ and ‘integrated’ services:  
+
+• Component services: these are services designed to be loosely coupled and work 
+in any combination.  For example, a component CPS can portray coverage data 
+from any WCS to which it is directed.  A component service is synonymous with 
+a loosely-coupled service as defined in the OGC Service Architecture2 
+
+• Integrated services: these are services that are closely coupled and can only work 
+in particular configurations.  For example, an integrated CPS might only be able 
+to portray coverage data from the WCS with which it is integrated. A component 
+service is synonymous with a tightly-coupled service as defined in the OGC 
+Service Architecture3 
+
+A loosely-coupled CPS may have an association with specific coverage type as identified 
+in the service type definition. In the tightly-coupled case, the CPS service metadata 
+
+                                                 
+
+2 Clause 7.4.1, Topic 12 - The OpenGIS Service Architecture, Versions 4.3 
+3 Clause 7.4.1, Topic 12 - The OpenGIS Service Architecture, Versions 4.3 
+
+8 © OGC 2002 – All rights reserved
+ 
+
+
+
+OGC 02-019r1 
+
+describes both the service and the coverage. Also for the tightly-coupled case, the  
+permitted values in the operations shall be constrained by the values defined by the 
+coverage associated with the CPS. For the loosely-coupled case, dataset metadata need 
+not be provided in the service metadata. 
+
+Whether a particular service is a ‘component’ or ‘integrated’ service says something 
+about how it is implemented.  For example a CPS is a ‘valid’ OGC CPS provided it 
+correctly supports the CPS interfaces. This makes no assumptions about how the CPS is 
+implemented.  However, a ‘component’ CPS that can portray coverage data from any 
+WCS only interacts with the data through the WCS interfaces, and this does say 
+something about the implementation.  Of course, it is not important what type of WCS 
+(component or integrated) that a component CPS is directed to. There will be a spectrum 
+of CPS implementations with the ability to support user-defined styling.  This is best 
+illustrated by describing in more detail what might be considered the ‘two ends’ of the 
+spectrum, represented by a ‘component’ CPS at one end and ‘integrated’ CPS at the 
+other. 
+
+• Component CPS 
+
+Essentially a portrayal engine that can portray coverage data obtained from one or 
+more remote WCS services.  Typically it has these characteristics: 
+
+o A component CPS probably has no pre-defined ‘named’ layers or styles. 
+
+o A component CPS only supports the CPS interfaces. 
+
+o A component CPS can portray coverage data from any compliant WCS  or 
+from any compliant WCS serving a specific type of coverage data type. 
+
+o A component CPS supports both user-defined styles and user-defined 
+layers. 
+
+• Integrated CPS 
+
+This is a service representing a closely coupled coverage store and a portrayal 
+engine.  Typically it has these characteristics: 
+
+o An integrated CPS probably has pre-defined ‘named’ layers and styles. 
+
+o An integrated CPS supports the CPS interface and the 
+DescribeCoverageType request of the WCS interface. 
+
+o An integrated CPS can only portray coverage data from its own internal 
+coverage store. 
+
+o An integrated CPS might only support user-defined styles being applied to 
+pre-defined ‘named’ layers. 
+
+© OGC 2002 – All rights reserved   9
+ 
+
+
+
+OGC 02-019r1 
+
+Whether one is using a component or integrated CPS, it must be possible to interrogate 
+(albeit at a relatively superficial level) the underlying coverage store.  This is because 
+user-defined styling makes use of concepts not previously required by WCS. User-
+defined styling needs to be able to define new layers and styles using coverage types and 
+coverage-type properties.  For example, a new layer might be defined as all the coverages 
+of a particular coverage type. 
+
+The underlying coverage store is interrogated using the WCS interface.  For a component 
+CPS this is not a problem, since the coverage store is indeed a remote WCS.  For an 
+integrated CPS, the server must support both the CPS interface and a minimal set of WCS 
+operations.  It must support the DescribeCoverageType request.  This describes the 
+properties of a coverage type specified by name in the request.  And, if the CPS supports 
+user-defined layers, then it must support the WCS GetCapabilities request.  For a 
+WCS this returns, among other things, the names of all the coverage types supported by 
+the WCS.  Together these two WCS requests allow clients to retrieve all of the 
+information that they will require in order to construct user-defined styling. 
+
+It is also necessary to indicate where a CPS should find the coverage data that is to be 
+portrayed. This is done using the following rules: 
+
+1. if the SLD specifies a WCS in the WCS attribute of the UserLayer element then 
+it should be used; otherwise 
+
+2. the CPS should use a default WCS. 
+
+This approach does not permit coverages from different WCS services to be included in 
+the same styled layer; however, it does allow different styled layers to be based on 
+coverage data from different WCS instances.  The first two options should only be used 
+for a CPS that can be ‘directed’ to a remote WCS.  The CPS will advertise this ability in 
+response to a GetCapabilities request.  For an integrated CPS, the default WCS is 
+just the one with which it is integrated.  However, there is no reason why a component 
+CPS should not have a default WCS defined. 
+
+6.7 CPS and coverage transfer formats 
+
+The WCS takes the position that a number of coverage transfer formats are currently in 
+use in the geospatial community, and that it should not legislate which of these to use4. 
+Of course for these transfer formats to be used by a CPS, they must be well defined. But 
+from the point of view of the CPS (or of any automated client of a WCS, for that matter) 
+there is an even more important requirement. Most of these formats are quite flexible, in 
+that they allow the same data to be encoded in more than one way. So not only does there 
+need to be a well-known definition of the transfer format, but also it is critical to have a 
+mapping from each of the formats which a WCS supports to some kind of common 
+
+                                                 
+
+4 Note that Coverages are defined in OGC Abstract Specification Topic 6 - The Coverage Type. 
+
+10 © OGC 2002 – All rights reserved
+ 
+
+
+
+OGC 02-019r1 
+
+definition, which tells how the format is being used. Otherwise it is difficult or (more 
+likely) impossible for the CPS to determine where the WCS has put the data that the 
+client needs. 
+
+The common definition would allow a CPS client to make definite references to parts of 
+the coverage which are encoded in the coverage transfer format, without having to know 
+in advance (perhaps by some out of bandagreement) how the transfer format was being 
+used. In other words, the coverage can have a number of different domain and range 
+components, the transfer format can define a number of different structural parts, and the 
+common definition needs to say which coverage components are encoded in which 
+structural parts of the transfer format. 
+
+For an abstract illustration of this, assume we have two transfer formats, format H and 
+format N, which transfer coverage data in structures Struct H and Struct N. (The parts of 
+the structures are labelled using sequences of alternating horizontal and vertical 1-based 
+indices.) 
+
+ 
+
+ 
+1,1 
+
+1,2 
+
+2,1 
+
+2,2,1
+
+2,3 
+
+2,2,2
+
+Struct H 
+ 
+
+ 
+
+ 
+
+1 
+
+2,1 
+
+2,2 
+
+2,3 
+
+3 
+
+Struct N 
+ 
+
+Also assume that there is a common definition. This means that there is a common 
+structure Struct C, and a known semantics for the parts of the structure. So Struct C might 
+look like this: 
+
+ 
+
+© OGC 2002 – All rights reserved   11
+ 
+
+
+
+OGC 02-019r1 
+
+ 1,1,1 1,1,2
+
+1,2 
+
+Struct C 
+ 
+
+and the known semantics might be this: 
+
+1,1,1 = domain dimension 1 
+
+1,1,2 = domain dimension 2 
+
+1,2  = range dimension 1 
+
+Now what is required is a know mapping from the common structure, Struct C, to each of 
+the transfer format structures. For example, the mapping to Struct H might be this: 
+
+ 
+
+Struct C to Struct H 
+
+1,1,1 = 2,2,1 
+
+1,1,2 = 2,2,2 
+
+1,2 = 2,3 
+
+ 
+
+This would allow a user to talk about, say, domain dimension 1, and the automated client 
+would know that, if it was dealing with a coverage encoded in Struct H, that what was 
+meant was the data in part 2,2,1 of the structure. 
+
+Of course Struct H might have its own semantics, for example: 
+
+1,1 = some metadata 
+
+1,2 = some more metadata 
+
+2,1 = some dimension 
+
+2,2,1 = some other dimension, and so on. 
+
+While this semantics may be useful in its own right to some users of the coverage data, 
+and should be compatible with the semantics that is implied by the mapping above, it 
+
+12 © OGC 2002 – All rights reserved
+ 
+
+
+
+OGC 02-019r1 
+
+does not in itself solve the problem of allowing a user to refer to interesting parts of the 
+coverage data in an open and unambiguous way. 
+
+7 CPS Service Interfaces 
+
+The CPS interfaces modify the corresponding WMS interfaces in the following way. The 
+CPS GetCapabilities interface extends the WMS GetCapabilities interface because the 
+CPS needs to say something about its ability to interact with a WCS. The CPS GetMap 
+interface restricts the WMS GetMap interface because the CPS requires SLD in order to 
+function in a meaningful way. 
+
+7.1 GetCapabilities 
+
+The CPS capabilities response needs to say 
+
+1. what parts of SLD are supported, 
+
+2. what coverage transport formats are supported, and 
+
+3. whether the CPS can do georectification. 
+
+It would be useless for a client to direct a CPS to request data from a WCS when that 
+WCS only supported coverage transport formats that the CPS could not handle. Therefore 
+it should be possible for the client to discover in advance if the CPS and the desired WCS 
+are incompatible in this way. A similar argument applies in the case of georectification. If 
+a WCS only supplies ungeorectified data, and the CPS does not support georectification, 
+then the client should be able to discover that fact. 
+
+NOTE: The schema for the CPS GetCapabilities request has not yet been defined. 
+
+7.2 GetMap 
+
+The parameters to the CPS GetMap request are identical to the parameters of the WMS 
+GetMap request. However, because the purpose of the CPS is to portray coverages, 
+additional user-styling information needs to be encoded into SLD, and supplied with a 
+CPS GetMap request.  
+
+The following diagram illustrates the interaction between the CPS client, the CPS, and 
+the WCS with respect to the GetMap request parameters. 
+
+© OGC 2002 – All rights reserved   13
+ 
+
+
+
+OGC 02-019r1 
+
+ 
+
+GetMap 
+
+GetCoverage 
+
+(graphic) Format
+(coverage transport) 
+
+Format 
+
+SLD 
+
+Layer 
+
+Dimensions 
+
+Client CPS WCS 
+
+BBOX 
+
+SRS 
+
+ 
+
+Figure 7.2.1. 
+
+As shown in Figure 7.2.1, some of the parameters that the CPS sends to the WCS are 
+identical to the parameters that it gets from its client, some of the parameters it sends are 
+derived from the parameters that it gets, and some of the parameters that it sends have to 
+be extracted from the SLD Of the parameters that are extracted from the SLD, some are 
+used for portrayal, while some are used to derive other parameters for the WCS.  
+
+The following example shows how the interaction shown in Figure 7.2.1 would happen in 
+a particular case. 
+
+7.2.1 GetMap example  
+
+In this example the CPS receives the GetMap request that is listed below, and generates 
+the following WCS coverage request based on it: 
+
+VERSION=1.0.3& 
+REQUEST=coverage& 
+LAYERS=mod2.hdf:SWATH:MODIS_SWATH_Type_L1B:EV_1KM_RefSB& 
+SRS=EPSG:4326& 
+BBOX=-106.38,38.78,-103.36,40.55& 
+Band_1KM_RefSB=1/3/1& 
+
+14 © OGC 2002 – All rights reserved
+ 
+
+
+
+OGC 02-019r1 
+
+FORMAT=HDFEOS 
+ 
+
+and sends that coverage request to this URL: 
+
+http://heineken.gsfc.nasa.gov:8080/cgi-bin/dib/wcshdfeos? 
+
+by performing the following steps. 
+
+1. It finds the 
+GetMap/StyledLayerDescriptor/UserLayer/RemoteOWS/OnlineResource from 
+the (SLD portion of the) request and fetches a capabilities document from there. 
+
+2. It gets the OnlineResource for HTTP GET from the capabilities document, which 
+it will use as the URL from which to request a coverage. 
+
+3. It finds the 
+GetMap/StyledLayerDescriptor/UserLayer/LayerFeatureConstraints/FeatureType
+Constraint/FeatureTypeName, and tries to find the corresponding layer in the 
+WCS capabilities document. 
+
+4. It finds all the contents of RasterSymbolizer/*/SourceChannelName elements and, 
+using the convention that if such a content looks like 
+
+bandname.bandnumber 
+
+then it looks for a Dimension in the layer named "bandname" that has an extent that 
+includes "bandnumber". (Note that this convention is totally ad hoc. Perhaps SLD 
+0.7.2 should provide separate elements for the dimension name and the channel 
+name.) 
+
+To make this more specific, assume the layer in question looks like this: 
+
+<Layer queryable="1"> 
+  <Name>mod2.hdf:SWATH:MODIS_SWATH_Type_L1B:EV_1KM_RefSB</Name> 
+  <Title>EV_1KM_RefSB</Title> 
+  <Abstract/> 
+  <Keywords/> 
+  <SRS>EPSG:4326</SRS> 
+  <LatLonBoundingBox minx="-120.093803" miny="21.792076" maxx="-90.692970" 
+maxy="42.964756"/> 
+  <Dimension name="Band_1KM_RefSB" units="None"/> 
+  <Extent name="Band_1KM_RefSB" default="1/15/1">1/15/1</Extent> 
+  <DataURL>http://heineken.gsfc.nasa.gov:8080/cgi-
+bin/dib/dib_view/hdf?mod2.hdf&amp;HDFEOS&amp;SWATH|MODIS_SWATH_Type_L1B&amp;
+FIELD|EV_1KM_RefSB   </DataURL> 
+</Layer> 
+
+and the request has this: 
+
+© OGC 2002 – All rights reserved   15
+ 
+
+
+
+OGC 02-019r1 
+
+<sld:RedChannel> 
+  <sld:SourceChannelName>Band_1KM_RefSB.3</sld:SourceChannelName> 
+</sld:RedChannel> 
+
+ 
+
+and the layer has a Dimension with name = Band_1KM_RefSB 
+
+and the corresponding Extent goes from 1 to 15, which includes 3. 
+
+ 
+
+The complete WMS GetMap request is listed here: 
+
+<?xml version="1.0" encoding="UTF-8"?> 
+<!-- User-defined layer from SLD WMS accessing a WCS --> 
+<GetMap xmlns="http://www.opengis.net/ows" xmlns:gml="http://www.opengis.net/gml" 
+xmlns:sld="http://www.opengis.net/sld" xmlns:wfs="http://www.opengis.net/namespaces/wfs" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.opengis.net/ows 
+../ows1/webmapping/wms/GetMap.xsd" version="1.2.0" service="WMS"> 
+  <sld:StyledLayerDescriptor version="0.7.2"> 
+    <sld:UserLayer> 
+      <sld:RemoteOWS> 
+        <sld:Service>WCS</sld:Service> 
+        <sld:OnlineResource xmlns:xlink="http://www.w3.org/1999/xlink" xlink:type="simple" 
+xlink:href="http://heineken.gsfc.nasa.gov:8080/cgi-bin/dib/wcshdfeos?"/> 
+      </sld:RemoteOWS> 
+      <sld:LayerFeatureConstraints> 
+        <sld:FeatureTypeConstraint> 
+          
+<sld:FeatureTypeName>mod2.hdf:SWATH:MODIS_SWATH_Type_L1B:EV_1KM_RefSB</sld:F
+eatureTypeName> 
+        </sld:FeatureTypeConstraint> 
+      </sld:LayerFeatureConstraints> 
+      <sld:UserStyle> 
+        <sld:FeatureTypeStyle> 
+          <sld:Rule> 
+            <sld:RasterSymbolizer> 
+              <sld:ChannelSelection> 
+                <sld:RedChannel> 
+                  <sld:SourceChannelName>Band_1KM_RefSB.3</sld:SourceChannelName> 
+                </sld:RedChannel> 
+                <sld:GreenChannel> 
+                  <sld:SourceChannelName>Band_1KM_RefSB.2</sld:SourceChannelName> 
+                </sld:GreenChannel> 
+                <sld:BlueChannel> 
+                  <sld:SourceChannelName>Band_1KM_RefSB.1</sld:SourceChannelName> 
+                </sld:BlueChannel> 
+              </sld:ChannelSelection> 
+            </sld:RasterSymbolizer> 
+          </sld:Rule> 
+        </sld:FeatureTypeStyle> 
+      </sld:UserStyle> 
+
+16 © OGC 2002 – All rights reserved
+ 
+
+
+
+OGC 02-019r1 
+
+    </sld:UserLayer> 
+  </sld:StyledLayerDescriptor> 
+  <BoundingBox srsName="http://www.opengis.net/gml/srs/epsg.xml#4326"> 
+    <gml:coord> 
+      <gml:X>-106.38</gml:X> 
+      <gml:Y>38.78</gml:Y> 
+    </gml:coord> 
+    <gml:coord> 
+      <gml:X>-103.36</gml:X> 
+      <gml:Y>40.55</gml:Y> 
+    </gml:coord> 
+  </BoundingBox> 
+  <Output> 
+    <Format>image/gif</Format> 
+    <Transparent>true</Transparent> 
+    <Size> 
+      <Width>640</Width> 
+      <Height>480</Height> 
+    </Size> 
+  </Output> 
+  <Exceptions>application/vnd.ogc.se+inimage</Exceptions> 
+</GetMap> 
+
+8 Future Work 
+
+Future work on CPS falls into three areas. 
+
+8.1 Separation of Concerns.  
+
+The information contained in a request to the CPS can be separated into information 
+related to service coordination, information related to control of the functionality 
+provided by a remote service, and information related to the control of the portrayal 
+functions which the CPS provides. Currently these three kinds of information are 
+conflated together in two different ways. 
+
+8.2 Capabilities Definition 
+
+The CPS needs to be able to make it clear what its capabilities are. The current 
+assumption behind the use of SLD in general is that an SLD-enabled service should make 
+a "best effort" attempt to comply with requests that use SLD. But it could be useful if 
+there was a way to guide a client's expectations as to what a "best effort" might entail. 
+Currently there is now way to say what part of SLD a service supports, and what part not. 
+There is not yet a language for doing this, but the notion of binding templates would 
+seem to be applicable here. 
+
+8.3 WCS Interaction 
+
+The interaction of the CPS with the WCS needs to be refined, with respect to the 
+following issues. 
+
+© OGC 2002 – All rights reserved   17
+ 
+
+
+
+OGC 02-019r1 
+
+• What kind or kinds of coverages are available? Are they gridded or not? Are they 
+georectified or not?  This future work should draw on the development of 
+coordinate reference system identifiers for sensor CRS's and geographic CRS.  
+This work is to better define the domain of the coverage.  Options for providing a 
+sensor CRS or a grid of geographic lat/long points should be accommodated. 
+
+• What kinds of attributes does the coverage offer?  This is the range question. 
+Distinction needs to be done between nominal classification and ordinal 
+classification.   
+
+• What choices does the WCS make when it encodes coverage data into a coverage 
+transfer format? 
+
+18 © OGC 2002 – All rights reserved
+ 
+
+
+	Scope
+	Conformance
+	3Normative references
+	4Terms and definitions
+	5Conventions
+	5.1Symbols (and abbreviated terms)
+
+	6Coverage Portrayal Service
+	Abstract
+	Purpose
+	The CPS Operational Concept
+	Use Case
+	Description
+	6.4.2Pre-conditions
+	6.4.3Post-conditions
+	6.4.4Flow of events
+
+	CPS and SLD
+	6.5.1Histograms and mapping bands to colors
+	6.5.2Mapping of categories via a color lookup table
+	6.5.3Thematic map rendering
+	6.5.4Other portrayal options
+
+	CPS and WCS
+	CPS and coverage transfer formats
+
+	7CPS Service Interfaces
+	7.1GetCapabilities
+	7.2GetMap
+	7.2.1GetMap example
+
+	8Future Work
+	8.1Separation of Concerns.
+	8.2Capabilities Definition
+	8.3WCS Interaction
+
+
+

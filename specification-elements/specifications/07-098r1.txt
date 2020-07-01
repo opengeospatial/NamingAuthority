@@ -1,0 +1,1005 @@
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 1 
+ 
+
+Open Geospatial Consortium Inc.  
+
+Date:   2007-11-16 
+
+Reference number of this OGC® project document:    OGC 07-098r1 
+
+Version: 1.0 
+
+Category: OGC® Implementation Specification 
+
+Editor:   Andreas Matheus 
+
+Geospatial eXtensible Access Control Markup Language (GeoXACML) 
+
+Extension A – GML2 Encoding 
+
+Version 1.0 
+
+ 
+
+ 
+
+Copyright notice 
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+
+To obtain additional rights of use, visit http://www.opengeospatial.org/legal/. 
+
+Document type:     OGC® Publicly Available Standard 
+
+Document subtype:    Encoding 
+
+Document stage:    Approved 
+
+Document language:  English 
+
+http://www.opengeospatial.org/legal/
+
+
+OGC 07-098r1 
+
+2 Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+Disclaimer 
+
+Issues of absolute or relative accuracy of feature geometry and positioning data and the 
+
+computational stability of finite precision arithmetic as used in all computers will affect 
+
+results where distance measure, geometry or positional values are compared. For this 
+
+reason, and the variety of statistically valid but different implementation approaches to 
+
+these issues, Boolean criteria as used in XACML or GeoXACML policy statements will 
+
+not always produce uniform results across geographic implementations. For these 
+
+reasons, users of this technology should not ask for fine gradations of measures that their 
+
+data or coordinate transformation cannot support, but should alternately allow a "tolerant" 
+
+approach where feasible which might give access to slightly more data than would be 
+
+given in a perfect computational, but impossible to implement, environment. 
+
+ 
+
+
+
+OGC 07-098r1 
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 3 
+ 
+
+Contents 
+
+1 Scope ....................................................................................................................... 8 
+
+2 Conformance ......................................................................................................... 8 
+
+3 Normative references ............................................................................................ 9 
+
+4 GeoXACML Data Type for GML2 Encoding (normative) ............................. 10 
+
+Annex A GeoXACML Conformance Table (normative) .................................... 11 
+
+Annex B GML2 Geometry Encoding Examples (informative) .......................... 12 
+
+B.1 Point Geometry ................................................................................................... 12 
+
+B.2 LineString Geometry .......................................................................................... 12 
+
+B.3 Polygon Geometry ............................................................................................... 12 
+
+Annex C GeoXACML Policy Construct Examples (informative) ...................... 13 
+
+C.1 Polygon Geometry Attribute Value ................................................................... 13 
+
+C.2 MultiPoint Attribute Value ................................................................................ 13 
+
+C.3 Creating a Bag of Geometries ............................................................................ 14 
+
+C.4 Function ............................................................................................................... 14 
+
+C.5  Condition ............................................................................................................. 14 
+
+Annex D Example for protecting a OWS using GeoXACML (informative) ..... 15 
+
+D.1 Condition encoding for the WMS example ...................................................... 15 
+
+D.2 Condition encoding for the WFS example ........................................................ 17 
+ 
+
+ 
+
+
+
+OGC 07-098r1 
+
+4 Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+i. Preface 
+
+This document defines the normative encoding of geometries to be used in GeoXACML 
+
+based on the Geography Markup Language (GML) version 2.1.2  
+
+ii. Submitting organizations 
+
+The following organizations submitted this Implementation Specification to the Open 
+
+Geospatial Consortium Inc. as a Request For Comment (RFC):  
+
+Universität der Bundeswehr München  
+Andreas Matheus 
+Werner-Heisenberg-Weg 39  
+
+D-85579 Neubiberg 
+
+Germany 
+andreas.matheus(at)unibw.de 
+
+Galdos Systems Inc.  
+Ron Lake 
+
+1300-409 Granville St 
+
+Vancouver V6C 1T2 
+
+Canada 
+
+Rlake(at)galdosinc.com  
+
+iii. Submission and contribution contact points 
+
+All questions regarding this submission should be directed to the editor or the submitters: 
+
+CONTACT COMPANY EMAIL 
+
+Andreas Matheus Universität der Bundeswehr München Andreas.Matheus(at)unibw.de  
+
+Jan Herrmann Ludwig-Maximilians-Universität München jan.herrmann(at)lmu.de  
+
+Martin Kyle Sierra Systems Group, Inc. MartinKyle(at)SierraSystems.com 
+
+
+
+OGC 07-098r1 
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 5 
+ 
+
+iv. Revision history 
+
+Date Release Author Paragraph 
+modified 
+
+Description 
+
+2007-08-12 0.1.0 Andreas Matheus All Initial Writing 
+
+2007-08-20 0.2.0 Andreas Matheus 4, Annex A Insert Null geometry and make all 
+definitions mandatory 
+
+2007-08-22 0.3.0 Andreas Matheus 4, A.1 As suggested by Jan, GML geometry 
+encoding shall be version aware 
+
+2007-08-24 0.4.0 Andreas Matheus Annex C, D Restructuring of examples 
+
+2007-09-07 0.5.0 Martin Kyle All Editorial corrections 
+
+2007-10-25 0.6.0 Andreas Matheus throughout Incorporation of comments and decisions 
+from the TC meeting 17.-21.9.2007 
+
+2007-11-16 0.7.0 Andreas Matheus p. 2 
+
+throughout 
+
+throughout 
+
+Insert of disclaimer 
+
+GeoXACML URN corrections 
+
+final formatting 
+
+v. Changes to the OGC® Abstract Specification 
+
+The OpenGIS® Abstract Specification does not require changes to accommodate this 
+
+standard.  
+
+
+
+OGC 07-098r1 
+
+6 Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+Foreword 
+
+Normative Annex A provides the GeoXACML conformance tables. 
+
+Informative Annex B provides GML2 encoding examples. 
+
+Informative Annex C provides GeoXACML Policy construct examples. 
+
+Informative Annex D provides the GML2 specific encoding of the <Condition> element, 
+
+used in the example of the core specification in Annex C. 
+
+
+
+OGC 07-098r1 
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 7 
+ 
+
+Introduction 
+
+This specification is a normative extension to the GeoXACML core Implementation 
+
+Specification ([2]). It defines the GML2 encoding for geometric data types. 
+
+
+
+OGC 07-098r1 
+
+8 Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+OpenGIS® Geospatial eXtensible Access Control Markup 
+
+Language (GeoXACML)  
+
+Implementation Specification – Version 1.0 
+
+ 
+
+Extension A – GML2 Encoding 
+ 
+
+1 Scope 
+
+This document defines an extension to the GeoXACML Implementation Specification, 
+
+Verison 1.0 ([2]) for the GML2 geometry encoding as specified in the GML2 standard 
+
+([3]). 
+
+2 Conformance 
+
+In order to claim conformance with this extension of the GeoXACML specification, an 
+
+implementation of a PDP MUST conform with  
+
+(i) the XACML specification as stated in [1], section 10 AND 
+
+(ii) the GeoXACML specification as stated in [2], section 2 AND 
+
+(iii) the data type encoding as provided in section 4 AND 
+
+(iv) the conformance table provided in Annex A of this specification. 
+
+
+
+OGC 07-098r1 
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 9 
+ 
+
+3 Normative references 
+
+[1] OASIS, eXtensible Access Control Markup Language (XACML) Version 2.0, 1 Feb 
+2005, http://docs.oasis-open.org/xacml/2.0/access_control-xacml-2.0-core-spec-
+
+os.pdf   
+
+[2] OGC, OpenGIS® GeoXACML Implementation Specification, Version 1.0, 2007-11-
+16  
+
+[3] OGC, OpenGIS® Geography Markup Language(GML) Implementation Specifica-
+tion, Version 2.1.2, 2002-09-17, 
+
+http://portal.opengeospatial.org/files/?artifact_id=11339  
+
+http://docs.oasis-open.org/xacml/2.0/access_control-xacml-2.0-core-spec-os.pdf
+http://docs.oasis-open.org/xacml/2.0/access_control-xacml-2.0-core-spec-os.pdf
+http://portal.opengeospatial.org/files/?artifact_id=11339
+
+
+OGC 07-098r1 
+
+10 Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+4 GeoXACML Data Type for GML2 Encoding (normative) 
+
+The Geography Markup Language GML of Version 2 as specified in [3] defines – beside 
+
+other aspects – the XML encoding for geometric data types.  
+
+In order to use GML2 geometric data type attribute values, this extension to the 
+
+GeoXACML core specification supports the following GML2 data type URIs: 
+
+GML URI 
+
+http://www.opengis.net/gml#Point 
+
+http://www.opengis.net/gml#LineString 
+
+http://www.opengis.net/gml#Polygon 
+
+http://www.opengis.net/gml#LinearRing 
+
+http://www.opengis.net/gml#Box 
+
+http://www.opengis.net/gml#MultiPoint 
+
+http://www.opengis.net/gml#MultiLineString 
+
+http://www.opengis.net/gml#MultiPolygon 
+
+Table 1 — GML2 data type URIs 
+
+ 
+
+
+
+OGC 07-098r1 
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 11 
+ 
+
+ 
+
+Annex A GeoXACML Conformance Table (normative) 
+
+This Annex defines which GML data type definitions are mandatory to be implemented 
+
+toward BASIC conformance. 
+
+In order to pass the BASIC conformance level, an implementation SHALL process ALL 
+
+attribute URIs marked “I” for ALL test cases defined in [2], Annex B.4, B.5 and B.6. 
+
+GML URI 
+Conformance 
+
+Class 
+
+http://www.opengis.net/gml#Point I 
+
+http://www.opengis.net/gml#LineString I 
+
+http://www.opengis.net/gml#Polygon I 
+
+http://www.opengis.net/gml#LinearRing I 
+
+http://www.opengis.net/gml#Box I 
+
+http://www.opengis.net/gml#MultiPoint I 
+
+http://www.opengis.net/gml#MultiLineString I 
+
+http://www.opengis.net/gml#MultiPolygon I 
+
+ 
+
+
+
+OGC 07-098r1 
+
+12 Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+Annex B GML2 Geometry Encoding Examples (informative) 
+
+ 
+
+B.1 Point Geometry 
+
+<gml:Point srsName="http://www.opengis.net/gml/srs/epsg.xml#4326"> 
+
+   <gml:coord>45.256,-110.45</gml:coord> 
+
+ </gml:Point> 
+
+Figure B.1 — GML2 Point Example 
+
+ 
+
+B.2 LineString Geometry 
+
+<gml:LineString srsName=" 
+
+http://www.opengis.net/gml/srs/epsg.xml#4326"> 
+
+   <gml:coordinates>45.256,-110.45 50.4,-100.3</gml:coordinates> 
+
+ </gml:LineString> 
+
+Figure B.2 — GML2 LineString Example 
+
+ 
+
+B.3 Polygon Geometry 
+
+<gml:Polygon gid="P2" srsName=" 
+
+http://www.opengis.net/gml/srs/epsg.xml#4326"> 
+
+ <gml:outerBoundaryIs> 
+
+  <gml:LinearRing> 
+
+         <gml:coordinates cs="," ts=" "> 
+
+-11,55 -10,35 -5.5,36 -1,36 1,38 5,38 11,38 14,36 26,33 29,36 
+
+26,39 29,46 39,47 40,49 27,56 27,60 25,60 20,58 21,56 19,55 
+
+11,55 10,57 7,57 8,54 3,53 -2,60 -8,58 -11,55 -11,55  
+
+       </gml:coordinates> 
+
+      </gml:LinearRing> 
+
+ </gml:outerBoundaryIs> 
+
+</gml:Polygon> 
+
+Figure B.3 — GML2 Polygon Example 
+
+ 
+
+
+
+OGC 07-098r1 
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 13 
+ 
+
+Annex C GeoXACML Policy Construct Examples (informative) 
+
+The following examples are based on the GML2 encoding for geometry types as 
+
+specified in this part (Extension A – GML2 Encoding), according to the underlying 
+
+geometric model as introduced in the core specification of GeoXACML (see [2]). 
+
+C.1 Polygon Geometry Attribute Value 
+
+<AttributeValue DataType="urn:ogc:def:dataType:geoxacml:1.0:geometry"> 
+
+   <gml:Polygon gid="P2" srsName=" 
+http://www.opengis.net/gml/srs/epsg.xml#4326"> 
+
+ <gml:outerBoundaryIs> 
+
+  <gml:LinearRing> 
+
+         <gml:coordinates cs="," ts=" "> 
+
+-11,55 -10,35 -5.5,36 -1,36 1,38 5,38 11,38 14,36 26,33 29,36 
+
+26,39 29,46 39,47 40,49 27,56 27,60 25,60 20,58 21,56 19,55 
+
+11,55 10,57 7,57 8,54 3,53 -2,60 -8,58 -11,55 -11,55  
+
+       </gml:coordinates> 
+
+      </gml:LinearRing> 
+
+ </gml:outerBoundaryIs> 
+
+</gml:Polygon> 
+
+</AttributeValue> 
+
+Figure C.1 — GeoXACML Polygon <AttributeValue> Example 
+
+C.2 MultiPoint Attribute Value 
+
+<AttributeValue DataType="urn:ogc:def:dataType:geoxacml:1.0:geometry"> 
+
+ <gml:MultiPoint xmlns:gml="http://www.opengis.net/gml" 
+
+srsName="urn:EPSG:geographicCRS:4326"> 
+
+  <geometryMember> 
+
+   <gml:Point gid="P1" xmlns:gml="http://www.opengis.net/gml" 
+
+srsName="urn:EPSG:geographicCRS:4326"> 
+
+    <gml:coord> 
+
+     <gml:X>0.0</gml:X><gml:Y>0.0</gml:Y> 
+
+    </gml:coord> 
+
+   </gml:Point> 
+
+  </geometryMember> 
+
+  <geometryMember> 
+
+   <gml:Point gid="P2" xmlns:gml="http://www.opengis.net/gml" 
+
+srsName="urn:EPSG:geographicCRS:4326"> 
+
+    <gml:coord> 
+
+     <gml:X>1.0</gml:X><gml:Y>1.0</gml:Y> 
+
+    </gml:coord> 
+
+   </gml:Point> 
+
+  </geometryMember> 
+
+ </gml:MultiPoint> 
+
+</AttributeValue> 
+
+Figure C.2 — GeoXACML MultiPoint <AttributeValue> Example 
+
+ 
+
+
+
+OGC 07-098r1 
+
+14 Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+C.3 Creating a Bag of Geometries 
+
+<Function FunctionId="urn:ogc:def:function:geoxacml:1.0:geometry-bag"/> 
+
+<AttributeValue DataType="urn:ogc:def:dataType:geoxacml:1.0:geometry"> 
+
+ <gml:Point gid="P1" xmlns:gml="http://www.opengis.net/gml" 
+
+srsName="urn:EPSG:geographicCRS:4326"> 
+
+  <gml:coord> 
+
+   <gml:X>0.0</gml:X><gml:Y>0.0</gml:Y> 
+
+  </gml:coord> 
+
+ </gml:Point> 
+
+</AttributeValue> 
+
+<AttributeValue DataType="urn:ogc:def:dataType:geoxacml:1.0:geometry"> 
+
+ <gml:Point gid="P2" xmlns:gml="http://www.opengis.net/gml" 
+
+srsName="urn:EPSG:geographicCRS:4326"> 
+
+  <gml:coord> 
+
+   <gml:X>1.0</gml:X><gml:Y>1.0</gml:Y> 
+
+  </gml:coord> 
+
+ </gml:Point> 
+
+</AttributeValue> 
+
+Figure C.3 — GeoXACML GeometryBag Example 
+
+ 
+
+C.4 Function 
+
+<Function FunctionId="urn:ogc:def:function:geoxacml:1.0:geometry-
+
+within"/> 
+
+Figure C.4 — GeoXACML Function Example 
+
+ 
+
+C.5  Condition 
+
+<Condition FunctionId="urn:oasis:names:tc:xacml:1.0:function:all-of"> 
+
+  <Function FunctionId="urn:ogc:def:function:geoxacml:1.0:geometry-
+
+contains"/> 
+
+  <AttributeValue 
+
+DataType="urn:ogc:def:dataType:geoxacml:1.0:geometry"> 
+
+    <gml:Polygon gid="P2" srsName=" 
+
+http://www.opengis.net/gml/srs/epsg.xml#4326"> 
+
+    <gml:outerBoundaryIs> 
+
+      <gml:LinearRing><gml:coordinates cs="," ts=" "> 
+
+-11,55 -10,35 -5.5,36 -1,36 1,38 5,38 11,38 14,36 26,33 
+
+29,36 26,39 29,46 39,47 40,49 27,56 27,60 25,60 20,58 21,56 
+
+19,55 11,55 10,57 7,57 8,54 3,53 -2,60 -8,58 -11,55 -11,55  
+
+           </gml:coordinates></gml:LinearRing> 
+
+     </gml:outerBoundaryIs> 
+
+      </gml:Polygon> 
+
+  </AttributeValue> 
+
+  <AttributeSelector DataType= 
+
+urn:ogc:def:dataType:geoxacml:1.0:geometry 
+
+RequestContextPath="//ogc:BBOX/gml:Box"/> 
+
+</Condition> 
+
+Figure C.5 — GeoXACML Condition Example 
+
+
+
+OGC 07-098r1 
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 15 
+ 
+
+Annex D Example for protecting a OWS using GeoXACML (informative) 
+
+This Annex contains the encodings of GeoXACML condition elements to be used for the 
+
+WMS and WFS protection example, presented in Annex C of the core specification. 
+
+D.1 Condition encoding for the WMS example  
+
+For the full example see [2], Annex C. 
+
+<Condition> 
+
+ <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:and"> 
+
+  <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:all-of"> 
+
+   <Function FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-
+
+equal"/> 
+
+   <AttributeValue 
+
+DataType="http://www.w3.org/2001/XMLSchema#string">Capitals</AttributeValue> 
+
+   <AttributeSelector 
+
+RequestContextPath="//wms:GetMap/*/sld:NamedLayer/sld:Name" 
+
+DataType="http://www.w3.org/2001/XMLSchema#string"/> 
+
+  </Apply> 
+
+  <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:not"> 
+
+   <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:any-of"> 
+
+    <Function 
+
+FunctionId="urn:ogc:def:function:geoxacml:1.0:geometry-contains"/> 
+
+    <AttributeValue 
+
+DataType="urn:ogc:def:dataType:geoxacml:1.0:geometry"> 
+
+     <gml:Polygon gid="North and South America" srsName=" 
+
+http://www.opengis.net/gml/srs/epsg.xml#4326" 
+
+xmlns:gml="http://www.opengis.net/gml"> 
+
+      <gml:outerBoundaryIs> 
+
+       <gml:LinearRing> 
+
+        <gml:coordinates cs="," ts=" ">-180,60 -180,47 -
+
+137,55 -125,35 -110,17 -80,5 -87,-5 -74,2 -78,-53 -67,-58 -60,-48 -35,-23 -
+
+27,-3 -55,12 -60,22 -75,30 -67,42 -50,45 -60,85 -60,85 -85,85 -120,80 -130,75 
+
+-160,75 -168,70 -180,60</gml:coordinates> 
+
+       </gml:LinearRing> 
+
+      </gml:outerBoundaryIs > 
+
+     </gml:Polygon> 
+
+    </AttributeValue> 
+
+    <AttributeSelector RequestContextPath="//gml:boundedBy/gml:Box" 
+
+DataType="urn:ogc:def:dataType:geoxacml:1.0:geometry"/> 
+
+   </Apply> 
+
+  </Apply> 
+
+  <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:all-of"> 
+
+   <Function FunctionId="urn:ogc:def:function:geoxacml:1.0:geometry-
+
+disjoint"/> 
+
+   <AttributeValue DataType=" 
+
+urn:ogc:def:dataType:geoxacml:1.0:geometry"> 
+
+     <gml:Polygon gid="North and South America" srsName=" 
+
+http://www.opengis.net/gml/srs/epsg.xml#4326" 
+
+xmlns:gml="http://www.opengis.net/gml"> 
+
+      <gml:outerBoundaryIs> 
+
+       <gml:LinearRing> 
+
+        <gml:coordinates cs="," ts=" ">-180,60 -180,47 -
+
+137,55 -125,35 -110,17 -80,5 -87,-5 -74,2 -78,-53 -67,-58 -60,-48 -35,-23 -
+
+27,-3 -55,12 -60,22 -75,30 -67,42 -50,45 -60,85 -60,85 -85,85 -120,80 -130,75 
+
+-160,75 -168,70 -180,60</gml:coordinates> 
+
+       </gml:LinearRing> 
+
+
+
+OGC 07-098r1 
+
+16 Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+      </gml:outerBoundaryIs > 
+
+     </gml:Polygon> 
+
+   </AttributeValue> 
+
+   <AttributeSelector RequestContextPath="//gml:boundedBy/gml:Box" 
+
+DataType=" urn:ogc:def:dataType:geoxacml:1.0:geometry"/> 
+
+  </Apply> 
+
+ </Apply> 
+
+</Condition> 
+
+Figure D.1 — GeoXACML Condition using GML2 geometry encoding 
+
+ 
+
+<Condition> 
+
+ <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:and"> 
+
+  <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:all-of"> 
+
+   <Function FunctionId="urn:oasis:names:tc:xacml:1.0:function:string-
+
+equal"/> 
+
+   <AttributeValue 
+
+DataType="http://www.w3.org/2001/XMLSchema#string">Capitals</AttributeValue> 
+
+   <AttributeSelector 
+
+RequestContextPath="//wms:GetMap/*/sld:NamedLayer/sld:Name" 
+
+DataType="http://www.w3.org/2001/XMLSchema#string"/> 
+
+  </Apply> 
+
+  <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:all-of"> 
+
+   <Function FunctionId="urn:ogc:def:function:geoxacml:1.0:geometry-
+
+contains"/> 
+
+   <AttributeValue DataType=" 
+
+urn:ogc:def:dataType:geoxacml:1.0:geometry"> 
+
+    <gml:Polygon gid="Europe" srsName=" 
+
+http://www.opengis.net/gml/srs/epsg.xml#4326" 
+
+xmlns:gml="http://www.opengis.net/gml"> 
+
+     <gml:outerboundaryIs> 
+
+      <gml:LinearRing> 
+
+       <gml:coordinates cs="," ts=" ">-11,55 -10,35 -5.5,36 
+
+-1,36 1,38 5,38 11 38 14 36 26 33 29,36 26,39 29,46 39 47 40 49 27,56 27,60 
+
+25,60 20,58 21,56 19,55 11,55 10,57 7,57 8,54 3,53 -2,60 -8,58 -11,55 -11,55 
+
+                          </gml:coordinates> 
+
+      </gml:LinearRing> 
+
+     </gml:outerboundaryIs > 
+
+    </gml:Polygon> 
+
+   </AttributeValue> 
+
+   <AttributeSelector RequestContextPath="//gml:boundedBy/gml:Box" 
+
+DataType="urn:ogc:def:dataType:geoxacml:1.0:geometry"/> 
+
+  </Apply> 
+
+ </Apply> 
+
+</Condition> 
+
+Figure D.2 — GeoXACML Condition using GML2 geometry encoding 
+
+ 
+
+
+
+OGC 07-098r1 
+
+Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 17 
+ 
+
+D.2 Condition encoding for the WFS example 
+
+For the full example see [2], Annex C. 
+
+<Condition> 
+
+ <Apply FunctionId="urn:oasis:names:tc:xacml:1.0:function:all-of"> 
+
+  <Function FunctionId="urn:ogc:def:function:geoxacml:1.0:contains"/> 
+
+  <AttributeValue DataType="urn:ogc:def:dataType:geoxacml:1.0:geometry"> 
+
+   <gml:Polygon gid="P" srsName="EPSG:4326" 
+
+xmlns:gml="http://www.opengis.net/gml"> 
+
+    <gml:outerBoundaryIs> 
+
+     <gml:LinearRing> 
+
+      <gml:coordinates cs="," ts=" ">-
+
+74.28798767828596,40.72400955310945 -74.12552621736093,40.722605998371435 -
+
+74.12552621736093,40.614883172228936 -74.28939123302396,40.61558494959794 -
+
+74.28798767828596,40.72400955310945 -74.28798767828596,40.72400955310945 -
+
+74.28798767828596,40.72400955310945</gml:coordinates> 
+
+     </gml:LinearRing> 
+
+    </gml:outerBoundaryIs> 
+
+   </gml:Polygon> 
+
+  </AttributeValue> 
+
+  <AttributeSelector 
+
+DataType="urn:ogc:def:dataType:geoxacml:1.0:geometry" 
+
+RequestContextPath="//wfs:Transaction/wfs:Insert/ows4:HeliPad_P2/ows4:the_geom/
+
+gml:Point" /> 
+
+ </Apply> 
+
+</Condition> 
+
+Figure D.3 — GeoXACML Condition using GML2 geometry encoding 
+
+ 
+
+
+
+OGC 07-098r1 
+
+18 Copyright © 2007 Open Geospatial Consortium, Inc. All Rights Reserved. 
+ 
+
+Bibliography 
+
+[4] OASIS, Core and hierarchical role based access control (RBAC) profile of XACML 
+v2.0, 2005-02-01, http://docs.oasis-open.org/xacml/2.0/access_control-xacml-2.0-
+
+rbac-profile1-spec-os.pdf  
+
+[5] OASIS, SAML 2.0 profile of XACML v2.0, 2005-02-01, http://docs.oasis-
+open.org/xacml/2.0/access_control-xacml-2.0-saml-profile-spec-os.pdf  
+
+[6] Cover Pages, Extensible Access Control Markup Language (XACML), 
+http://xml.coverpages.org/xacml.html  
+
+[7] OGC, The OpenGIS® Abstract Specification Topic 18: Geospatial Digital Rights 
+Management Reference Model (GeoDRM RM), Version: 1.0.0, 2006-12-29, 
+
+http://portal.opengeospatial.org/files/?artifact_id=17802 
+
+[8] Vivid Solutions, JTS Topology Suite Technical Specifications, Version 1.4, 
+http://www.vividsolutions.com/JTS/bin/JTS%20Technical%20Specs.pdf  
+
+[9]  OGC, OpenGIS® Web Service Common Implementation Specification, Version 
+1.0.0, 2005-11-22, http://portal.opengeospatial.org/files/?artifact_id=8798  
+
+[10] OGC, OpenGIS® Web Map Service Implementation Specification, Version 1.3.0, 
+
+2004-01-20, http://portal.opengeospatial.org/files/?artifact_id=4756  
+
+[11] OGC, OpenGIS® Web Feature Service Implementation Specification, Version 1.1.0, 
+
+2005-05-03, http://portal.opengeospatial.org/files/?artifact_id=8339  
+
+http://docs.oasis-open.org/xacml/2.0/access_control-xacml-2.0-rbac-profile1-spec-os.pdf
+http://docs.oasis-open.org/xacml/2.0/access_control-xacml-2.0-rbac-profile1-spec-os.pdf
+http://docs.oasis-open.org/xacml/2.0/access_control-xacml-2.0-saml-profile-spec-os.pdf
+http://docs.oasis-open.org/xacml/2.0/access_control-xacml-2.0-saml-profile-spec-os.pdf
+http://xml.coverpages.org/xacml.html
+http://portal.opengeospatial.org/files/?artifact_id=17802
+http://www.vividsolutions.com/JTS/bin/JTS%20Technical%20Specs.pdf
+http://portal.opengeospatial.org/files/?artifact_id=8798
+http://portal.opengeospatial.org/files/?artifact_id=4756
+http://portal.opengeospatial.org/files/?artifact_id=8339
+
+	1 Scope
+	2 Conformance
+	3 Normative references
+	4 GeoXACML Data Type for GML2 Encoding (normative)
+	Annex A GeoXACML Conformance Table (normative)
+	Annex B GML2 Geometry Encoding Examples (informative)
+	B.1 Point Geometry
+	B.2 LineString Geometry
+	B.3 Polygon Geometry
+
+	Annex C GeoXACML Policy Construct Examples (informative)
+	C.1 Polygon Geometry Attribute Value
+	C.2 MultiPoint Attribute Value
+	C.3 Creating a Bag of Geometries
+	C.4 Function
+	C.5  Condition
+
+	Annex D Example for protecting a OWS using GeoXACML (informative)
+	D.1 Condition encoding for the WMS example
+	D.2 Condition encoding for the WFS example
+
+

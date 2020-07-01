@@ -1,0 +1,904 @@
+
+ 
+
+  
+ 
+
+Open Geospatial Consortium, Inc. 
+
+Date: 18-August-2010 
+
+Reference number of this document: OGC 10-059r2 
+
+Category: Pubic Engineering Report 
+
+Editors: Christian Kiehle, Theodor Foerster 
+
+OGC
+®
+ OWS-7 Web Processing Service Profiling Engineering 
+
+Report 
+
+ 
+
+ 
+
+Copyright © 2010 Open Geospatial Consortium, Inc. 
+
+To obtain additional rights of use, visit http://www.opengeospatial.org/legal/. 
+
+Warning 
+
+This document is not an OGC Standard. This document is an OGC Public 
+
+Engineering Report created as a deliverable in an OGC Interoperability Initiative 
+
+and is not an official position of the OGC membership. It is distributed for review 
+
+and comment. It is subject to change without notice and may not be referred to as 
+
+an OGC Standard. Further, any OGC Engineering Report should not be referenced 
+
+as required or mandatory technology in procurements. 
+
+ 
+
+Document type:  OpenGIS
+® 
+
+Public Engineering Report 
+
+Document subtype: NA 
+
+Document stage:  Approved for public release 
+
+Document language:  English 
+
+http://www.opengeospatial.org/legal/
+
+
+OGC 10-059r2 
+
+ii Copyright © 2010 Open Geospatial Consortium, Inc.  
+ 
+
+ 
+
+Preface 
+
+Within the scope of OGC Web Services, Phase 7 (OWS-7) Testbed the Open Geospatial 
+
+Consortium (OGC®) several Web Processing Services (WPS) provide access to Feature 
+
+and Statistical Analysis (FSA) functionality. In order to provide interoperability beyond 
+
+the rather coarse grained WPS interface, a detailed description of a 'WPS profile for FSA' 
+
+should be provided. The use of the term WPS profile is not well defined. The current 
+
+Engineering Report gives advice on the architecture of a WPS profile and provides some 
+
+working examples of a FSA profile.  
+
+ 
+
+ 
+
+
+
+OGC 10-059r2 
+
+Copyright © 2010 Open Geospatial Consortium, Inc.  iii 
+ 
+
+Contents  Page 
+
+1 Introduction ..............................................................................................................1 
+
+1.1 Scope ...................................................................................................................1 
+1.2 Document contributor contact points ..................................................................1 
+1.3 Revision history ...................................................................................................1 
+1.4 Future work .........................................................................................................2 
+1.5 Forward ...............................................................................................................2 
+
+2 References ................................................................................................................2 
+
+3 Terms and definitions ..............................................................................................2 
+
+4 Conventions .............................................................................................................3 
+
+4.1 Abbreviated terms ...............................................................................................3 
+4.2 UML notation ......................................................................................................4 
+
+5 ER Topic overview ..................................................................................................4 
+
+6 Profiling design guidelines ......................................................................................4 
+6.1 Example Vector Topology Profile ......................................................................4 
+
+6.2 Design WPS Profiles using RM ODP .................................................................5 
+6.2.1 Enterprise Viewpoint ......................................................................................6 
+6.2.2 Information Viewpoint....................................................................................6 
+
+6.2.3 Computational Viewpoint ...............................................................................6 
+6.2.4 Technology Viewpoint....................................................................................6 
+
+6.3 WPS Profile Entry Points ....................................................................................6 
+
+7 URN management ....................................................................................................7 
+
+8 Profile deployment ...................................................................................................7 
+
+9 Example walk through .............................................................................................8 
+
+10 Lessons learned and open issues ..............................................................................8 
+ 
+
+Figures 
+
+Figure 1: Basic interaction with WPS Profiles. .......................................................................... 8 
+
+Tables 
+
+Table 1: Aspects of the RM ODP model for WPS Profiles. ....................................................... 5 
+
+
+
+OGC 10-059r2 
+
+iv Copyright © 2010 Open Geospatial Consortium, Inc.  
+ 
+
+  
+
+ 
+
+
+
+OpenGIS
+®
+ Public Engineering Report OGC 10-059r2 
+
+ 
+
+Copyright © 2010 Open Geospatial Consortium, Inc.  1 
+ 
+
+OGC
+®
+ OWS-7 WPS Profiling Engineering Report 
+
+1 Introduction 
+
+This OGC Engineering Report (ER) provides discussions and recommendations for 
+
+defining, registering and using Web Processing Service (WPS) profiles. It will especially 
+
+focus on the usage of a Feature and Statistical Analysis (FSA) profile for WPS as this has 
+
+been targeted within OWS-7 WPS-FSA cross-thread effort. However, this ER will make 
+
+recommendations on defining WPS profiles in general and give advise on how to register 
+
+a profile to make it available for third-party users.  
+
+ 
+
+1.1 Scope 
+
+The overall scope of this ER is to clarify how to write and register a WPS profile. WPS 
+
+profiles enable clients to search and identify equivalent WPS-based processes distributed 
+
+on the web. Therefore, this ER provides guidelines for designing WPS Profiles based on 
+
+WPS interface specification 1.0.0. 
+
+It is important to note that Web Coverage Processing Service specification is out of scope 
+
+of this ER, as OWS-7 is focusing on vector-based operations and excludes Map Algebra 
+
+operations, which are the basis for WCPS. 
+
+ 
+
+1.2 Document contributor contact points 
+
+All questions regarding this document should be directed to the editor or the contributors: 
+
+Name Organization 
+
+Christian Kiehle lat/lon GmbH 
+
+Theodor Foerster Institute for Geoinformatics 
+
+ 
+
+1.3 Revision history 
+
+Date Release Editor Primary clauses 
+modified 
+
+Description 
+
+23.2.2010  CK,TF ALL Initial draft 
+
+30.3.2010  CK, TF ALL Document structure 
+
+26.5.2010  CK, TF ALL Draft submitted to Pending Documents 
+
+30.6.2010  CK, TF ALL Final version prepared 
+
+
+
+OGC 10-059r2 
+
+2 Copyright © 2010 Open Geospatial Consortium, Inc.  
+ 
+
+ 
+
+1.4 Future work 
+
+Improvements in this document are desirable to support workflow chaining of WPS-
+
+based processes and enhance interoperability between WPS profiles. 
+
+1.5 Forward  
+
+Attention is drawn to the possibility that some of the elements of this document may be 
+
+the subject of patent rights. The Open Geospatial Consortium Inc. shall not be held 
+
+responsible for identifying any or all such patent rights. 
+
+Recipients of this document are requested to submit, with their comments, notification of 
+
+any relevant patent claims or other intellectual property rights of which they may be 
+
+aware that might be infringed by any implementation of the standard set forth in this 
+
+document, and to provide supporting documentation. 
+
+2 References 
+
+The following documents are referenced in this document. For dated references, 
+
+subsequent amendments to, or revisions of, any of these publications do not apply. For 
+
+undated references, the latest edition of the normative document referred to applies. 
+
+OGC 06-121r3, OpenGIS
+®
+
+ Web Services Common Standard 
+NOTE This OWS Common Specification contains a list of normative references that are also applicable to 
+this Implementation Specification. 
+
+OGC 05-007r7, OpenGIS® Web Processing Service 
+
+OGC 08-062r4. OGC Reference Model 
+
+OGC 09-046r2, OGC Naming Authority - Procedures 
+
+OGC 09-047r2, Name type specification - documents 
+
+OGC 09-048r3, Name type specification – definitions – part 1 – basic name 
+
+OGC 09-049r1, OGC urn policies. Name type specification – specification elements 
+
+OGC 10-074, OGC OWS-7 Feature and Statistical Analysis Engineering Report 
+
+IETF RFC 5165, A Uniform Resource Name (URN) Namespace for the Open Geospatial 
+
+Consortium (OGC) 
+
+ISO 19109:2005(E), Geographic information -- Rules for application schema 
+
+ 
+
+3 Terms and definitions 
+
+For the purposes of this report, the definitions specified in Clause 4 of the OWS Common 
+
+Implementation Specification [OGC 06-121r3] shall apply. In addition, the following 
+
+terms and definitions apply. 
+
+
+
+OGC 10-059r2 
+
+Copyright © 2010 Open Geospatial Consortium, Inc.  3 
+ 
+
+1. Application profile 
+An Application Profile (AP) is considered to be a subtype of an OpenGIS 
+
+Implementation Standard (OGC 08-062r4). It serves more detailed information about a 
+
+specific domain than the standard itself. An AP specifies required interfaces, bindings 
+
+and encodings to publish and access data. 
+
+2. Application Schema 
+In contrast to an application profile, an application schema derives from the ISO standard 
+
+19109 about rules for GI application schema: “An application schema provides the 
+
+formal description of the data structure and content required by one or more applications. 
+
+An application schema contains the descriptions of both geographic data and other related 
+
+data.” (ISO 19109:2005) 
+
+3. Process classification 
+Classifications allow users and systems to handle complexity. They support decision 
+
+making and selecting the appropriate approach regarding a specific problem.  
+
+4. Uniform Resource Name (URN) 
+A URN identifies resources on the web following a specific urn scheme specified by 
+
+OGC. 
+
+5. WPS 
+The term Web Processing Service (WPS) describes a service instance of a WPS server. A 
+
+WPS is a container for one or many processes. The capabilities of a WPS contain the list 
+
+of services which are hosted by the WPS. Each process is further described by a Process 
+
+Description.  
+
+6. Process Description 
+The term process description relates to the response of a describe process request (OGC 
+
+05-007r7). A process description contains all data to issue a execute request for a specific 
+
+process. A process description is based on the XML Schema document located at 
+
+http://schemas.opengis.net/wps/1.0.0/wpsDescribeProcess_response.xsd 
+
+7. WPS profile 
+According to the WPS specification (OGC 05-007r7), a WPS Application Profile should 
+
+be defined as a standalone document containing: 
+
+ An Universal Resource Name (URN) that uniquely identifies the process 
+
+ A reference response to a DescribeProcess request for that process (reference 
+
+process schema),  
+
+ A human-readable description of the process and its implementation (optional, but 
+
+recommended). 
+
+ A Web Service Description Language (WSDL) document for that process 
+
+(optional). 
+
+4 Conventions 
+
+4.1 Abbreviated terms 
+
+ AP Application Profile 
+
+ ER Engineering Report 
+
+ FDF Feature and Decision Fusion 
+
+ FSA Feature and Statistical Analysis 
+
+ GI Geographic Information 
+
+
+
+OGC 10-059r2 
+
+4 Copyright © 2010 Open Geospatial Consortium, Inc.  
+ 
+
+ GML Geography Markup Language 
+
+ IETF Internet Engineering Task Force 
+
+ ISO International Organization for Standardization 
+
+ OGC Open Geospatial Consortium 
+
+ ONA Open Geospatial Consortium Naming Authority 
+
+ OWS Open Geospatial Consortium Web Services 
+
+ RFC Request for Comments 
+
+ RM ODP Reference Model for Open Distributed Processing 
+
+ UML Unified Modeling Language 
+
+ URN Universal Resource Name 
+
+ WCPS Web Coverage Processing Service 
+
+ WPS Web Processing Service 
+
+ WSDL Web Service Description Language 
+
+ XML Extensible Markup Language 
+
+ 
+
+4.2 UML notation 
+
+Most diagrams that appear in this standard are presented using the Unified Modeling 
+
+Language (UML) static structure diagram, as described in Subclause 5.2 of [OGC 06-
+
+121r3]. 
+
+5 ER Topic overview 
+
+This Engineering Report addresses the development of a common pattern for defining 
+
+and describing WPS profiles, guiding the WPS Profile developments across all threads of 
+
+OWS-7. This ER is coordinated with SFE Change Detection ER, FDF FSA ER, and prior 
+
+OGC work with WPS. 
+
+6 Profiling design guidelines 
+
+This section presents design guidelines based on the RM ODP model. 
+
+6.1 Example Vector Topology Profile 
+
+Within OWS-7 participants agreed on a list of example processes for a topology profile. 
+
+The processes are derived from the ISO 19125 specification “Geographic Information – 
+
+Simple Feature Access”. The operators are:  
+
+ equals 
+
+ disjoint 
+
+ intersects 
+
+ touches 
+
+ crosses 
+
+ within 
+
+ contains 
+
+ overlaps 
+
+These operators are provided as processes through a Web Processing Service interface. 
+
+Each process is described by a process description according to the WPS interface 
+
+
+
+OGC 10-059r2 
+
+Copyright © 2010 Open Geospatial Consortium, Inc.  5 
+ 
+
+specification. The description for the all the operators is listed in the Annex of the Feature 
+
+and Statistical Analysis Engineering Report. 
+
+The processes of the topology profile accept as input parameters KML, subversions of 
+
+GML 3 and GML 2, respectively. The output is a boolean literal. Other processes could 
+
+produce geometric output like GML as well.  
+
+Based on ISO 19125 the operations mentioned above comprise a useful set of operations 
+
+to compute vector- and topology relations. Other potential candidates for profiles are 
+
+Map Algebra, Generalizations Algorithms and Geostatistics.  
+
+6.2 Design WPS Profiles using RM ODP 
+
+This section provides a guideline for designing WPS Profiles. Designing WPS Profiles is 
+
+a challenge not only regarding choosing the appropriate input and output type definitions, 
+
+but also regarding choosing appropriate classifications. For this reason, a holistic 
+
+approach is required to reflect the complexity of appropriate process design. 
+
+One approach to model processes is the Reference Model of Open Distributed Processing 
+
+(RM ODP). It is comprehensive as it tackles the design aspect from various viewpoints: 
+
+ Enterprise viewpoint 
+
+ Information viewpoint 
+
+ Computational viewpoint 
+
+ Engineering viewpoint 
+
+ Technology viewpoint. 
+
+As RM ODP focuses on modeling distributed systems, describing some viewpoints for 
+
+WPS Profiles is trivial, such as the engineering viewpoint. The questions to be issues 
+
+regarding the other viewpoints are described in Table 1. 
+
+Viewpoint Enterprise Information Computation Technology 
+
+Areas of 
+concern 
+
+Objectives 
+of 
+processes 
+
+Information 
+models and 
+information 
+manipulation 
+
+Logical 
+decomposition 
+of processes 
+
+Technical 
+artifacts and 
+solutions 
+
+Main 
+concepts 
+
+Artifacts, 
+roles 
+
+Data 
+schemas 
+
+Computational 
+interfaces 
+
+Table 1: Aspects of the RM ODP model for WPS Profiles. 
+
+ 
+
+
+
+OGC 10-059r2 
+
+6 Copyright © 2010 Open Geospatial Consortium, Inc.  
+ 
+
+6.2.1 Enterprise Viewpoint 
+
+In the enterprise viewpoint, the objectives of the set of processes are identified. 
+
+Additionally, it is interesting to know, which artifacts are processed by which roles. This 
+
+helps to identify the level of granularity of the specific processes. Granularity describes 
+
+the level of complexity of the modeled process as well as of the modeled information. 
+
+6.2.2 Information Viewpoint 
+
+In the information viewpoint, the information models are described and the manipulation 
+
+of this information regarding the set of processes is specified. These information models 
+
+are mostly described in data schemas.  
+
+6.2.3 Computational Viewpoint 
+
+In the computational viewpoint the decomposition of the processes is described, which 
+
+basically also involves to select the granularity of the processes. The granularity of a 
+
+specific process also depends on the design of its interface (syntax). The syntax of the 
+
+processes applies the information models described in the information viewpoint. 
+
+6.2.4 Technology Viewpoint 
+
+Finally, these information models are specified in the technology viewpoint by describing 
+
+the particular encoding of the inputs and outputs of the process. For the OWS-7 testbed 
+
+GML 2, GML 3, KML have been identified as appropriate candidate input/output types. 
+
+After the WPS Profile is designed, it should be registered at the OGC to retrieve a URN. 
+
+This URN should be identified within the published process descriptions and sharable 
+
+with others. However, before designing and registering new profiles, a developer should 
+
+identify existing profiles and evaluate their reuse.  
+
+6.3 WPS Profile Entry Points  
+
+This section describes the entry points of GetCapabilities and DescribeProcess response 
+
+documents to reference specific profiles. This requires that the service provider has 
+
+identified in a previous step the appropriate WPS Profile to be referenced. 
+
+The GetCapabilities response document contains two different profile elements: 
+
+ The first profile element (Capabilities/ServiceIdentification/Profile) is inherited 
+
+from OWS Common and is an unnecessary duplication of the second. The only 
+
+justification to preserve this element here is, that OWS Common clients expect to 
+
+find profile information within this element.  
+
+ The second profile element (Capabilities/ProcessOfferings/Process/Profile) 
+
+applies to a specific process and is thus useful to support service discovery and 
+
+appropriately positioned in the schema.  
+
+The DescribeProcess response document contains one profile element 
+
+(ProcessDescriptions/ProcessDescription/Profile). This is intended to be a duplicate of 
+
+
+
+OGC 10-059r2 
+
+Copyright © 2010 Open Geospatial Consortium, Inc.  7 
+ 
+
+the second GetCapabilitiesResponse profile element. It is duplicated here deliberately in 
+
+order to allow a client to confirm that a specific behavior should be able to be applied in 
+
+order to generate a User Interface or workflow. 
+
+7 URN management 
+
+This section describes, how URNs can be created in the OGC realm. The technical 
+
+baseline for URNs is detailed within the following set of documents: 
+
+ OGC 09-046r2, OGC Naming Authority - Procedures 
+
+ OGC 09-047r2, Name type specification - documents 
+
+ OGC 09-048r3, Name type specification – definitions – part 1 – basic name 
+
+ OGC 09-049r1, OGC urn policies. Name type specification – specification 
+
+elements 
+
+ IETF RFC 5165, A Uniform Resource Name (URN) Namespace for the Open 
+
+Geospatial Consortium (OGC) 
+
+ 
+
+The Open Geospatial Consortium Naming Authority (ONA) manages the assignment and 
+
+management of resources withing the Naming Authority. To register a URN within ONA 
+
+an OGC member has to complete a URN proposal and send this proposal to the 
+
+names@opengeospatial.org. According to IETF RFC 5165 the generic syntax for OGC 
+
+URNs is: 
+
+URN = "urn:ogc:" OGCResource ":" ResourceSpecificString 
+
+ 
+
+ONA will review the proposal. After acceptance, the requested URN will be publicly 
+
+available within the OGC Naming Authority registry. The OGC Naming Authority hosts 
+
+an URN resolver which resolves an URN to a specific resource, e.g. a document 
+
+describing a WPS profile.  
+
+ 
+
+The resolver tool is available online: http://urn.opengis.net/  
+
+ 
+
+Attention is drawn to the fact that each process of a profile should be registered within 
+
+the OGC Naming Authority as well as the profile document itself. Section “profile 
+
+deployment” describes the necessary steps.  
+
+8 Profile deployment 
+
+Profile deployment is the last necessary step to share a WPS profile and allow other 
+
+parties to implement software components based on the definitions made within the 
+
+profile. Profile deployment requires: 
+
+ Document containing a description of the profile (processes, scope, use-cases, 
+
+etc.) 
+
+ Universal Resource Name (URN) that uniquely identifies the profile document. 
+
+ A reference response to a DescribeProcess request for each process, 
+
+ if applicable, a Web Service Description Language (WSDL) document each 
+
+process.  
+
+mailto:names@opengeospatial.org
+http://urn.opengis.net/
+
+
+OGC 10-059r2 
+
+8 Copyright © 2010 Open Geospatial Consortium, Inc.  
+ 
+
+It is not necessary to provide a working reference implementation, although this is 
+
+considered as good style to ensure interoperability and ease the development of 
+
+interoperable software components.  
+
+ 
+
+The Feature and Statistical Analysis profile would be referenced as  
+
+urn:ogc:doc:SAP:WPS:FSAProfile 
+
+9 Example walk through 
+
+This section describes, how WPS profiles are used, whenever they are referenced by a 
+
+WPS. The course of action is depicted in Figure 1. 
+
+ 
+
+ 
+
+Figure 1: Basic interaction with WPS Profiles. 
+
+A user accesses a given WPS and queries its available processes. Some of the processes 
+
+implement a WPS Profile, which is indicated by a referenced URN. The client retrieves 
+
+the description of the specific process, by accessing the profile using the URN. In 
+
+particular, the user retrieves the specific process description, by searching the URN 
+
+resolver. The URN resolver returns a URL of the process description (i.e. the WPS 
+
+Profile) to the user, which he/she can use to access the process description.  
+
+10 Lessons learned and open issues 
+
+Profiling of Web Processing Services is a crucial task to achieve syntactic interoperability 
+
+between services, processes and input/output data. It is therefore important to provide the 
+
+basis for service chaining, service orchestration and the development and deployment of 
+
+WPS-based workflows. Within OWS-7 there was a lively discussion between providers 
+
+of data services (mainly Web Feature Services and Sensor Observation Services) and 
+
+especially processing services. During the still ongoing discussion some unresolved 
+
+issues were unfolded: 
+
+
+
+OGC 10-059r2 
+
+Copyright © 2010 Open Geospatial Consortium, Inc.  9 
+ 
+
+ Which document should be used to provide the information needed to describe a 
+
+profile? 
+
+ Which would be the workflow to publish a profile so that other vendors/users 
+
+could implement / use this profile? 
+
+ Who would be responsible to review a submitted profile? 
+
+ Is it necessary to provide a proof-of-concept implementation along with the 
+
+profile? 
+
+ What is the distinction between a Process Description, a WPS Profile, a WPS 
+
+Application Profile, a Profile of the WPS Specification and how do these terms 
+
+relate to the core-and-extension model? 
+
+ How could processes and services be described semantically to achieve 
+
+interoperability (i.e. ensure the concept of a spatial buffer is a commonly agreed 
+
+concept) 
+
+ Should data formats for process input / process outputs be mandatory? Which data 
+
+formats should be mandatory? 
+
+ 
+
+Due to the fact that the implementation of the WPS instances began during the late 
+
+project stage of OWS-7, it was not possible to review the experiences made by WPS 
+
+developers. It would have been important to integrate those findings into the current 
+
+report. Furthermore, none of the participants developed a WPS profile in its strict sense 
+
+(i.e. provide a human readable document, register an URN and provide example Describe 
+
+Process Responses). The experiences gained here would be an interesting source of 
+
+information to be included in an Engineering Report and should be the basis for deriving 
+
+a best practice approach. 
+
+ 
+
+It is obvious that WPS profiling needs more attention and should be considered by 
+
+different domain experts. Discussion on WPS profiling will need a significant effort and 
+
+amount of time, so it is advisable to facilitate a Technology Integration Experiment (TIE) 
+
+to further explore issues and possible solutions for interoperable processes.  
+
+ 
+
+
+	Open Geospatial Consortium, Inc.
+	OGC® OWS-7 Web Processing Service Profiling Engineering Report
+	Warning
+	Preface
+	OGC® OWS-7 WPS Profiling Engineering Report
+	Introduction
+	Scope
+	Document contributor contact points
+	Revision history
+	Future work
+	Forward
+
+	References
+	Terms and definitions
+	Conventions
+	Abbreviated terms
+	UML notation
+
+	ER Topic overview
+	Profiling design guidelines
+	Example Vector Topology Profile
+	Design WPS Profiles using RM ODP
+	Enterprise Viewpoint
+	Information Viewpoint
+	Computational Viewpoint
+	Technology Viewpoint
+
+	WPS Profile Entry Points
+
+	URN management
+	Profile deployment
+	Example walk through
+	Lessons learned and open issues
+

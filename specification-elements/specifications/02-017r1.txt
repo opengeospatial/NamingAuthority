@@ -1,0 +1,919 @@
+
+ 
+
+ 
+
+OpenGIS Project Document 02-017r1 
+
+TITLE:  Web Map Service Implementation Specification  Part 2: 
+XML for Requests using HTTP POST 
+
+ 
+Author (s):  Jeff de La Beaujardière 
+Address:  NASA Goddard Space Flight Center, Code 933 
+
+Greenbelt MD 20771 USA 
+  
+Phone:  +1 301 286 1569 
+Email:   delabeau@iniki.gsfc.nasa.gov 
+DATE:    4/24/2002  
+CATEGORY:  OpenGIS® Discussion Paper 
+ 
+
+ 
+
+ 
+
+Warning 
+This document is not an OGC Standard or Specification. This document presents a 
+discussion of technology issues considered in an Interoperability Initiative of the OGC 
+Interoperability Program. The content of this document is presented to create discussion 
+in the geospatial information industry on this topic; the content of this document is not to 
+be considered an adopted specification of any kind. This document does not represent the 
+official position of the OGC nor of the OGC Technical Committee. It is subject to change 
+without notice and may not be referred to as an OGC Standard or Specification. 
+However, the discussions in this document could very well lead to the definition of an 
+OGC Implementation Specification.  
+ 
+Recipients of this document are invited to submit, with their comments, notification of 
+any relevant patent rights of which they are aware and to provide supporting 
+documentation. 
+ 
+
+ 
+ 
+
+
+
+ 
+
+ 
+
+Open GIS Consortium Inc.  
+
+Date: 2002-04-24 
+
+Reference number of this OpenGIS® project document: 02-017r1 
+
+Version: 0.0.3 
+
+Category: OpenGIS® Discussion Paper 
+
+Status: Public 
+
+Editor:   Jeff de La Beaujardière 
+
+ 
+
+Web Map Service Implementation Specification  Part 2: XML for 
+Requests using HTTP POST 
+
+ 
+
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Document type:  OpenGIS® Discussion Paper 
+Document stage:  Public 
+Document language: English 
+ 
+WARNING: The Open GIS Consortium (OGC) releases this Discussion Paper to the public without 
+warranty. It is subject to change without notice. This Discussion Paper is currently under active 
+revision by the OGC Technical Committee 
+
+Requests for clarification and/or revision can be made by contacting the OGC at 
+revisions@opengis.org. 
+
+
+
+ 
+
+ 3
+
+The companies listed above have granted the Open GIS Consortium, Inc. (OGC) a nonexclusive, royalty-free, paid up, worldwide 
+license to copy and distribute this document and to modify this document and distribute copies of the modified version. 
+ 
+This document does not represent a commitment to implement any portion of this specification in any company’s products. 
+ 
+OGC’s Legal, IPR and Copyright Statements are found at http://www.opengis.org/legal/ipr.htm 
+
+ 
+NOTICE 
+
+ 
+Permission to use, copy, and distribute this document in any medium for any purpose and without fee or royalty is hereby granted, 
+provided that you include the above list of copyright holders and the entire text of this NOTICE.  
+  
+We request that authorship attribution be provided in any software, documents, or other items or products that you create pursuant to 
+the implementation of the contents of this document, or any portion thereof. 
+ 
+No right to create modifications or derivatives of OGC documents is granted pursuant to this license. However, if additional 
+requirements (as documented in the Copyright FAQ at http://www.opengis.org/legal/ipr_faq.htm) are satisfied, the right to create 
+modifications or derivatives is sometimes granted by the OGC to individuals complying with those requirements. 
+ 
+THIS DOCUMENT IS PROVIDED "AS IS," AND COPYRIGHT HOLDERS MAKE NO REPRESENTATIONS OR 
+WARRANTIES, EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY, 
+FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, OR TITLE; THAT THE CONTENTS OF THE 
+DOCUMENT ARE SUITABLE FOR ANY PURPOSE; NOR THAT THE IMPLEMENTATION OF SUCH CONTENTS WILL 
+NOT INFRINGE ANY THIRD PARTY PATENTS, COPYRIGHTS, TRADEMARKS OR OTHER RIGHTS. 
+ 
+COPYRIGHT HOLDERS WILL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, SPECIAL OR CONSEQUENTIAL 
+DAMAGES ARISING OUT OF ANY USE OF THE DOCUMENT OR THE PERFORMANCE OR IMPLEMENTATION OF THE 
+CONTENTS THEREOF. 
+ 
+The name and trademarks of copyright holders may NOT be used in advertising or publicity pertaining to this document or its contents 
+without specific, written prior permission. Title to copyright in this document will at all times remain with copyright holders. 
+ 
+RESTRICTED RIGHTS LEGEND. Use, duplication, or disclosure by government is subject to restrictions as set forth in subdivision 
+(c)(1)(ii) of the Right in Technical Data and Computer Software Clause at DFARS 252.227.7013 
+ 
+OpenGIS® is a trademark or registered trademark of Open GIS Consortium, Inc. in the United States and in other countries.
+
+
+
+
+
+OGC 02-017r1 
+
+  
+ 
+
+Contents 
+
+i. Preface .................................................................................................................... ii 
+ii. Submitting Organizations .................................................................................... ii 
+iii. Submission Contact Points ................................................................................... ii 
+iv. Revision History ................................................................................................... iii 
+v. Changes to the OpenGIS Abstract Specification .............................................. iii 
+Foreword........................................................................................................................... iv 
+Introduction ....................................................................................................................... v 
+1 Scope....................................................................................................................... 1 
+2 Conformance.......................................................................................................... 1 
+3 Normative references ............................................................................................ 1 
+4 Terms and definitions ........................................................................................... 2 
+5 Conventions............................................................................................................ 3 
+5.1 Normative verbs .................................................................................................... 3 
+5.2 Abbreviated Terms ............................................................................................... 3 
+6 WMS Operation with HTTP POST .................................................................... 3 
+7 Description of Request Messages ......................................................................... 5 
+7.1 GetCapabilities ...................................................................................................... 5 
+7.2 GetMap................................................................................................................... 6 
+Annex A (normative)  XML Schema ................................................................................ 7 
+A.1 GetCapabilities Request Schema ......................................................................... 7 
+A.2 GetMap Request Schema...................................................................................... 7 
+A.3 GetFeatureInfo Request Schema ......................................................................... 8 
+Annex D (normative)  Conformance Tests..................................................................... 10 
+
+Bibliography .................................................................................................................... 11 
+ 
+
+
+
+OGC 02-017r1 
+
+ii © OGC 2002 – All rights reserved 
+ 
+
+i. Preface 
+
+This document is a partial description of the accomplishments of the Open GIS 
+Consortium (OGC) Web Services Testbed, phase 1 (OWS1). 
+
+ii. Submitting Organizations 
+
+The US National Aeronautics and Space Administration (NASA) submits this IPR to the 
+OGC as a component of future revisions of the Web Map Service Implementation 
+Specification. 
+
+iii. Submission Contact Points 
+
+All questions regarding this submission should be directed to the Editor or to the WWW 
+Mapping SIG chair: 
+
+Jeff de La Beaujardière (Editor) 
+NASA Goddard Space Flight Center, Code 933 
+Greenbelt MD 20771 USA 
++1 301 286 1569 
+delabeau@iniki.gsfc.nasa.gov 
+
+Allan Doyle (WWW Mapping SIG Chair) 
+International Interfaces, Inc. 
+948 Great Plain Ave. PMB-182 
+Needham, MA 02492 USA 
++1 781 433 2695 
+adoyle@intl-interfaces.com 
+
+
+
+OGC 02-017r1 
+
+© OGC 2001 – All rights reserved iii
+ 
+
+iv. Revision History 
+
+Date Release Editor Description 
+2001-11-02 0.0.1 Jeff de La 
+
+Beaujardière 
+Submittal to OGC IP 
+
+2002-03-18 0.0.2 Jeff de La 
+Beaujardière 
+
+Submittal to OGC TC 
+
+2002-04-24 0.0.3 Jeff de La 
+Beaujardière 
+
+Public Release as a Discussion Paper, formatting changes for 
+public release. 
+
+v. Changes to the OpenGIS Abstract Specification 
+
+No revisions to the OGC Abstract Specification are required. 
+
+
+
+OGC 02-017r1 
+
+iv © OGC 2002 – All rights reserved 
+ 
+
+Foreword 
+
+Additional Contributors 
+
+Craig Bruce 
+CubeWerx 
+csbruce@cubewerx.com 
+
+Saul Farber 
+Syncline 
+saul@syncline.com 
+
+Jeff Lansing 
+Polexis 
+jeff@polexis.com 
+
+Keith Pomakis 
+CubeWerx 
+pomakis@cubewerx.com 
+
+Raj Singh 
+Syncline 
+rs@syncline.com  
+
+Peter Vretanos 
+CubeWerx 
+pvretano@cubewerx.com 
+
+
+
+OGC 02-017r1 
+
+© OGC 2001 – All rights reserved v
+ 
+
+Introduction 
+
+The OGC Web Map Service (WMS) implementation specification version 1.1.0 defines 
+keyword/value encodings for operation requests using HTTP GET.  This document 
+describes XML encodings for requests using HTTP POST.  This document is advanced 
+as a draft candidate for a new Part 2 of the WMS specification. 
+
+Basic GET encodings are directly usable by standard World Wide Web user agents, and 
+may be bookmarked, sent in email, pasted into HTML documents, and so forth.  The ease 
+of use of the GET encoding is its primary benefit.  However, it does have some 
+disadvantages.  Additional semantics must be defined to, for example, associate a list of 
+layers with a list of styles.  Styled Layer Descriptor (SLD) WMS requests, which include 
+an XML description of the styling, are difficult to encode directly and require that the 
+request URL make reference to a separate SLD URL.  Proposals to add a Filter parameter 
+have been made more complex by the need to associate specific Filter expressions with 
+specific Layers.  Length limitations on HTTP URLs may preclude all of the desired 
+parameters from being included in the request. 
+
+The optional HTTP POST encodings defined in this document are meant to provide 
+additional structure in the request message and thereby to allow additional functionality 
+without encountering size restrictions and encoding ambiguities.  The greatest benefit is 
+felt in the GetMap operation, where the comma-separated list of Layer names in HTTP 
+GET can be replaced by a sequence of XML elements, each of which is either a named or 
+a user-defined Layer, and directly associating Style and Filter information within each 
+Layer.  The GetFeatureInfo operation, which includes most of a GetMap request, benefits 
+in a similar way. 
+
+
+
+
+
+OGC 02-017r1 
+
+  
+ 
+
+Web Map Service Implementation Specification  Part 2: 
+XML for Requests using HTTP POST 
+
+1 Scope 
+
+This part of the Web Map Service (WMS) specification applies to those clients and 
+servers which allow operation request encodings that are more complex than those 
+permitted by the basic keyword/value encoding defined in WMS Part 1 [17].  Part 2 only 
+describes the encoding of the request messages using Extensible Markup Language 
+(XML); all other aspects of the Web Map Service are fully defined in Part 1. 
+
+2 Conformance 
+
+An implementation conformant with this Part of the WMS specification must also be 
+conformant with Part 1 [17].  Additional conformance tests for this Part only are listed in 
+Annex D. 
+
+The following Sections of Part 1 shall not apply to conformance based on Part 2: 
+
+- 6.2.1: "Reserved characters in HTTP GET URLs" 
+
+- 6.2.2: "HTTP GET" 
+
+3 Normative references 
+
+The following normative documents contain provisions that, through reference in this 
+text, constitute provisions of this specification. For dated references, subsequent 
+amendments to, or revisions of, any of these publications do not apply. However, parties 
+to agreements based on this specification are encouraged to investigate the possibility of 
+applying the most recent editions of the normative documents indicated below. For 
+undated references, the latest edition of the normative document referred to applies. 
+
+Berners-Lee, T., Fielding, N., and Masinter, L., "Uniform Resource Identifiers (URI): 
+Generic Syntax", IETF RFC 2396, August 1998, http://www.ietf.org/rfc/rfc2396.txt. 
+
+Bray, T., Paoli, J., Sperberg-McQueen, C.M., and Maler, E., eds., "Extensible Markup 
+Language (XML) 1.0", 2nd edition, October 2000, W3C Recommendation, 
+http://www.w3.org/TR/2000/REC-xml. 
+
+
+
+OGC 02-017r1 
+
+2 © OGC 2002 – All rights reserved 
+ 
+
+de La Beaujardiere, J., ed., "OGC Web Map Service Implementation Specification 
+version 1.1.0", OGC document #01-047r2, June 2001, 
+<http://www.opengis.org/techno/specs.html>. 
+
+Gettys, J., Mogul, J., Frystyk, H., Masinter, L., Leach, P., and Berners-Lee, T., eds., 
+"Hypertext Transfer Protocol – HTTP/1.1," IETF RFC 2616, June 1999, 
+http://www.ietf.org/rfc/rfc2616.txt. 
+
+Freed, N. and Borenstein N., "Multipurpose Internet Mail Extensions (MIME) Part One: 
+Format of Internet Message Bodies", IETF RFC 2045, November 1996, 
+http://www.ietf.org/rfc/rfc2045.txt. 
+
+4 Terms and definitions 
+
+For the purposes of this document, the following terms and definitions apply. 
+
+4.1  
+Operation 
+Specification of an interaction that can be requested from an object to effect behavior 
+(definition from ISO 19119). 
+
+4.2  
+Interface 
+An implementation of operations including the syntax of the interaction for a given 
+distributed computing technology (definition from ISO 19119). 
+
+4.3  
+Service 
+A collection of operations, accessible through an interface, that allows a user to evoke a 
+behavior of value to the user (definition from ISO 19119). 
+
+4.4  
+Service Instance 
+An actual implementation of a Service.  Service Instance is synonymous with Server. 
+
+4.5  
+Client 
+A software component that can invoke an Operation from a Server. 
+
+4.6  
+Request 
+An invocation by Client of an Operation. 
+
+4.7  
+Response 
+The result of an Operation returned from a Server to a Client. 
+
+
+
+OGC 02-017r1 
+
+©OGC 2002 – All rights reserved 3
+ 
+
+4.8  
+Capabilities XML 
+Service-level metadata describing the operations and content available at a Service 
+Instance. 
+
+5 Conventions 
+
+5.1 Normative verbs 
+
+In the sections labeled as normative, the key words "must", "must not", "required", 
+"shall", "shall not", "should", "should not", "recommended",  "may", and "optional" 
+in this document are to be interpreted as described in Internet RFC 2119 [15]. 
+
+5.2 Abbreviated Terms 
+
+DTD Document Type Definition 
+HTTP Hypertext Transfer Protocol 
+MIME Multipurpose Internet Mail Extensions 
+OGC Open GIS Consortium 
+OWS OGC Web Service 
+RFC Request for Comments 
+SLD Styled Layer Descriptor 
+SOAP Simple Object Access Protocol 
+URL Uniform Resource Locator 
+WMS Web Map Service 
+XML Extensible Markup Language 
+ 
+
+6 WMS Operation with HTTP POST 
+
+[Debate about whether to use SOAP[19] has not been completely settled by tests on 
+actual implementations, so two alternatives are temporarily described here.] 
+
+WMS requests using HTTP POST are made as follows: 
+
+(1) The OnlineResource URL of the request message is determined from the Capabilities 
+XML of the service instance according to this XPath [21] expression: 
+
+/WMT_MS_Capabilities/Capability/Request/(operation)/DCPType/
+HTTP/Post/OnlineResource/@xlink:href
+
+where (operation) refers to GetCapabilities, GetMap, or another operation 
+name.  A line break has been added for clarity. 
+
+
+
+OGC 02-017r1 
+
+4 © OGC 2002 – All rights reserved 
+ 
+
+If this XPath expression is not resolvable for the desired operation, then the service 
+instance does not support HTTP POST and the Client must not attempt communication 
+using that protocol.  This specification does not apply to such service instances. 
+
+(2) An XML document conformant with the XML Schema in Annex A for the desired 
+operation is constructed. 
+
+(2a) (with SOAP) The message document from step 2 is enclosed in a SOAP envelope as 
+follows: 
+
+<env:Envelope
+xmlns:env="http://www.w3.org/2001/09/soap-envelope">
+<env:Body>
+request document here
+
+</env:Body>
+</env:Envelope>
+ 
+
+[The request document in (2) uses SOAP value encoding (which is based on XML 
+Schema) and therefore could legally be used alone or in a SOAP envelope.] 
+
+(3) The request message is sent to the OnlineResource in (1) according to the HTTP 
+POST rules defined in [8].  The following HTTP request headers must be used (along 
+with any others mandated by [8]). 
+
+(3a) (without SOAP)  
+
+Content-Type: text/xml; charset="utf-8"
+-or?-
+Content-Type: application/vnd.ogc.request+xml
+The text/xml content type is mandated by SOAP [19] and is generically applicable to the 
+document constructed in step (2).  However, it might be useful to define operation-
+specific MIME [11] types as in the second alternative (where request is one of the 
+defined operation names). 
+
+Content-Length: nnnn
+The content length is the number of bytes in the document created in (2).  
+
+(3b) (with SOAP)  
+
+Content-Type: text/xml; charset="utf-8" 
+The text/xml content type is mandated by SOAP. 
+
+Content-Length: nnnn
+The content length is the number of bytes in the document created in (2), including the 
+SOAP envelope. 
+
+SOAPAction:
+
+
+
+OGC 02-017r1 
+
+©OGC 2002 – All rights reserved 5
+ 
+
+A SOAPAction header is required by SOAP, and may have a null value.  [It is not clear 
+when it should be non-null; its value is a URL, and need not be that of the 
+OnlineResource to which the request is sent.] 
+
+(4) A response in received from the server. 
+
+(4a) (without SOAP): the response is one of the operation responses defined in WMS Part 
+1 [17].  That is, for GetCapabilities the results is Capabilities XML with MIME type 
+application/vnd.ogc.wms+xml; for GetMap the result is a map image with the correct 
+MIME [11] type; if an error has occurred the response is a Service Exception; etc. 
+
+(4b) (with SOAP): the response is a multipart-MIME document formatted according to 
+the SOAP Messages with Attachments [20] note from W3C.  The first part is a SOAP 
+message and the second contains the actual WMS response object as in (4a). 
+
+(4c) (alternative with SOAP): the response is a SOAP message that includes the URL of 
+the actual WMS response object as in (4a). 
+
+7 Description of Request Messages 
+
+The format of the request messages is normatively specified by Annex A.  This section 
+points out several features of those messages. 
+
+All requests include a service attribute.  For Web Map Service requests, a value of 
+"WMS" must be used. 
+
+7.1 GetCapabilities 
+
+The GetCapabilities request includes an optional <Section> element to retrieve only one 
+of the sections of a complete Capabilities XML document.  [It is intended that this 
+document include a WSDL section as defined by OWS1 testbed.]  If the Section element 
+is missing, the server must return the entire Capabilities XML document. The Section 
+element includes an XPath [21] expression stating which part to retrieve.  At present, 
+only a limited number of predefined XPath expressions are enumerated in the Schema; 
+this specification uses the XPath syntax for compatibility but does not require that service 
+instances support complete XPath parsing.  However, a service instance which accepts 
+POST requests must understand the predefined XPath expressions and correctly return 
+only the desired section of the document upon request.  The expression "/" refers to the 
+entire document.  An expression of the form 
+"/OGC_Capabilities/element_name" refers to the child called <element_name> 
+in the <OGC_Capabilities> parent, including the <element_name> start tag, the 
+</element_name> closing tag, and everything in between. 
+
+
+
+OGC 02-017r1 
+
+6 © OGC 2002 – All rights reserved 
+ 
+
+7.2 GetMap 
+
+The GetMap request includes exactly one <StyledLayerDescriptor> element that defines 
+the map layers which are to appear in the returned map.  Layers shall be drawn in the 
+order that they appear in the XML, with the first one drawn at the bottom. 
+
+When accessing a basic WMS as defined in Part 1 [17], the StyledLayerDescriptor 
+element simply contains named Layer(s) and possibly named Style(s).  When accessing 
+an SLD-enabled WMS as defined in [10], more complex expressions specifying user-
+defined layer contents and styling are permitted. 
+
+
+
+OGC 02-017r1 
+
+©OGC 2002 – All rights reserved 7
+ 
+
+Annex A 
+(normative) 
+
+ 
+XML Schema 
+
+A.1 GetCapabilities Request Schema 
+
+[Copy of http://www2.digitalearth.gov/ows/GetCapabilities002.xsd] 
+
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.opengis.net/ows"
+
+xmlns:ogc="http://www.opengis.net/ows"
+xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+<xs:annotation>
+<xs:documentation xml:lang="en">
+XML Schema for OGC Web Service GetCapabilities request.
+
+</xs:documentation>
+</xs:annotation>
+
+<!-- Type Declarations -->
+<xs:simpleType name="ogc:OWSType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="WMS" />
+<xs:enumeration value="WFS" />
+<xs:enumeration value="WCS" />
+
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="ogc:CapabilitiesSectionType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="/" />
+<xs:enumeration value="/OGC_Capabilities/ServiceMetadata" />
+<xs:enumeration value="/OGC_Capabilities/OperationSignatures" />
+<xs:enumeration value="/OGC_Capabilities/ContentMetadata" />
+<xs:enumeration value="/OGC_Capabilities/Common" />
+
+</xs:restriction>
+</xs:simpleType>
+
+<!-- Root Element -->
+<xs:element name="GetCapabilities">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="Section" type="ogc:CapabilitiesSectionType"
+
+minOccurs="0" maxOccurs="1" default="/" />
+</xs:sequence>
+<xs:attribute name="version" type="xs:string" use="required"
+
+fixed="1.2.0" />
+<xs:attribute name="service" type="ogc:OWSType" use="required" />
+<xs:attribute name="updateSequence" type="xs:string" use="optional" />
+
+</xs:complexType>
+</xs:element>
+
+</xs:schema>
+
+A.2 GetMap Request Schema 
+
+[Copy of http://www2.digitalearth.gov/ows/GetMap002.xsd] 
+
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema targetNamespace="http://www.opengis.net/ows"
+
+xmlns:ogc="http://www.opengis.net/ows"
+
+
+
+OGC 02-017r1 
+
+8 © OGC 2002 – All rights reserved 
+ 
+
+xmlns:sld="http://www.opengis.net/sld"
+xmlns:gml="http://www.opengis.net/gml"
+xmlns:xs="http://www.w3.org/2001/XMLSchema"
+elementFormDefault="qualified">
+
+<xs:annotation>
+<xs:documentation xml:lang="en">
+XML Schema for OGC Web Map Service GetMap request.
+
+</xs:documentation>
+</xs:annotation>
+<xs:import namespace="http://www.opengis.net/gml"
+schemaLocation="http://www.opengis.net/namespaces/gml/core/geometry.xsd"/>
+<xs:import namespace="http://www.opengis.net/sld"
+schemaLocation="http://www2.digitalearth.gov/ows/sld.xsd"/>
+<xs:element name="GetMap">
+<xs:complexType>
+<xs:sequence>
+<xs:element ref="sld:StyledLayerDescriptor" />
+<xs:element name="BoundingBox" type="gml:BoxType"/>
+<xs:element name="Output">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="Format" type="ogc:FormatType"/>
+<xs:element name="Transparent" type="xs:boolean" minOccurs="0"/>
+<xs:element name="BGcolor" type="xs:string" minOccurs="0"/>
+<xs:element name="Size">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="Width" type="xs:positiveInteger"/>
+<xs:element name="Height" type="xs:positiveInteger"/>
+
+</xs:sequence>
+</xs:complexType>
+
+</xs:element><!--Size-->
+</xs:sequence>
+
+</xs:complexType>
+</xs:element><!--Output-->
+<xs:element name="Exceptions" type="ogc:ExceptionsType" minOccurs="0"/>
+<xs:element name="Vendor" type="ogc:VendorType" minOccurs="0"/>
+
+</xs:sequence>
+<xs:attribute name="version" type="xs:string" use="required"/>
+<xs:attribute name="service" type="ogc:OWSType" use="required"/>
+
+</xs:complexType>
+</xs:element><!--GetMap-->
+<!--Type definitions-->
+<xs:simpleType name="ExceptionsType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="application/vnd.ogc.se+inimage"/>
+<xs:enumeration value="application/vnd.ogc.se+xml"/>
+
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="FormatType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="image/gif"/>
+<xs:enumeration value="image/jpg"/>
+<xs:enumeration value="image/png"/>
+
+</xs:restriction>
+</xs:simpleType>
+<xs:simpleType name="OWSType">
+<xs:restriction base="xs:string">
+<xs:enumeration value="WMS"/>
+
+</xs:restriction>
+</xs:simpleType>
+<xs:complexType name="VendorType"/>
+<!--not sure how to define vendor-specific area in open manner-->
+
+</xs:schema>
+
+A.3 GetFeatureInfo Request Schema 
+
+[Copy of http://www2.digitalearth.gov/ows/GetFeatureInfo002.xsd] 
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+
+
+OGC 02-017r1 
+
+©OGC 2002 – All rights reserved 9
+ 
+
+<xs:schema targetNamespace="http://www.opengis.net/ows"
+xmlns:xs="http://www.w3.org/2001/XMLSchema"
+xmlns:ogc="http://www.opengis.net/ows"
+xmlns:sld="http://www.opengis.net/sld"
+xmlns:xlink="http://www.w3.org/1999/xlink">
+
+<xs:annotation>
+<xs:documentation xml:lang="en">
+XML Schema for OGC Web Map Service GetFeatureInfo request.
+
+</xs:documentation>
+</xs:annotation>
+
+<!-- External references -->
+<xs:include schemaLocation="http://www2.digitalearth.gov/ows/GetMap002.xsd" />
+<xs:import namespace="http://www.opengis.net/sld"
+schemaLocation="http://www2.digitalearth.gov/ows/sld.xsd"/>
+
+<!-- Root Element -->
+<xs:element name="ogc:GetFeatureInfo"
+
+xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="ogc:GetMap" />
+<xs:element name="QueryLayer" type="xs:string"
+
+minOccurs="1" maxOccurs="unbounded" />
+<xs:element name="X" type="xs:nonNegativeInteger" />
+<xs:element name="Y" type="xs:nonNegativeInteger" />
+<xs:element name="Output">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="Format" type="xs:string" />
+<xs:element name="Size">
+<xs:complexType>
+<xs:sequence>
+<xs:element name="FeatureCount" type="xs:PositiveInteger" />
+
+</xs:sequence>
+</xs:complexType>
+
+</xs:element>
+</xs:sequence>
+
+</xs:complexType>
+</xs:element>
+<xs:element name="Exceptions" type="xs:string" minOccurs="0" />
+<xs:element name="Vendor" minOccurs="0">
+<!--not sure how to define vendor-specific area in open manner-->
+
+</xs:element>
+</xs:sequence>
+<xs:attribute name="version" type="xs:string" use="required" />
+<xs:attribute name="service" type="ogc:OWSType" use="required" />
+
+</xs:complexType>
+</xs:element>
+
+</xs:schema>
+
+
+
+OGC 02-017r1 
+
+10 © OGC 2002 – All rights reserved 
+ 
+
+Annex D 
+(normative) 
+
+ 
+Conformance Tests 
+
+Minimal conformance with this specification requires the following: 
+
+1. The Extensible Markup Language (XML) document sent as an operation request 
+must be valid against the appropriate XML Schema in Annex A. Such validation may 
+be performed using commonly available XML validating tools. 
+
+2. All clauses in the normative sections of this specification that use the keywords 
+"must", "must not", "required", "shall", and "shall not" have been satisfied. 
+
+
+
+OGC 02-017r1 
+
+©OGC 2002 – All rights reserved 11
+ 
+
+Bibliography 
+
+[numbering will be fixed before final draft] 
+
+[8]  Gettys, J., Mogul, J., Frystyk, H., Masinter, L., Leach, P., and Berners-Lee, T., 
+eds., "Hypertext Transfer Protocol – HTTP/1.1," IETF RFC 2616, June 1999, 
+http://www.ietf.org/rfc/rfc2616.txt. 
+
+[9]  Bray, T., Paoli, J., Sperberg-McQueen, C.M., and Maler, E., eds., "Extensible 
+Markup Language (XML) 1.0", 2nd edition, October 2000, W3C 
+Recommendation, http://www.w3.org/TR/2000/REC-xml. 
+
+[10] Bruce, C. (ed.), "OpenGIS Discussion Paper #01-028: Styled Layer Descriptor 
+Draft Candidate Implementation Specification 0.7.1," August 2001, 
+http://www.opengis.org/techno/discussions.htm. 
+
+[11]  Freed, N. and Borenstein N., "Multipurpose Internet Mail Extensions (MIME) Part 
+One: Format of Internet Message Bodies", IETF RFC 2045, November 1996, 
+http://www.ietf.org/rfc/rfc2045.txt. 
+
+[12]  Berners-Lee, T., Fielding, N., and Masinter, L., "Uniform Resource Identifiers 
+(URI): Generic Syntax", IETF RFC 2396, http://www.ietf.org/rfc/rfc2396.txt. 
+
+[15] Bradner, Scott, "RFC 2119 Key words for use in RFCs to Indicate Requirement 
+Levels," March 1997, ftp://ftp.isi.edu/in-notes/rfc2119.txt . 
+
+[17]  de La Beaujardiere, J., ed., "OGC Web Map Service Implementation Specification 
+version 1.1.0", OGC document #01-047r2, June 2001, 
+<http://www.opengis.org/techno/specs.html>. 
+
+[19] Box, D., Ehnebuske, D., Kakivaya, G., Layman, A., Mendelsohn, N., Frystyk 
+Nielsen, H.  Thatte, S., and Winer, D., eds., "Simple Object Access Protocol 
+(SOAP) 1.1," May 2000, W3C Note, <http://www.w3.org/TR/SOAP/>. 
+
+[20] Barton, J. J., Thatte, S., and Frystyk Nielsen, H., eds., "SOAP Messages with 
+Attachments," December 2000, W3C Note,  
+<http://www.w3.org/TR/SOAP-attachments>. 
+
+[21] Clark, J. and DeRose, S., eds., "XML Path Language (XPath) Version 1.0," 
+November 1999, W3C Recommendation, <http://www.w3.org/TR/xpath>. 
+
+ 
+
+
+	Scope
+	Conformance
+	Normative references
+	Terms and definitions
+	Conventions
+	Normative verbs
+	Abbreviated Terms
+
+	WMS Operation with HTTP POST
+	Description of Request Messages
+
