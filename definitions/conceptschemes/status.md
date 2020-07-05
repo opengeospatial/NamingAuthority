@@ -20,7 +20,7 @@ Markdown documentation created by [pyLODE](http://github.com/rdflib/pyLODE)
   * [https://def.isotc211.org/iso19135/-1/2015/catalog-v001.xml](https://def.isotc211.org/iso19135/-1/2015/catalog-v001.xml)
 
 * **Taxonomy RDF**
-  * RDF ([status.ttl](turtle))
+  * RDF ([turtle](status.ttl))
 ### Description
 <p>Statuses of items within a controlled register.</p>
 <p>This vocabulary is a SKOS Concept Hierarchy of the RE_ItemStatus enumeration of ISO 19135: Geographic Information -- Procedures for item registration's Register with additional Concepts from the Core Ontology for Linked Data Registry Services.</p>
