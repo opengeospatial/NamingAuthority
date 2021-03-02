@@ -4,7 +4,7 @@ OGC definition space refactoring decisions and process:
 
 ConceptSchemes will reflect delegatable policy domains.
 
-There may (or may not be a need to define a top level ConceptScheme that binds to each and every definitions in every scheme.
+There may (or may not) be a need to define a top level ConceptScheme that binds to each and every definitions in every scheme.
 
 SKOS model complicates things - ConceptScheme and Collection are disjoint - so we can't simply treat a ConceptScheme as a Collection member
 of an aggregate ConceptScheme.
