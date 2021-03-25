@@ -2,15 +2,21 @@
 identifier = "15-113r5"
 specURL = "https://portal.opengeospatial.org/files/15-113r5"
 fout = open("../mappings/"+identifier+".csv","w") # output file
-fin = open("../specifications/"+identifier+".txt","r") # input file
+fin = open("../specifications/"+identifier+".txt","r",encoding='utf-8') # input file
 elementList = []
 
 # processing the input file
+elementtext = {}
 
+currentelement = None
 for line in fin:
     line = line.replace("\n","")
+    if currentelement and line :
+        elementtext[currentelement] = line
+        currentelement = None
     if "/req/" in line:
-        elementList.append(line[line.index("/req/"):])
+        currentelement = line[line.index("/req/"):]
+        elementList.append(currentelement)
     if "/conf/" in line:
         elementList.append(line[line.index("/conf/"):])
 
