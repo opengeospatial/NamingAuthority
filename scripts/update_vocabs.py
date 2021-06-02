@@ -3,10 +3,12 @@ from typing import List
 import argparse
 from pathlib import Path
 import httpx
+from pyshacl import validate
 from rdflib import Graph, URIRef
 from rdflib.namespace import RDF, SKOS
 import os
 
+SKOS_RULES = [ 'scripts/skostopconcepts.shapes.ttl']
 
 def add_vocabs(vocabs: List[Path], mappings: dict):
     for vocab in vocabs:
@@ -68,13 +70,25 @@ def get_all_vocabs_uris(vocabs: List[Path]) -> dict:
 #         f.write(json.dumps(mappings))
 
 
-def make_rdf(f):
-    g = Graph().parse(str(f), format="ttl")
-    g.serialize(destination=f.replace(".ttl",".rdf"), format="xml")
+def make_rdf(f,g=None):
+    if not g:
+        g = Graph().parse(str(f), format="ttl")
+    #g.serialize(destination=f.replace(".ttl",".rdf"), format="xml")
+    g.serialize(destination=f.replace(".ttl", "_entailed.ttl"), format="ttl")
 
 
 def log(param):
    print ( param)
+
+
+def perform_skos_entailments(f, g=None):
+    """ run skos graph entailments """
+    if not g:
+        g = Graph().parse(str(f), format="ttl")
+    for rules in SKOS_RULES:
+        shg = Graph().parse(rules, format="ttl")
+        validate(g, shacl_graph=shg, advanced=True, inplace=True )
+    return g
 
 
 if __name__ == "__main__":
@@ -108,11 +122,12 @@ if __name__ == "__main__":
     modified = []
     if args.modified:
         for f in args.modified.split(","):
-            # if the file is in the vocabularies/ folder and ends with .ttl, it's a vocab file
+            # if the file is in the definitions/conceptschemes/ folder and ends with .ttl, it's a vocab file
             if f.startswith("definitions/conceptschemes/") and f.endswith(".ttl"):
                 modified.append(Path(f))
                 try:
-                    make_rdf(f)
+                    newg = perform_skos_entailments(f)
+                    make_rdf(f,newg)
                 except Exception as e:
                     log ("Failed to generate {} : ( {}  )".format(f,e))
 
