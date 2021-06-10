@@ -1,4 +1,5 @@
 import json
+from glob import glob
 from typing import List
 import argparse
 from pathlib import Path
@@ -35,13 +36,14 @@ def remove_vocabs(vocabs: List[Path], mappings: dict):
         # remove_from_vocab_index(vocab)
 
 
-def get_graph_uri_for_vocab(vocab: Path) -> URIRef:
+def get_graph_uri_for_vocab(vocab: Path, g: Graph = None) -> URIRef:
     """We can get the Graph URI for a vocab from the vocab file as we know that all VocPub-conformant vocabs
     have one and only one ConceptScheme per file and that the ICSM VocPrez installation uses the ConceptScheme URI
     as the Graph URI"""
-    g = Graph().parse(str(vocab), format="ttl")
+    if not g:
+        g = Graph().parse(str(vocab), format="ttl")
     for s in g.subjects(predicate=RDF.type, object=SKOS.ConceptScheme):
-        return s
+        yield str(s)
 
 
 def get_all_vocabs_uris(vocabs: List[Path]) -> dict:
@@ -70,11 +72,38 @@ def get_all_vocabs_uris(vocabs: List[Path]) -> dict:
 #         f.write(json.dumps(mappings))
 
 
+def get_entailedpath(f, g:Graph , fmt, rootpattern='/def/'):
+    path,filename = os.path.split(f)
+    filename = os.path.splitext(filename)[0]
+    canonical_filename = None
+    for graphuri in get_graph_uri_for_vocab(f,g=g):
+        if canonical_filename:
+            print ('Warning - file {} contains multiple concept schemes'.format(f))
+        canonical_filename = graphuri.rsplit(rootpattern)[1]
+        conceptscheme = graphuri
+    if not canonical_filename:
+        print('Warning - file {} contains no concept schemes'.format(f))
+        return None,filename,None,None
+    cpaths = os.path.split(canonical_filename)
+    return ( os.path.join( path,'entailed',*cpaths) + "." + fmt , filename, canonical_filename , conceptscheme)
+
+FMTS = { 'ttl':'ttl' , 'rdf':'xml'  }
+
 def make_rdf(f,g=None):
     if not g:
         g = Graph().parse(str(f), format="ttl")
     #g.serialize(destination=f.replace(".ttl",".rdf"), format="xml")
-    g.serialize(destination=f.replace(".ttl", "_entailed.ttl"), format="ttl")
+    for fmt in FMTS.keys() :
+        newpath, filename, canonical_filename, conceptschemeuri = get_entailedpath(f, g, fmt)
+        if newpath:
+            try:
+                Path(Path(newpath).parent).mkdir(parents=True, exist_ok=True)
+            except FileExistsError:
+                pass
+            g.serialize(destination=newpath, format=FMTS[fmt])
+    if filename != canonical_filename:
+        print("New file name {} -> {} for {}".format(filename, canonical_filename, conceptschemeuri))
+
 
 
 def log(param):
@@ -117,19 +146,47 @@ if __name__ == "__main__":
         help="Vocabs to be removed from the DB",
     )
 
+    parser.add_argument(
+        "-i",
+        "--initialise",
+        help="Initialise Database",
+    )
+
+    parser.add_argument(
+        "-u",
+        "--update",
+        help="Update Database",
+    )
+
+    parser.add_argument(
+        "-b",
+        "--batch",
+        action='store_true',
+        help="Batch entail all vocabs ( use -f to force overwrite of existing entailments )",
+    )
+
+    parser.add_argument(
+        "-f",
+        "--force",
+        action='store_true',
+        help="force overwrite of existing entailments",
+    )
+
     args = parser.parse_args()
 
     modified = []
+    if args.batch:
+        # update modified list to be everything missing, or everything if -f
+        if args.force :
+            modified = glob("definitions/conceptschemes/*.ttl")
+        else:
+            modified = list ( set(glob("definitions/conceptschemes/*.ttl")) - set(glob("definitions/conceptschemes/entailed/*.ttl")))
+
     if args.modified:
         for f in args.modified.split(","):
             # if the file is in the definitions/conceptschemes/ folder and ends with .ttl, it's a vocab file
             if f.startswith("definitions/conceptschemes/") and f.endswith(".ttl"):
                 modified.append(Path(f))
-                try:
-                    newg = perform_skos_entailments(f)
-                    make_rdf(f,newg)
-                except Exception as e:
-                    log ("Failed to generate {} : ( {}  )".format(f,e))
 
     added = []
     if args.added:
@@ -138,6 +195,13 @@ if __name__ == "__main__":
             if f.startswith("definitions/conceptschemes/") and f.endswith(".ttl"):
                 p = Path(f)
                 added.append(p)
+
+    for f in modified + added:
+        try:
+            newg = perform_skos_entailments(f)
+            make_rdf(f, newg)
+        except Exception as e:
+            log("Failed to generate {} : ( {}  )".format(f, e))
 
     removed = []
     if args.removed:
