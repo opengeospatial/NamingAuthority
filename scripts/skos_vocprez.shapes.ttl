@@ -1,4 +1,4 @@
-# baseURI: https://data.surroundaustralia.com/platform/shapes/skostopconcepts
+# baseURI: https://www.opengis.net/def/profile/skos/vocprez
 # imports: http://datashapes.org/dash
 # imports: http://www.w3.org/2004/02/skos/core
 
@@ -9,59 +9,67 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
-@prefix skostopconcepts: <https://data.surroundaustralia.com/platform/shapes/skostopconcepts#> .
+@prefix : <https://www.opengis.net/def/profile/skos/vocprez#> .
 @prefix swa: <http://topbraid.org/swa#> .
 @prefix tosh: <http://topbraid.org/tosh#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-<https://data.surroundaustralia.com/platform/shapes/skostopconcepts>
+<https://www.opengis.net/def/profile/skos/vocprez>
   a owl:Ontology ;
   owl:imports <http://datashapes.org/dash> ;
   owl:imports <http://www.w3.org/2004/02/skos/core> ;
-  owl:versionInfo "Created with TopBraid Composer" ;
+  rdfs:comment "Entail metadata needed to support VocPrez SKOS profile" ;
+  dcterms:creator "Rob Atkinson"
 .
-<skostopconcepts:NodeShape_concept>
+
+:NodeShape_concept
   a sh:NodeShape ;
-  sh:rule <skostopconcepts:SPARQLRule_broadinverse> ;
-    sh:rule <skostopconcepts:SPARQLRule_narrowinverse> ;
-  # sh:rule <skostopconcepts:rdfslabel> ;
+  sh:rule :definition_required;
   sh:targetClass skos:Concept ;
 .
 
-<skostopconcepts:SPARQLRule_broadinverse>
+:NodeShape_conceptscheme
+  a sh:NodeShape ;
+ sh:rule :source_required;
+  sh:targetClass skos:ConceptScheme ;
+.
+
+
+:definition_required
   a sh:SPARQLRule ;
-  rdfs:label "Create missing skos:broader EDG needs" ;
+  rdfs:label "Best definition option" ;
   sh:construct """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+  prefix dcterms: <http://purl.org/dc/terms/>
+  prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 CONSTRUCT {
-?c skos:broader ?this
+?this skos:definition ?skosdef
 }
 WHERE {
-    ?this skos:narrower ?c
-    FILTER NOT EXISTS { ?c skos:broader ?this }
-}""" ;
+    OPTIONAL { ?this skos:definition ?def }
+    OPTIONAL { ?this dcterms:description ?desc }
+    ?this rdfs:label|skos:prefLabel ?lab
+    BIND ( COALESCE( ?def,?desc, ?lab  ) AS ?skosdef )
+    FILTER ( ! bound(?def ) )
+}
+""" ;
   sh:prefixes <http://www.w3.org/2004/02/skos/core> ;
 .
 
-<skostopconcepts:SPARQLRule_narrowinverse>
+:source_required
   a sh:SPARQLRule ;
-  rdfs:label "Create missing skos:broader EDG needs" ;
-  sh:construct """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+  rdfs:label "Define source if missing" ;
+  sh:construct """
+  PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+  prefix dcterms: <http://purl.org/dc/terms/>
+  prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 CONSTRUCT {
-?c  skos:narrower ?this
+  ?this dcterms:source "OGC Naming Authority on behalf of relevant OGC Working Group"
 }
 WHERE {
-    ?this skos:broader ?c
-    FILTER NOT EXISTS { ?c  skos:narrower  ?this }
-}""" ;
-  sh:prefixes <http://www.w3.org/2004/02/skos/core> ;
+  ?this a skos:ConceptScheme
+  FILTER NOT EXISTS { ?this dcterms:source ?source }
+    }
+  """ ;
+  sh:prefixes <http://purl.org/dc/terms/> ;
 .
 
-<skostopconcepts:rdfslabel>
-  a sh:TripleRule ;
-  rdfs:label "propagate preferredLabel to rdfs:label" ;
-  sh:object [
-      sh:path skos:prefLabel ;
-    ] ;
-  sh:predicate rdfs:label ;
-  sh:subject sh:this ;
-.

@@ -9,7 +9,17 @@ from rdflib import Graph, URIRef
 from rdflib.namespace import RDF, SKOS
 import os
 
-SKOS_RULES = [ 'scripts/skostopconcepts.shapes.ttl']
+SKOS_RULES = [ 'scripts/skosbasics.shapes.ttl', 'scripts/skos_vocprez.shapes.ttl' ]
+COMMON_VALIDATORS = [ "https://w3id.org/profile/vocpub/validator" ]
+
+
+def get_validation_graph( vlist ):
+    for v in vlist:
+        r = httpx.get(v)
+        assert r.status_code == 200
+        return Graph().parse(data=r.text, format="turtle")
+
+SKOS_VALIDATOR = get_validation_graph ( COMMON_VALIDATORS  )
 
 def add_vocabs(vocabs: List[Path], mappings: dict):
     for vocab in vocabs:
@@ -23,6 +33,7 @@ def add_vocabs(vocabs: List[Path], mappings: dict):
         )
         assert 200 <= r.status_code <= 300, "Status code was {}".format(r.status_code)
         # add_to_vocab_index(vocab, get_graph_uri_for_vocab(vocab))
+
 
 
 def remove_vocabs(vocabs: List[Path], mappings: dict):
@@ -199,6 +210,10 @@ if __name__ == "__main__":
     for f in modified + added:
         try:
             newg = perform_skos_entailments(f)
+            v = validate(data_graph=newg, shacl_graph=SKOS_VALIDATOR)
+            if not v[0]:
+                with open( str(f).replace('.ttl','.txt') , "w" ) as vr:
+                    vr.write(v[2])
             make_rdf(f, newg)
         except Exception as e:
             log("Failed to generate {} : ( {}  )".format(f, e))
