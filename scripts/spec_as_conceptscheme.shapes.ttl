@@ -1,0 +1,59 @@
+# baseURI: https://www.opengis.net/def/profile/skos/basics
+# imports: http://datashapes.org/dash
+# imports: http://www.w3.org/2004/02/skos/core
+
+@prefix dash: <http://datashapes.org/dash#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix skostopconcepts: <https://www.opengis.net/def/profile/skos/basics#> .
+@prefix swa: <http://topbraid.org/swa#> .
+@prefix tosh: <http://topbraid.org/tosh#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://www.opengis.net/def/profile/skos/basics>
+  a owl:Ontology ;
+  owl:imports <http://datashapes.org/dash> ;
+  owl:imports <http://www.w3.org/2004/02/skos/core> ;
+  owl:versionInfo "Created with TopBraid Composer" ;
+.
+<skostopconcepts:NodeShape_concept>
+  a sh:NodeShape ;
+  sh:rule <skostopconcepts:SPARQLRule_broadinverse> ;
+    sh:rule <skostopconcepts:SPARQLRule_narrowinverse> ;
+  # sh:rule <skostopconcepts:rdfslabel> ;
+  sh:targetClass skos:Concept ;
+.
+
+<skostopconcepts:SPARQLRule_broadinverse>
+  a sh:SPARQLRule ;
+  rdfs:label "Create missing skos:broader EDG needs" ;
+  sh:construct """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+CONSTRUCT {
+?c skos:broader ?this
+}
+WHERE {
+    ?this skos:narrower ?c
+    FILTER NOT EXISTS { ?c skos:broader ?this }
+}""" ;
+  sh:prefixes <http://www.w3.org/2004/02/skos/core> ;
+.
+
+<skostopconcepts:SPARQLRule_narrowinverse>
+  a sh:SPARQLRule ;
+  rdfs:label "Create missing skos:broader EDG needs" ;
+  sh:construct """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+CONSTRUCT {
+?c  skos:narrower ?this
+}
+WHERE {
+    ?this skos:broader ?c
+    FILTER NOT EXISTS { ?c  skos:narrower  ?this }
+}""" ;
+  sh:prefixes <http://www.w3.org/2004/02/skos/core> ;
+.
+
+
