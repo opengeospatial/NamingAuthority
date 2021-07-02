@@ -11,6 +11,8 @@ import os
 
 SKOS_RULES = [ 'scripts/skosbasics.shapes.ttl', 'scripts/skos_vocprez.shapes.ttl' ]
 COMMON_VALIDATORS = [ "https://w3id.org/profile/vocpub/validator" ]
+OWL_RULES = [ 'scripts/owl2skos.shapes.ttl' ] + SKOS_RULES
+
 
 
 def get_validation_graph( vlist ):
@@ -20,6 +22,7 @@ def get_validation_graph( vlist ):
         return Graph().parse(data=r.text, format="turtle")
 
 SKOS_VALIDATOR = get_validation_graph ( COMMON_VALIDATORS  )
+DOMAINS = [ ( "definitions/conceptschemes", SKOS_RULES , SKOS_VALIDATOR ) ]
 
 def add_vocabs(vocabs: List[Path], mappings: dict):
     for vocab in vocabs:
@@ -121,11 +124,11 @@ def log(param):
    print ( param)
 
 
-def perform_skos_entailments(f, g=None):
+def perform_entailments(rulegraphlist, f, g=None):
     """ run skos graph entailments """
     if not g:
         g = Graph().parse(str(f), format="ttl")
-    for rules in SKOS_RULES:
+    for rules in rulegraphlist:
         shg = Graph().parse(rules, format="ttl")
         validate(g, shacl_graph=shg, advanced=True, inplace=True )
     return g
@@ -184,47 +187,53 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-
-    modified = []
-    if args.batch:
-        # update modified list to be everything missing, or everything if -f
-        if args.force :
-            modified = glob("definitions/conceptschemes/*.ttl")
-        else:
-            modified = list ( set(glob("definitions/conceptschemes/*.ttl")) - set(glob("definitions/conceptschemes/entailed/*.ttl")))
-
+    modlist = []
+    addedlist = []
     if args.modified:
-        for f in args.modified.split(","):
+        modlist = args.modified.split(",")
+    if args.added:
+        addedlist = args.added.split(",")
+
+    for scopepath,rules,validator in DOMAINS:
+        modified = []
+        if args.batch:
+            # update modified list to be everything missing, or everything if -f
+            if args.force :
+                modified = glob(scopepath+"/*.ttl")
+            else:
+                modified = list ( set(glob(scopepath+"/*.ttl")) - set(glob(scopepath+ "/entailed/*.ttl")))
+
+
+        for f in modlist:
             # if the file is in the definitions/conceptschemes/ folder and ends with .ttl, it's a vocab file
-            if f.startswith("definitions/conceptschemes/") and f.endswith(".ttl"):
+            if f.startswith(scopepath) and f.endswith(".ttl"):
                 modified.append(Path(f))
 
-    added = []
-    if args.added:
-        for f in args.added.split(","):
+        added = []
+        for f in addedlist:
             # if the file is in the vocabularies/ folder and ends with .ttl, it's a vocab file
-            if f.startswith("definitions/conceptschemes/") and f.endswith(".ttl"):
+            if f.startswith(scopepath) and f.endswith(".ttl"):
                 p = Path(f)
                 added.append(p)
 
-    for f in modified + added:
-        try:
-            newg = perform_skos_entailments(f)
-            v = validate(data_graph=newg, shacl_graph=SKOS_VALIDATOR)
-            if not v[0]:
-                with open( str(f).replace('.ttl','.txt') , "w" ) as vr:
-                    vr.write(v[2])
-            make_rdf(f, newg)
-        except Exception as e:
-            log("Failed to generate {} : ( {}  )".format(f, e))
+        for f in modified + added:
+            try:
+                newg = perform_entailments(rules,f)
+                v = validate(data_graph=newg, shacl_graph=validator)
+                if not v[0]:
+                    with open( str(f).replace('.ttl','.txt') , "w" ) as vr:
+                        vr.write(v[2])
+                make_rdf(f, newg)
+            except Exception as e:
+                log("Failed to generate {} : ( {}  )".format(f, e))
 
-    removed = []
-    if args.removed:
-        for f in args.removed.split(","):
-            # if the file is in the vocabularies/ folder and ends with .ttl, it's a vocab file
-            if f.startswith("definitions/conceptschemes/") and f.endswith(".ttl"):
-                p = Path(f)
-                removed.append(p)
+        removed = []
+        if args.removed:
+            for f in args.removed.split(","):
+                # if the file is in the vocabularies/ folder and ends with .ttl, it's a vocab file
+                if f.startswith(scopepath) and f.endswith(".ttl"):
+                    p = Path(f)
+                    removed.append(p)
 
     #i = Path(__file__).parent.parent / "vocabularies" / "index.json"
     #with open(i, "r") as f:
@@ -235,13 +244,14 @@ if __name__ == "__main__":
     # add all added and modified vocabs
     #add_vocabs(added + modified, mappings)
 
-    # print for testing
-    print("modified:")
-    print([str(x) for x in modified])
-    print("added:")
-    print([str(x) for x in added])
-    print("removed:")
-    print([str(x) for x in removed])
+        # print for testing
+        print ( "Scope : ")
+        print("modified:")
+        print([str(x) for x in modified])
+        print("added:")
+        print([str(x) for x in added])
+        print("removed:")
+        print([str(x) for x in removed])
 
     # rebuild VocPrez' cache
     #r = httpx.get("http://defs-dev.opengis.net/vocprez/cache-reload")
