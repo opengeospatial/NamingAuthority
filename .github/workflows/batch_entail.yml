@@ -10,29 +10,15 @@ jobs:
       - name: install Python dependencies
         run: |
           python -m pip install -U pip
-          pip install -r scripts/requirements.txt
-      - id: file_changes
-        uses: trilom/file-changes-action@v1.2.4
-        with:
-          output: ','        
-      - name: detect file changes
-        env:
-            DB_USERNAME: ${{secrets.DB_USERNAME}}
-            DB_PASSWORD: ${{secrets.DB_PASSWORD}}      
+          pip install -r scripts/requirements.txt        
+      - name: batch process all entailments and validations  
         run: |
           echo 'Run batch update script...'
-          a=${{steps.file_changes.outputs.files_added}}
-          m=${{steps.file_changes.outputs.files_modified}}
-          r=${{steps.file_changes.outputs.files_removed}}
-          if [ -z $a ]; then a="x"; fi
-          if [ -z $m ]; then m="x"; fi
-          if [ -z $r ]; then r="x"; fi
-          # ignoring changes for now - but can use this to identify changes in entailment or validation and force batch re-processing
           python scripts/update_vocabs.py -b
-      - name: commit generated files for entailments and validations
+      - name: commit new generated files for entailments and validations
         uses: EndBug/add-and-commit@v7 # You can change this to use a specific version
         with:
           add: .
           message: "Batch Generated entailment and validation results and serialisations"
           default_author: github_actions
-            
+
