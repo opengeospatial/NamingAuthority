@@ -1,4 +1,4 @@
-# baseURI: https://www.opengis.net/def/profile/skos/basics
+# baseURI: https://www.opengis.net/def/profile/orm/specascs
 # imports: http://datashapes.org/dash
 # imports: http://www.w3.org/2004/02/skos/core
 
@@ -9,34 +9,43 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix sh: <http://www.w3.org/ns/shacl#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
-@prefix skostopconcepts: <https://www.opengis.net/def/profile/skos/basics#> .
+@prefix : <https://www.opengis.net/def/profile/orm/specascs#> .
 @prefix swa: <http://topbraid.org/swa#> .
 @prefix tosh: <http://topbraid.org/tosh#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix spec: <http://www.opengis.net/def/ont/modspec/> .
 
-<https://www.opengis.net/def/profile/skos/basics>
+<https://www.opengis.net/def/profile/orm/specascs>
   a owl:Ontology ;
   owl:imports <http://datashapes.org/dash> ;
   owl:imports <http://www.w3.org/2004/02/skos/core> ;
-  owl:versionInfo "Created with TopBraid Composer" ;
-.
-<skostopconcepts:NodeShape_concept>
-  a sh:NodeShape ;
-  sh:rule <skostopconcepts:SPARQLRule_broadinverse> ;
-    sh:rule <skostopconcepts:SPARQLRule_narrowinverse> ;
-  # sh:rule <skostopconcepts:rdfslabel> ;
-  sh:targetClass skos:Concept ;
+  skos:definition "Entails a concept scheme for a given specification, with topconcepts for each conformance class and each requirement being a narrower concept. Supports visualisation in a heirarchy"
 .
 
-<skostopconcepts:SPARQLRule_broadinverse>
+:NodeShape_conformance_class
+  a sh:NodeShape ;
+  sh:rule :specelements ;
+  sh:targetClass spec:ConformanceClass ;
+.
+
+:specelements
   a sh:SPARQLRule ;
-  rdfs:label "Create missing skos:broader EDG needs" ;
+  rdfs:label "Create missing concept scheme" ;
   sh:construct """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 CONSTRUCT {
-?c skos:broader ?this
+  ?cs a skos:ConceptScheme ;
+    rdfs:label ?cslabel ;
+    skos:topConcept ?this ;
+    .
+  ?this a skos:Concept ;
+    skos:topConceptOf ?cs ;
+    skos:inScheme ?cs ;
+    skos:narrower ?req ;
+  .
+  ?req skos:broader ?this .
 }
 WHERE {
-    ?this skos:narrower ?c
+    
     FILTER NOT EXISTS { ?c skos:broader ?this }
 }""" ;
   sh:prefixes <http://www.w3.org/2004/02/skos/core> ;
