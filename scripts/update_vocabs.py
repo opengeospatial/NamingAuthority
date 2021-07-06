@@ -9,20 +9,33 @@ from rdflib import Graph, URIRef
 from rdflib.namespace import RDF, SKOS
 import os
 
+def get_closure_graph( vlist: List[str] ):
+    g = Graph()
+    for v in vlist:
+        if v.startswith("http:") or v.startswith("https:"):
+            r = httpx.get(v)
+            assert r.status_code == 200
+            data = r.text
+            g += Graph().parse(data=data, format="turtle")
+        else:
+            g += Graph().parse(source=v, format="turtle")
+
+    return g
+
 SKOS_RULES = [ 'scripts/skosbasics.shapes.ttl', 'scripts/skos_vocprez.shapes.ttl' ]
 COMMON_VALIDATORS = [ "https://w3id.org/profile/vocpub/validator" ]
 OWL_RULES = [ 'scripts/owl2skos.shapes.ttl' ] + SKOS_RULES
+SPEC_RULES = [ 'scripts/spec_as_conceptscheme.shapes.ttl' ]
+SPEC_VALIDATORS = []
+DOCREG_CLOSURE = [ "definitions/conceptschemes/docs.ttl" ]
 
 
+SKOS_VALIDATOR = get_closure_graph ( COMMON_VALIDATORS  )
+SPEC_VALIDATOR =  get_closure_graph ( SPEC_VALIDATORS  ) + SKOS_VALIDATOR
+DOCREGISTER_GRAPH = get_closure_graph( DOCREG_CLOSURE )
 
-def get_validation_graph( vlist ):
-    for v in vlist:
-        r = httpx.get(v)
-        assert r.status_code == 200
-        return Graph().parse(data=r.text, format="turtle")
-
-SKOS_VALIDATOR = get_validation_graph ( COMMON_VALIDATORS  )
-DOMAINS = [ ( "definitions/conceptschemes", SKOS_RULES , SKOS_VALIDATOR ) ]
+DOMAINS = [ ( "definitions/conceptschemes", SKOS_RULES , SKOS_VALIDATOR , None, '/def/'),
+            ( "specification-elements/defs" , SPEC_RULES , SPEC_VALIDATOR, DOCREGISTER_GRAPH, '/spec/' ) ]
 
 def add_vocabs(vocabs: List[Path], mappings: dict):
     for vocab in vocabs:
@@ -103,12 +116,12 @@ def get_entailedpath(f, g:Graph , fmt, rootpattern='/def/'):
 
 FMTS = { 'ttl':'ttl' , 'rdf':'xml'  }
 
-def make_rdf(f,g=None):
+def make_rdf(f,g=None,rootpath='/def/',):
     if not g:
         g = Graph().parse(str(f), format="ttl")
     #g.serialize(destination=f.replace(".ttl",".rdf"), format="xml")
     for fmt in FMTS.keys() :
-        newpath, filename, canonical_filename, conceptschemeuri = get_entailedpath(f, g, fmt)
+        newpath, filename, canonical_filename, conceptschemeuri = get_entailedpath(f, g, fmt, rootpattern=rootpath)
         if newpath:
             try:
                 Path(Path(newpath).parent).mkdir(parents=True, exist_ok=True)
@@ -194,7 +207,7 @@ if __name__ == "__main__":
     if args.added:
         addedlist = args.added.split(",")
 
-    for scopepath,rules,validator in DOMAINS:
+    for scopepath,rules,validator,extra_ont,domain_rootpath in DOMAINS:
         modified = []
         if args.batch:
             # update modified list to be everything missing, or everything if -f
@@ -223,7 +236,7 @@ if __name__ == "__main__":
                 if not v[0]:
                     with open( str(f).replace('.ttl','.txt') , "w" ) as vr:
                         vr.write(v[2])
-                make_rdf(f, newg)
+                make_rdf(f, g=newg, rootpath=domain_rootpath)
             except Exception as e:
                 log("Failed to generate {} : ( {}  )".format(f, e))
 
