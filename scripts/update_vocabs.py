@@ -233,7 +233,7 @@ if __name__ == "__main__":
             try:
                 newg = perform_entailments(rules,f)
                 v = validate(data_graph=newg, shacl_graph=validator)
-                if not v[0]:
+                if True or not v[0]:
                     with open( str(f).replace('.ttl','.txt') , "w" ) as vr:
                         vr.write(v[2])
                 make_rdf(f, g=newg, rootpath=domain_rootpath)
