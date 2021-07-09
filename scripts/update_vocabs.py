@@ -3,6 +3,8 @@ from glob import glob
 from typing import List
 import argparse
 from pathlib import Path
+from urllib.parse import urlencode, quote_plus
+
 import httpx
 from pyshacl import validate
 from rdflib import Graph, URIRef
@@ -37,18 +39,31 @@ DOCREGISTER_GRAPH = get_closure_graph( DOCREG_CLOSURE )
 DOMAINS = [ ( "definitions/conceptschemes", SKOS_RULES , SKOS_VALIDATOR , None, '/def/'),
             ( "specification-elements/defs" , SPEC_RULES , SPEC_VALIDATOR, DOCREGISTER_GRAPH, '/spec/' ) ]
 
-def add_vocabs(vocabs: List[Path], mappings: dict):
-    for vocab in vocabs:
-        r = httpx.post(
-            #"http://"+os.environ["VOCAB_HOST"] + "/rdf4j-server/repositories/ogc-na" , 
-            "http://defs-dev.opengis,net:8080/rdf4j-server/repositories/ogc-na",
-            params={"graph": str(mappings[vocab.name])},
-            headers={"Content-Type": "text/turtle"},
-            content=open(vocab, "rb").read(),
-            auth=(os.environ["DB_USERNAME"], os.environ["DB_PASSWORD"])
-        )
-        assert 200 <= r.status_code <= 300, "Status code was {}".format(r.status_code)
-        # add_to_vocab_index(vocab, get_graph_uri_for_vocab(vocab))
+def load_vocab(vocab: Path, guri):
+    authdetails = None
+    try:
+        authdetails = (os.environ["DB_USERNAME"], os.environ["DB_PASSWORD"])
+    except:
+        pass
+    context = "http://defs-dev.opengis.net:8080/rdf4j-server/repositories/ogc-na/statements?context=<{}>".format(quote_plus(guri))
+
+
+    r = httpx.delete(
+        # "http://"+os.environ["VOCAB_HOST"] + "/rdf4j-server/repositories/ogc-na" ,
+        context,
+        auth=authdetails
+    )
+    # print ( r.status_code )
+    r = httpx.post(
+    #"http://"+os.environ["VOCAB_HOST"] + "/rdf4j-server/repositories/ogc-na" ,
+    context,
+    params={"graph":  guri },
+    headers={"Content-Type": "text/turtle"},
+    content=open(vocab, "rb").read(),
+    auth= authdetails
+    )
+    assert 200 <= r.status_code <= 300, "Status code was {}".format(r.status_code)
+    # add_to_vocab_index(vocab, get_graph_uri_for_vocab(vocab))
 
 
 
@@ -117,6 +132,7 @@ def get_entailedpath(f, g:Graph , fmt, rootpattern='/def/'):
 FMTS = { 'ttl':'ttl' , 'rdf':'xml'  }
 
 def make_rdf(f,g=None,rootpath='/def/',):
+    loadable_ttl = None
     if not g:
         g = Graph().parse(str(f), format="ttl")
     #g.serialize(destination=f.replace(".ttl",".rdf"), format="xml")
@@ -128,9 +144,12 @@ def make_rdf(f,g=None,rootpath='/def/',):
             except FileExistsError:
                 pass
             g.serialize(destination=newpath, format=FMTS[fmt])
+            if fmt == 'ttl':
+                loadable_ttl = newpath
+
     if filename != canonical_filename:
         print("New file name {} -> {} for {}".format(filename, canonical_filename, conceptschemeuri))
-
+    return loadable_ttl
 
 
 def log(param):
@@ -239,7 +258,11 @@ if __name__ == "__main__":
                 if True or not v[0]:
                     with open( str(f).replace('.ttl','.txt') , "w" ) as vr:
                         vr.write(v[2])
-                make_rdf(f, g=newg, rootpath=domain_rootpath)
+                loadable_path = make_rdf(f, g=newg, rootpath=domain_rootpath)
+                try:
+                    load_vocab( loadable_path, list(get_graph_uri_for_vocab(None,newg))[0])
+                except  Exception as e:
+                    log("Failed to upload {} for {} : ( {} )".format(loadable_path, f, e))
             except Exception as e:
                 log("Failed to generate {} : ( {}  )".format(f, e))
 
