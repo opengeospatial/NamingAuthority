@@ -22,10 +22,10 @@ def get_closure_graph( vlist: List[str] ):
 
     return g
 
-SKOS_RULES = [ 'scripts/skosbasics.shapes.ttl', 'scripts/skos_vocprez.shapes.ttl' ]
+SKOS_RULES = [ 'scripts/skosbasics.shapes.ttl', 'scripts/ogc_skos_profile_entailments.ttl', 'scripts/skos_vocprez.shapes.ttl' ]
 COMMON_VALIDATORS = [ "https://w3id.org/profile/vocpub/validator" ]
 OWL_RULES = [ 'scripts/owl2skos.shapes.ttl' ] + SKOS_RULES
-SPEC_RULES = [ 'scripts/spec_as_conceptscheme.shapes.ttl' ]
+SPEC_RULES = [ 'scripts/spec_as_conceptscheme.shapes.ttl' ] + SKOS_RULES
 SPEC_VALIDATORS = []
 DOCREG_CLOSURE = [ "definitions/conceptschemes/docs.ttl" ]
 
@@ -143,7 +143,10 @@ def perform_entailments(rulegraphlist, f, g=None):
         g = Graph().parse(str(f), format="ttl")
     for rules in rulegraphlist:
         shg = Graph().parse(rules, format="ttl")
-        validate(g, shacl_graph=shg, advanced=True, inplace=True )
+        try:
+            validate(g, shacl_graph=shg, advanced=True, inplace=True )
+        except Exception as e:
+            raise Exception ( "SHACL error in {}: {}".format(rules, str(e)))
     return g
 
 

@@ -22,6 +22,31 @@
   skos:definition "Entails a concept scheme for a given specification, with topconcepts for each conformance class and each requirement being a narrower concept. Supports visualisation in a heirarchy"
 .
 
+:NodeShape_ConceptScheme
+  a sh:NodeShape ;
+  sh:rule :status ;
+  sh:targetClass skos:ConceptScheme ;
+.
+
+:status
+ a sh:SPARQLRule ;
+  rdfs:label "Add status code if missing"@en;
+  rdfs:comment "Assume status valid if not present.  Note original data and prior entailments for experimental resources must set status if not present"@en ;
+  sh:construct """
+		     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+		     PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+			 PREFIX policy: <http://www.opengis.net/def/metamodel/ogc-na/>
+		     CONSTRUCT  {
+				 ?this policy:status ?status .
+				}
+			 WHERE {
+			    ?this a skos:ConceptScheme .
+                OPTIONAL { ?this policy:status ?cstatus }
+                BIND ( COALESCE ( ?cstatus , <http://www.opengis.net/def/status/experimental> ) AS ?status )
+			    }
+""" ;
+.
+
 :NodeShape_conformance_class
   a sh:NodeShape ;
   sh:rule :specelements ;
@@ -32,6 +57,7 @@
   a sh:SPARQLRule ;
   rdfs:label "Create missing concept scheme" ;
   sh:construct """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+  		     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 CONSTRUCT {
   ?cs a skos:ConceptScheme ;
     rdfs:label ?cslabel ;
@@ -48,21 +74,8 @@ WHERE {
     
     FILTER NOT EXISTS { ?c skos:broader ?this }
 }""" ;
-  sh:prefixes <http://www.w3.org/2004/02/skos/core> ;
 .
 
-<skostopconcepts:SPARQLRule_narrowinverse>
-  a sh:SPARQLRule ;
-  rdfs:label "Create missing skos:broader EDG needs" ;
-  sh:construct """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-CONSTRUCT {
-?c  skos:narrower ?this
-}
-WHERE {
-    ?this skos:broader ?c
-    FILTER NOT EXISTS { ?c  skos:narrower  ?this }
-}""" ;
-  sh:prefixes <http://www.w3.org/2004/02/skos/core> ;
-.
+
 
 
