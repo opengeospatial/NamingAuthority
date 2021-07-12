@@ -3,36 +3,67 @@ from glob import glob
 from typing import List
 import argparse
 from pathlib import Path
+from urllib.parse import urlencode, quote_plus
+
 import httpx
 from pyshacl import validate
 from rdflib import Graph, URIRef
 from rdflib.namespace import RDF, SKOS
 import os
 
-SKOS_RULES = [ 'scripts/skosbasics.shapes.ttl', 'scripts/skos_vocprez.shapes.ttl' ]
-COMMON_VALIDATORS = [ "https://w3id.org/profile/vocpub/validator" ]
-
-
-def get_validation_graph( vlist ):
+def get_closure_graph( vlist: List[str] ):
+    g = Graph()
     for v in vlist:
-        r = httpx.get(v)
-        assert r.status_code == 200
-        return Graph().parse(data=r.text, format="turtle")
+        if v.startswith("http:") or v.startswith("https:"):
+            r = httpx.get(v)
+            assert r.status_code == 200
+            data = r.text
+            g += Graph().parse(data=data, format="turtle")
+        else:
+            g += Graph().parse(source=v, format="turtle")
 
-SKOS_VALIDATOR = get_validation_graph ( COMMON_VALIDATORS  )
+    return g
 
-def add_vocabs(vocabs: List[Path], mappings: dict):
-    for vocab in vocabs:
-        r = httpx.post(
-            #"http://"+os.environ["VOCAB_HOST"] + "/rdf4j-server/repositories/ogc-na" , 
-            "http://defs-dev.opengis,net:8080/rdf4j-server/repositories/ogc-na",
-            params={"graph": str(mappings[vocab.name])},
-            headers={"Content-Type": "text/turtle"},
-            content=open(vocab, "rb").read(),
-            auth=(os.environ["DB_USERNAME"], os.environ["DB_PASSWORD"])
-        )
-        assert 200 <= r.status_code <= 300, "Status code was {}".format(r.status_code)
-        # add_to_vocab_index(vocab, get_graph_uri_for_vocab(vocab))
+SKOS_RULES = [ 'scripts/skosbasics.shapes.ttl', 'scripts/ogc_skos_profile_entailments.ttl', 'scripts/skos_vocprez.shapes.ttl' ]
+COMMON_VALIDATORS = [ "https://w3id.org/profile/vocpub/validator" ]
+OWL_RULES = [ 'scripts/owl2skos.shapes.ttl' ] + SKOS_RULES
+SPEC_RULES = [ 'scripts/spec_as_conceptscheme.shapes.ttl' ] + SKOS_RULES
+SPEC_VALIDATORS = []
+DOCREG_CLOSURE = [ "definitions/conceptschemes/docs.ttl" ]
+
+
+SKOS_VALIDATOR = get_closure_graph ( COMMON_VALIDATORS  )
+SPEC_VALIDATOR =  get_closure_graph ( SPEC_VALIDATORS  ) + SKOS_VALIDATOR
+DOCREGISTER_GRAPH = get_closure_graph( DOCREG_CLOSURE )
+
+DOMAINS = [ ( "definitions/conceptschemes", SKOS_RULES , SKOS_VALIDATOR , None, '/def/'),
+            ( "specification-elements/defs" , SPEC_RULES , SPEC_VALIDATOR, DOCREGISTER_GRAPH, '/spec/' ) ]
+
+def load_vocab(vocab: Path, guri):
+    authdetails = None
+    try:
+        authdetails = (os.environ["DB_USERNAME"], os.environ["DB_PASSWORD"])
+    except:
+        pass
+    context = "http://defs-dev.opengis.net:8080/rdf4j-server/repositories/ogc-na/statements?context=<{}>".format(quote_plus(guri))
+
+
+    r = httpx.delete(
+        # "http://"+os.environ["VOCAB_HOST"] + "/rdf4j-server/repositories/ogc-na" ,
+        context,
+        auth=authdetails
+    )
+    # print ( r.status_code )
+    r = httpx.post(
+    #"http://"+os.environ["VOCAB_HOST"] + "/rdf4j-server/repositories/ogc-na" ,
+    context,
+    params={"graph":  guri },
+    headers={"Content-Type": "text/turtle"},
+    content=open(vocab, "rb").read(),
+    auth= authdetails
+    )
+    assert 200 <= r.status_code <= 300, "Status code was {}".format(r.status_code)
+    # add_to_vocab_index(vocab, get_graph_uri_for_vocab(vocab))
 
 
 
@@ -100,34 +131,41 @@ def get_entailedpath(f, g:Graph , fmt, rootpattern='/def/'):
 
 FMTS = { 'ttl':'ttl' , 'rdf':'xml'  }
 
-def make_rdf(f,g=None):
+def make_rdf(f,g=None,rootpath='/def/',):
+    loadable_ttl = None
     if not g:
         g = Graph().parse(str(f), format="ttl")
     #g.serialize(destination=f.replace(".ttl",".rdf"), format="xml")
     for fmt in FMTS.keys() :
-        newpath, filename, canonical_filename, conceptschemeuri = get_entailedpath(f, g, fmt)
+        newpath, filename, canonical_filename, conceptschemeuri = get_entailedpath(f, g, fmt, rootpattern=rootpath)
         if newpath:
             try:
                 Path(Path(newpath).parent).mkdir(parents=True, exist_ok=True)
             except FileExistsError:
                 pass
             g.serialize(destination=newpath, format=FMTS[fmt])
+            if fmt == 'ttl':
+                loadable_ttl = newpath
+
     if filename != canonical_filename:
         print("New file name {} -> {} for {}".format(filename, canonical_filename, conceptschemeuri))
-
+    return loadable_ttl
 
 
 def log(param):
    print ( param)
 
 
-def perform_skos_entailments(f, g=None):
+def perform_entailments(rulegraphlist, f, g=None):
     """ run skos graph entailments """
     if not g:
         g = Graph().parse(str(f), format="ttl")
-    for rules in SKOS_RULES:
+    for rules in rulegraphlist:
         shg = Graph().parse(rules, format="ttl")
-        validate(g, shacl_graph=shg, advanced=True, inplace=True )
+        try:
+            validate(g, shacl_graph=shg, advanced=True, inplace=True )
+        except Exception as e:
+            raise Exception ( "SHACL error in {}: {}".format(rules, str(e)))
     return g
 
 
@@ -184,47 +222,57 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-
-    modified = []
-    if args.batch:
-        # update modified list to be everything missing, or everything if -f
-        if args.force :
-            modified = glob("definitions/conceptschemes/*.ttl")
-        else:
-            modified = list ( set(glob("definitions/conceptschemes/*.ttl")) - set(glob("definitions/conceptschemes/entailed/*.ttl")))
-
+    modlist = []
+    addedlist = []
     if args.modified:
-        for f in args.modified.split(","):
+        modlist = args.modified.split(",")
+    if args.added:
+        addedlist = args.added.split(",")
+
+    for scopepath,rules,validator,extra_ont,domain_rootpath in DOMAINS:
+        modified = []
+        if args.batch:
+            # update modified list to be everything missing, or everything if -f
+            if args.force :
+                modified = glob(scopepath+"/*.ttl")
+            else:
+                modified = list ( set(glob(scopepath+"/*.ttl")) - set(glob(scopepath+ "/entailed/*.ttl")))
+
+
+        for f in modlist:
             # if the file is in the definitions/conceptschemes/ folder and ends with .ttl, it's a vocab file
-            if f.startswith("definitions/conceptschemes/") and f.endswith(".ttl"):
+            if f.startswith(scopepath) and f.endswith(".ttl"):
                 modified.append(Path(f))
 
-    added = []
-    if args.added:
-        for f in args.added.split(","):
+        added = []
+        for f in addedlist:
             # if the file is in the vocabularies/ folder and ends with .ttl, it's a vocab file
-            if f.startswith("definitions/conceptschemes/") and f.endswith(".ttl"):
+            if f.startswith(scopepath) and f.endswith(".ttl"):
                 p = Path(f)
                 added.append(p)
 
-    for f in modified + added:
-        try:
-            newg = perform_skos_entailments(f)
-            v = validate(data_graph=newg, shacl_graph=SKOS_VALIDATOR)
-            if not v[0]:
-                with open( str(f).replace('.ttl','.txt') , "w" ) as vr:
-                    vr.write(v[2])
-            make_rdf(f, newg)
-        except Exception as e:
-            log("Failed to generate {} : ( {}  )".format(f, e))
+        for f in modified + added:
+            try:
+                newg = perform_entailments(rules,f)
+                v = validate(data_graph=newg, shacl_graph=validator)
+                if True or not v[0]:
+                    with open( str(f).replace('.ttl','.txt') , "w" ) as vr:
+                        vr.write(v[2])
+                loadable_path = make_rdf(f, g=newg, rootpath=domain_rootpath)
+                try:
+                    load_vocab( loadable_path, list(get_graph_uri_for_vocab(None,newg))[0])
+                except  Exception as e:
+                    log("Failed to upload {} for {} : ( {} )".format(loadable_path, f, e))
+            except Exception as e:
+                log("Failed to generate {} : ( {}  )".format(f, e))
 
-    removed = []
-    if args.removed:
-        for f in args.removed.split(","):
-            # if the file is in the vocabularies/ folder and ends with .ttl, it's a vocab file
-            if f.startswith("definitions/conceptschemes/") and f.endswith(".ttl"):
-                p = Path(f)
-                removed.append(p)
+        removed = []
+        if args.removed:
+            for f in args.removed.split(","):
+                # if the file is in the vocabularies/ folder and ends with .ttl, it's a vocab file
+                if f.startswith(scopepath) and f.endswith(".ttl"):
+                    p = Path(f)
+                    removed.append(p)
 
     #i = Path(__file__).parent.parent / "vocabularies" / "index.json"
     #with open(i, "r") as f:
@@ -235,13 +283,14 @@ if __name__ == "__main__":
     # add all added and modified vocabs
     #add_vocabs(added + modified, mappings)
 
-    # print for testing
-    print("modified:")
-    print([str(x) for x in modified])
-    print("added:")
-    print([str(x) for x in added])
-    print("removed:")
-    print([str(x) for x in removed])
+        # print for testing
+        print ( "Scope : ")
+        print("modified:")
+        print([str(x) for x in modified])
+        print("added:")
+        print([str(x) for x in added])
+        print("removed:")
+        print([str(x) for x in removed])
 
     # rebuild VocPrez' cache
     #r = httpx.get("http://defs-dev.opengis.net/vocprez/cache-reload")
