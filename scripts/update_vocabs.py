@@ -26,7 +26,8 @@ def get_closure_graph( vlist: List[str] ):
 
 SKOS_RULES = [ 'scripts/skosbasics.shapes.ttl', 'scripts/ogc_skos_profile_entailments.ttl', 'scripts/skos_vocprez.shapes.ttl' ]
 COMMON_VALIDATORS = [ "https://w3id.org/profile/vocpub/validator" ]
-OWL_RULES = [ 'scripts/owl2skos.shapes.ttl' ] + SKOS_RULES
+#OWL_RULES = [ 'scripts/owl2skos.shapes.ttl' , 'scripts/skos2ftc.shapes.ttl'] + SKOS_RULES
+OWL_RULES = [ 'scripts/owl2skos.shapes.ttl', 'scripts/skosbasics.shapes.ttl', 'scripts/ogc_skos_profile_entailments.ttl' ] + SKOS_RULES
 SPEC_RULES = [ 'scripts/spec_as_conceptscheme.shapes.ttl' ] + SKOS_RULES
 SPEC_VALIDATORS = []
 DOCREG_CLOSURE = [ "definitions/conceptschemes/docs.ttl" ]
@@ -37,7 +38,9 @@ SPEC_VALIDATOR =  get_closure_graph ( SPEC_VALIDATORS  ) + SKOS_VALIDATOR
 DOCREGISTER_GRAPH = get_closure_graph( DOCREG_CLOSURE )
 
 DOMAINS = [ ( "definitions/conceptschemes", SKOS_RULES , SKOS_VALIDATOR , None, '/def/'),
-            ( "specification-elements/defs" , SPEC_RULES , SPEC_VALIDATOR, DOCREGISTER_GRAPH, '/spec/' ) ]
+            ( "specification-elements/defs" , SPEC_RULES , SPEC_VALIDATOR, DOCREGISTER_GRAPH, '/spec/' ) ,
+            ("incubation/binary-array-ld", OWL_RULES, SKOS_VALIDATOR, None, '/def/')
+            ]
 
 def load_vocab(vocab: Path, guri):
     authdetails = None
@@ -64,6 +67,7 @@ def load_vocab(vocab: Path, guri):
     )
     assert 200 <= r.status_code <= 300, "Status code was {}".format(r.status_code)
     # add_to_vocab_index(vocab, get_graph_uri_for_vocab(vocab))
+    return context
 
 
 
@@ -204,6 +208,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "-u",
         "--update",
+        action='store_true',
         help="Update Database",
     )
 
@@ -259,10 +264,12 @@ if __name__ == "__main__":
                     with open( str(f).replace('.ttl','.txt') , "w" ) as vr:
                         vr.write(v[2])
                 loadable_path = make_rdf(f, g=newg, rootpath=domain_rootpath)
-                try:
-                    load_vocab( loadable_path, list(get_graph_uri_for_vocab(None,newg))[0])
-                except  Exception as e:
-                    log("Failed to upload {} for {} : ( {} )".format(loadable_path, f, e))
+                if args.update:
+                    try:
+                        loc = load_vocab( loadable_path, list(get_graph_uri_for_vocab(None,newg))[0])
+                        log("Uploaded {} for {} to   {} ".format(loadable_path, f, loc))
+                    except  Exception as e:
+                        log("Failed to upload {} for {} : ( {} )".format(loadable_path, f, e))
             except Exception as e:
                 log("Failed to generate {} : ( {}  )".format(f, e))
 
