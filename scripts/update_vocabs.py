@@ -31,15 +31,17 @@ OWL_RULES = [ 'scripts/owl2skos.shapes.ttl' ] + SKOS_RULES
 SPEC_RULES = [ 'scripts/spec_as_conceptscheme.shapes.ttl' ] + SKOS_RULES
 SPEC_VALIDATORS = [ 'definitions/models/modspec_shacl.ttl']
 DOCREG_CLOSURE = [ "definitions/conceptschemes/docs.ttl" ]
+SPECMODEL_CLOSURE = [ 'definitions/models/modspec.ttl' ] + DOCREG_CLOSURE
 
 
 SKOS_VALIDATOR = get_closure_graph ( COMMON_VALIDATORS  )
 SPEC_VALIDATOR =  get_closure_graph ( SPEC_VALIDATORS  ) + SKOS_VALIDATOR
 DOCREGISTER_GRAPH = get_closure_graph( DOCREG_CLOSURE )
+SPECMODEL_GRAPH = get_closure_graph( SPECMODEL_CLOSURE )
 
 DOMAINS = [ ( "definitions/conceptschemes", SKOS_RULES , SKOS_VALIDATOR , None, '/def/'),
             ( "specification-elements/defs" , SPEC_RULES , SPEC_VALIDATOR, DOCREGISTER_GRAPH, '/spec/' ) ,
-            ("incubation/binary-array-ld", OWL_RULES, SKOS_VALIDATOR, None, '/def/')
+            ("incubation/binary-array-ld", OWL_RULES, SKOS_VALIDATOR, SPECMODEL_CLOSURE, '/def/')
             ]
 
 def load_vocab(vocab: Path, guri):
@@ -291,13 +293,16 @@ if __name__ == "__main__":
     #add_vocabs(added + modified, mappings)
 
         # print for testing
-        print ( "Scope : ")
-        print("modified:")
-        print([str(x) for x in modified])
-        print("added:")
-        print([str(x) for x in added])
-        print("removed:")
-        print([str(x) for x in removed])
+        print ( "Scope : {}".format(scopepath))
+        if modified:
+            print("modified:")
+            print([str(x) for x in modified])
+        if added:
+            print("added:")
+            print([str(x) for x in added])
+        if removed:
+            print("removed:")
+            print([str(x) for x in removed])
 
     # rebuild VocPrez' cache
     #r = httpx.get("http://defs-dev.opengis.net/vocprez/cache-reload")

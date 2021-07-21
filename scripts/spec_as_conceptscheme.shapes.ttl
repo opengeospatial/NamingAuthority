@@ -31,18 +31,21 @@
 :status
  a sh:SPARQLRule ;
   rdfs:label "Add status code if missing"@en;
-  rdfs:comment "Assume status valid if not present.  Note original data and prior entailments for experimental resources must set status if not present"@en ;
+  rdfs:comment "Two statuses - status of the specification and status of the definitions publication. Assume same and publication status experimental if not present.  Note original data and prior entailments for experimental resources must set status if not present"@en ;
   sh:construct """
 		     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 		     PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
 			 PREFIX policy: <http://www.opengis.net/def/metamodel/ogc-na/>
+			 prefix spec: <http://www.opengis.net/def/ont/modspec/>
 		     CONSTRUCT  {
 				 ?this policy:status ?status .
+				 ?this spec:status ?status .
 				}
 			 WHERE {
 			    ?this a skos:ConceptScheme .
                 OPTIONAL { ?this policy:status ?cstatus }
-                BIND ( COALESCE ( ?cstatus , <http://www.opengis.net/def/status/experimental> ) AS ?status )
+                OPTIONAL { ?this spec:status ?pstatus }
+                BIND ( COALESCE ( ?cstatus , ?pstatus, <http://www.opengis.net/def/status/experimental> ) AS ?status )
 			    }
 """ ;
 .
