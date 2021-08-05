@@ -22,6 +22,35 @@
   skos:definition "Entails a concept scheme for a given specification, with topconcepts for each conformance class and each requirement being a narrower concept. Supports visualisation in a heirarchy"
 .
 
+:NodeShape_spec_add_as_doc
+  a sh:NodeShape ;
+  sh:rule :add_to_docs ;
+  sh:targetClass spec:Specification ;
+.
+
+:add_to_docs
+ a sh:SPARQLRule ;
+  rdfs:label "Add spec as a Concept in /def/docs/ if not present"@en;
+  rdfs:comment "May be detgails of an unpublished doc"@en ;
+  sh:construct """
+		     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+		     PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+			 PREFIX policy: <http://www.opengis.net/def/metamodel/ogc-na/>
+			 prefix spec: <http://www.opengis.net/def/ont/modspec/>
+		     CONSTRUCT  {
+				 ?this policy:status ?status.
+				 ?this a skos:Concept .
+				 ?this skos:inScheme <http://www.opengis.net/def/docs> ;
+				}
+			 WHERE {
+			    ?this a spec:Specification .
+                OPTIONAL { ?this policy:status ?regstatus }
+                OPTIONAL { ?this spec:status ?specstatus }
+                BIND ( COALESCE ( ?specstatus , ?regstatus , <http://www.opengis.net/def/status/under-development>  ) AS ?status )
+			    }
+""" ;
+.
+
 :NodeShape_ConceptScheme
   a sh:NodeShape ;
   sh:rule :status ;

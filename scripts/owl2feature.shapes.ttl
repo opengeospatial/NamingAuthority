@@ -1,0 +1,63 @@
+# baseURI: https://www.opengis.net/def/profile/feature/owl2feature
+# imports: http://datashapes.org/dash
+# imports: http://www.w3.org/2004/02/skos/core
+
+@prefix dash: <http://datashapes.org/dash#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix : <https://www.opengis.net/def/profile/skos/owl2skos#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://www.opengis.net/def/profile/feature/owl2feature>
+  a owl:Ontology ;
+  owl:imports <http://datashapes.org/dash> ;
+  owl:imports <http://www.w3.org/2004/02/skos/core> ;
+  dcterms:creator "Rob Atkinson" ;
+  dcterms:title "Entail ISO 19109 Feature Types from OWL models" ;
+  rdfs:comment "SHACL rules to entail a ISO Application Schema Feature Model (Properties of Feature Type Classes) from OWL and optional other frame specifications (future SHACL, RDF-QB?)" ;
+.
+
+
+:feature a sh:NodeShape;
+  sh:rule :buildFeature ;
+        # skostopconcepts:rdfslabel> ;
+  sh:targetClass owl:Class ;
+.
+
+
+:buildFeature
+  a sh:SPARQLRule ;
+  rdfs:label "Build owl:Class as a Feature and properties" ;
+  rdfs:comment "under construction.." ;
+  sh:construct """
+    PREFIX prof: <http://www.w3.org/ns/dx/prof/>
+	  prefix skos: <http://www.w3.org/2004/02/skos/core#>
+      PREFIX afn: <http://jena.hpl.hp.com/ARQ/function#>
+      prefix dct: <http://purl.org/dc/terms/>
+      PREFIX ft: <http://www.opengis.net/def/metamodel/featuretypes/>
+      CONSTRUCT {
+        ?this ft:hasProperty ?classprop ;
+
+        }
+WHERE {
+   ?this a owl:Class .
+   ?class rdfs:subClassOf* ?classh .
+   {
+
+          ?classh rdfs:subClassOf ?bn.
+          ?bn a owl:Restriction .
+          ?bn owl:onProperty ?classprop .
+          ?bn owl:allValuesFrom|owl:someValuesFrom ?proptype .
+    }
+    UNION
+    {
+        ?classprop rdfs:domain ?classsh .
+    }
+
+}""" ;
+.
+

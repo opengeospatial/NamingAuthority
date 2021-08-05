@@ -27,22 +27,32 @@ def get_closure_graph( vlist: List[str] ):
 SKOS_RULES = [ 'scripts/skosbasics.shapes.ttl', 'scripts/ogc_skos_profile_entailments.ttl', 'scripts/skos_vocprez.shapes.ttl' ]
 COMMON_VALIDATORS = [ "https://w3id.org/profile/vocpub/validator" ]
 #OWL_RULES = [ 'scripts/owl2skos.shapes.ttl' , 'scripts/skos2ftc.shapes.ttl'] + SKOS_RULES
-OWL_RULES = [ 'scripts/owl2skos.shapes.ttl' ] + SKOS_RULES
-SPEC_RULES = [ 'scripts/spec_as_conceptscheme.shapes.ttl' ] + SKOS_RULES
-SPEC_VALIDATORS = [ 'definitions/models/modspec_shacl.ttl']
-DOCREG_CLOSURE = [ "definitions/conceptschemes/docs.ttl" ]
-SPECMODEL_CLOSURE = [ 'definitions/models/modspec.ttl' ] + DOCREG_CLOSURE
+OWL_RULES = [ 'scripts/owl2skos.shapes.ttl' , 'scripts/owl2feature.shapes.ttl'] + SKOS_RULES
+SPEC_RULES = [ 'scripts/spec_as_conceptscheme.shapes.ttl'  ] + SKOS_RULES
+# , 'scripts/modspec_entailmenthelpers.ttl'
+#SPEC_VALIDATORS = [ 'definitions/models/modspec_shacl.ttl']
+SPEC_VALIDATORS = [ 'definitions/models/modspec-owl2sh-semi-closed.ttl']
+#DOCREG_CLOSURE = [ "definitions/conceptschemes/docs.ttl" ]
+SPECMODEL_CLOSURE = [ 'definitions/models/modspec_validations.ttl', 'definitions/conceptschemes/status.ttl' ]
+# 'definitions/models/modspec.ttl',
 
+# SPECMODEL_CLOSURE = [ 'scripts/modspecs_entailmenthelpers.ttl']
 
 SKOS_VALIDATOR = get_closure_graph ( COMMON_VALIDATORS  )
 SPEC_VALIDATOR =  get_closure_graph ( SPEC_VALIDATORS  ) + SKOS_VALIDATOR
-DOCREGISTER_GRAPH = get_closure_graph( DOCREG_CLOSURE )
-SPECMODEL_GRAPH = get_closure_graph( SPECMODEL_CLOSURE )
+#DOCREGISTER_GRAPH = get_closure_graph( DOCREG_CLOSURE )
+TEST_VALIDATOR = get_closure_graph([ 'scripts/test/test_validator.ttl'])
 
-DOMAINS = [ ( "definitions/conceptschemes", SKOS_RULES , SKOS_VALIDATOR , None, '/def/'),
-            ( "specification-elements/defs" , SPEC_RULES , SPEC_VALIDATOR, DOCREGISTER_GRAPH, '/spec/' ) ,
-            ("incubation/binary-array-ld", OWL_RULES, SKOS_VALIDATOR, SPECMODEL_CLOSURE, '/def/')
+DOMAINS = [ ( "definitions/conceptschemes", "/*.ttl" , SKOS_RULES , SKOS_VALIDATOR , None, '/def/'),
+            ( "specification-elements/defs" , "/*.ttl", SPEC_RULES , SPEC_VALIDATOR, SPECMODEL_CLOSURE, '/spec/' ) ,
+            ("incubation/binary-array-ld",  "/*.ttl" ,OWL_RULES, SKOS_VALIDATOR, None , '/def/') ,
+            ("scripts/tests", "/*.ttl", [] , TEST_VALIDATOR , [ 'scripts/test/test_closure.ttl'] , '/test/') ,
+            ("incubation/cybele-semantic-model", "/*_flat.ttl",  OWL_RULES, SKOS_VALIDATOR, None , '/w3id.org/') ,
+            ("/repos/rob-metalinkage/DEMETER/profiles", "/*/*_flat.ttl" , OWL_RULES, SKOS_VALIDATOR, None , '/w3id.org/')
             ]
+
+RDF4JSERVER = 'http://defs-dev.opengis.net:8080/'
+REPO = 'ogc-na'
 
 def load_vocab(vocab: Path, guri):
     authdetails = None
@@ -50,7 +60,7 @@ def load_vocab(vocab: Path, guri):
         authdetails = (os.environ["DB_USERNAME"], os.environ["DB_PASSWORD"])
     except:
         pass
-    context = "http://defs-dev.opengis.net:8080/rdf4j-server/repositories/ogc-na/statements?context=<{}>".format(quote_plus(guri))
+    context = "{}/rdf4j-server/repositories/{}/statements?context=<{}>".format(RDF4JSERVER, REPO, quote_plus(guri))
 
 
     r = httpx.delete(
@@ -127,10 +137,13 @@ def get_entailedpath(f, g:Graph , fmt, rootpattern='/def/'):
     for graphuri in get_graph_uri_for_vocab(f,g=g):
         if canonical_filename:
             print ('Warning - file {} contains multiple concept schemes'.format(f))
-        canonical_filename = graphuri.rsplit(rootpattern)[1]
-        conceptscheme = graphuri
+        try:
+            canonical_filename = graphuri.rsplit(rootpattern)[1]
+            conceptscheme = graphuri
+        except:
+            print ('Ignoring concept scheme that does not match domain path {}  : {}'.format(rootpattern,graphuri))
     if not canonical_filename:
-        print('Warning - file {} contains no concept schemes'.format(f))
+        print('Warning - file {} contains no concept schemes matching domain root URI {}'.format(f, rootpattern))
         return None,filename,None,None
     cpaths = os.path.split(canonical_filename)
     return ( os.path.join( path,'entailed',*cpaths) + "." + fmt , filename, canonical_filename , conceptscheme)
@@ -162,14 +175,14 @@ def log(param):
    print ( param)
 
 
-def perform_entailments(rulegraphlist, f, g=None):
+def perform_entailments(rulegraphlist, f, g=None, extra=None):
     """ run skos graph entailments """
     if not g:
         g = Graph().parse(str(f), format="ttl")
     for rules in rulegraphlist:
         shg = Graph().parse(rules, format="ttl")
         try:
-            validate(g, shacl_graph=shg, advanced=True, inplace=True )
+            validate(g, shacl_graph=shg, ont_graph=extra, advanced=True, inplace=True )
         except Exception as e:
             raise Exception ( "SHACL error in {}: {}".format(rules, str(e)))
     return g
@@ -202,6 +215,12 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "-d",
+        "--domain",
+        help="Batch process specific domain",
+    )
+
+    parser.add_argument(
         "-i",
         "--initialise",
         help="Initialise Database",
@@ -228,7 +247,25 @@ if __name__ == "__main__":
         help="force overwrite of existing entailments",
     )
 
+    parser.add_argument(
+        "-s",
+        "--server" ,
+        help="override server - default =  " + RDF4JSERVER ,
+    )
+
+    parser.add_argument(
+        "-t",
+        "--triplerepo",
+        help="override triplestore repo - default =  " + REPO,
+    )
+
     args = parser.parse_args()
+
+    if args.server:
+        RDF4JSERVER = args.server
+    if args.triplerepo:
+        REPO = args.triplerepo
+
     modlist = []
     addedlist = []
     if args.modified:
@@ -236,32 +273,40 @@ if __name__ == "__main__":
     if args.added:
         addedlist = args.added.split(",")
 
-    for scopepath,rules,validator,extra_ont,domain_rootpath in DOMAINS:
+    for scopepath,scopeglobpattern,rules,validator,extra_ont_list,domain_rootpath in DOMAINS:
+        if args.domain and args.domain != scopepath:
+            continue
         modified = []
+        domainlist = [os.path.normpath(i) for i in glob(scopepath+scopeglobpattern)]
+
         if args.batch:
             # update modified list to be everything missing, or everything if -f
             if args.force :
-                modified = glob(scopepath+"/*.ttl")
+                modified = domainlist
             else:
-                modified = list ( set(glob(scopepath+"/*.ttl")) - set(glob(scopepath+ "/entailed/*.ttl")))
+                # fix - this will be broken for globbing pattern
+                modified = list ( set(domainlist) - set(glob(scopepath+ "/entailed" + scopeglobpattern)))
 
 
         for f in modlist:
-            # if the file is in the definitions/conceptschemes/ folder and ends with .ttl, it's a vocab file
-            if f.startswith(scopepath) and f.endswith(".ttl"):
+            # if the file matches the glob using the scopepath and glob pattern  it's a vocab file
+            if f.startswith(scopepath) and f.endswith(".ttl") and os.path.normpath(f) in domainlist:
                 modified.append(Path(f))
 
         added = []
         for f in addedlist:
-            # if the file is in the vocabularies/ folder and ends with .ttl, it's a vocab file
-            if f.startswith(scopepath) and f.endswith(".ttl"):
+            if f.startswith(scopepath) and f.endswith(".ttl") and os.path.normpath(f) in domainlist:
                 p = Path(f)
                 added.append(p)
-
+        if modified + added :
+            if extra_ont_list:
+                extra_ont = get_closure_graph(extra_ont_list)
+            else:
+                extra_ont = None
         for f in modified + added:
             try:
-                newg = perform_entailments(rules,f)
-                v = validate(data_graph=newg, shacl_graph=validator)
+                newg = perform_entailments(rules,f,extra=extra_ont)
+                v = validate(data_graph=newg, ont_graph=extra_ont , shacl_graph=validator)
                 if True or not v[0]:
                     with open( str(f).replace('.ttl','.txt') , "w" ) as vr:
                         vr.write(v[2])

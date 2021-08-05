@@ -26,13 +26,22 @@
   sh:targetClass owl:Ontology ;
 .
 
+:feature a sh:NodeShape;
+  sh:rule :buildClass ;
+        # skostopconcepts:rdfslabel> ;
+  sh:targetClass owl:Class ;
+.
+
 :buildConceptScheme
   a sh:SPARQLRule ;
-  rdfs:label "Add skos:broader inverse reference" ;
+  rdfs:label "Build Concept Scheme" ;
+  rdfs:comment "Also builds top level collections for classes and properties" ;
   sh:construct """PREFIX ogc: <http://www.opengis.net/def/metamodel/>
+    PREFIX ft: <http://www.opengis.net/def/metamodel/featuretypes/>
     PREFIX prof: <http://www.w3.org/ns/dx/prof/>
 	  prefix skos: <http://www.w3.org/2004/02/skos/core#>
       PREFIX afn: <http://jena.hpl.hp.com/ARQ/function#>
+      prefix dct: <http://purl.org/dc/terms/>
       CONSTRUCT {
     ?this a skos:ConceptScheme .
     ?this skos:prefLabel ?cslabel .
@@ -40,6 +49,9 @@
 	?this a owl:Ontology .
 	?this owl:imports <http://www.opengis.net/ont/geosparql> .
 	?this skos:definition ?def .
+	?this ft:propertyList ?pcollection .
+	?this ft:ftList ?ftcollection .
+    ?this ft:codelistList ?clcollection .
 	?topcollection a skos:Collection .
     ?topcollection rdfs:comment "This is the collection viewpoint of this application schema, consisting of sub-collections of feature types, properties and codelists defined by the application schema."@en .
     ?topcollection skos:inScheme ?this .
@@ -59,23 +71,17 @@
 	?topcollection skos:member ?pcollection .
     ?topcollection skos:member ?clcollection .
 	?ftcollection skos:member ?class .
-    ?this skos:topConcept ?class .
-    ?class a skos:Concept ;
-       skos:inScheme ?this ;
-       skos:prefLabel ?bestpreflabel ;
-	   skos:broader ?parent ;
-        ?skospred ?skosprop .
     ?pcollection skos:member ?property .
-    ?property a skos:Concept ;
-       skos:inScheme ?this ;
-       skos:prefLabel ?bestpropertylabel ;
-       ?skospred ?skosprop .
+    ?property a skos:Concept.
+    ?property skos:prefLabel ?bestproplabel  .
+    ?property skos:broader ?superprop .
 }
 WHERE {
      ?this a owl:Ontology .
      OPTIONAL { ?this rdfs:label ?label }
     OPTIONAL { ?this skos:prefLabel ?plabel }
-BIND ( COALESCE (?plabel,?label,str(?this)) as ?cslabel )
+    OPTIONAL { ?this dct:title ?title }
+BIND ( COALESCE (?title,?plabel,?label,str(?this)) as ?cslabel )
 	 OPTIONAL { ?this skos:definition ?def }
     OPTIONAL { ?this ogc:sourceGraph ?sourceGraph . }
     BIND ( COALESCE(?sourceGraph,?this) as ?g )
@@ -84,27 +90,55 @@ BIND ( COALESCE (?plabel,?label,str(?this)) as ?cslabel )
 	BIND (URI(CONCAT(str(?g), "/Properties/")) AS ?pcollection) .
 	BIND (URI(CONCAT(str(?g), "/CodeLists/")) AS ?clcollection) .
 
-        ?class a owl:Class .
-        OPTIONAL {
-            ?class rdfs:subClassOf ?parent . ?parent a owl:Class .
-            OPTIONAL { ?parent rdfs:label ?parentlabel }.
-        } .
-        OPTIONAL { ?class ?skospred ?skosprop FILTER (STRSTARTS(str(?skospred),str(skos:))) }
-        OPTIONAL { ?class rdfs:label ?classlabel . }
-        OPTIONAL {
-            ?class skos:prefLabel ?preflabel .
-        } .
-        BIND( afn:localname(?class) as ?classname )
-        BIND (COALESCE(?preflabel,?classlabel,?classname) AS ?bestpreflabel) .
+        OPTIONAL { ?class a owl:Class . }
 
         OPTIONAL {
-          { ?property a owl:ObjectProperty } UNION { ?property a owl:DatatypeProperty } UNION { ?property a rdf:Property } UNION { ?property rdfs:domain|rdfs:range ?anyClass }
-          OPTIONAL { ?property rdfs:label ?propertylabel . }
-          OPTIONAL {
-              ?property skos:prefLabel ?propertypreflabel .
-          } .
-        }
-        BIND( afn:localname(?property) as ?propertyname )
-        BIND (COALESCE(?propertypreflabel,?propertylabel,?propertyname) AS ?bestpropertylabel) .
+          { ?property a owl:ObjectProperty }
+           UNION { ?property a owl:DatatypeProperty }
+           UNION { ?property a rdf:Property }
+           UNION { ?property rdfs:domain|rdfs:range ?anyClass }
+          OPTIONAL { ?property rdfs:subPropertyOf ?superprop }
+          OPTIONAL { ?property rdfs:label ?proplabel }
+          OPTIONAL { ?property skos:prefLabel ?proppreflabel }
+          BIND ( COALESCE(?proppreflabel,?proplabel, afn:localname(?property)) AS ?bestproplabel  )
+  }
+
 }""" ;
 .
+
+:buildClass
+  a sh:SPARQLRule ;
+  rdfs:label "Build owl:Class as a Feature and properties" ;
+  rdfs:comment "under construction.." ;
+  sh:construct """
+    PREFIX prof: <http://www.w3.org/ns/dx/prof/>
+	  prefix skos: <http://www.w3.org/2004/02/skos/core#>
+      PREFIX afn: <http://jena.hpl.hp.com/ARQ/function#>
+      prefix dct: <http://purl.org/dc/terms/>
+      CONSTRUCT {
+    ?this a skos:Concept;
+       skos:definition ?bestclassdef ;
+       skos:prefLabel ?bestpreflabel ;
+	   skos:broader ?parent ;
+        ?skospred ?skosprop .
+        }
+WHERE {
+     ?this a owl:Class .
+     OPTIONAL { ?this rdfs:label ?label }
+     OPTIONAL { ?this skos:prefLabel ?plabel }
+     OPTIONAL { ?this dct:title ?title }
+     BIND( afn:localname(?this) as ?classname )
+     BIND ( COALESCE (?title,?plabel,?label,?classname) as ?bestpreflabel )
+
+      OPTIONAL {
+            ?this rdfs:subClassOf ?parent FILTER ( !isBlank(?parent) )
+        } .
+
+        OPTIONAL { ?this skos:definition ?cdef . }
+        OPTIONAL { ?this dct:description ?cdesc . }
+        OPTIONAL { ?this rdfs:comment ?ccomment . }
+        BIND (COALESCE(?cdef,?cdesc,?ccomment,?bestpreflabel) AS ?bestclassdef) .
+
+}""" ;
+.
+
