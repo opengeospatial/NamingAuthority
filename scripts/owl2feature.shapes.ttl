@@ -40,21 +40,31 @@
       prefix dct: <http://purl.org/dc/terms/>
       PREFIX ft: <http://www.opengis.net/def/metamodel/featuretypes/>
       CONSTRUCT {
-        ?this ft:hasProperty ?classprop ;
+        ?this ft:hasProperty ?classprop .
+        ?bn rdfs:label ?restrictionlabel
 
         }
 WHERE {
    ?this a owl:Class .
-   ?class rdfs:subClassOf* ?classh .
+   ?this rdfs:subClassOf* ?classh .
    {
 
           ?classh rdfs:subClassOf ?bn.
           ?bn a owl:Restriction .
           ?bn owl:onProperty ?classprop .
-          ?bn owl:allValuesFrom|owl:someValuesFrom ?proptype .
+          OPTIONAL {?classprop rdfs:label ?proplabel}
+          OPTIONAL { ?bn owl:allValuesFrom|owl:someValuesFrom ?proptype . }
+          OPTIONAL { ?bn rdfs:label ?bnlabel }
+          OPTIONAL { ?bn owl:minCardinality ?minc }
+          OPTIONAL { ?bn owl:maxCardinality ?maxc }
+          OPTIONAL { ?bn owl:cardinality ?c }
+          BIND( CONCAT( COALESCE( str(?minc), str(?c) , "0" ), CONCAT(":", COALESCE( str(?maxc), str(?c) , "*")))  as ?cardinality )
+          BIND  (COALESCE(?proplabel, str(?classprop) ) as ?pname )
+          BIND (  CONCAT (?pname, CONCAT(" ( " , CONCAT(?cardinality, " ) " )) )  as ?rl )
+          BIND ( COALESCE(?bnlabel,  ?rl , "A restriction") as ?restrictionlabel )
     }
     UNION
-    {
+    {   ?classprop a "Not matchable to disable this clause" .
         ?classprop rdfs:domain ?classsh .
     }
 
