@@ -103,11 +103,35 @@ CONSTRUCT {
   ?req skos:broader ?this .
 }
 WHERE {
-    
+
     FILTER NOT EXISTS { ?c skos:broader ?this }
 }""" ;
 .
 
 
+:NodeShape_class_dependency
+  a sh:NodeShape ;
+  sh:rule :classdependencies ;
+  rdfs:domain [
+      a owl:Class ;
+      owl:unionOf (
+          spec:RequirementsClass
+          spec:ConformanceClass
+        ) ;
+    ] ;
+.
 
-
+:classdependencies
+  a sh:SPARQLRule ;
+  rdfs:label "Create skos:broader hierarchy for spec:dependency" ;
+  sh:construct """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+  		     prefix spec: <http://www.opengis.net/def/ont/modspec/>
+           CONSTRUCT {
+           ?c skos:broader ?this .
+           ?this skos:narrower ?c .
+           }
+           WHERE {
+               ?c spec:dependency ?this
+               FILTER NOT EXISTS { ?c skos:broader ?this } #not sure if this is most effective to query it instead of just adding second time same relation
+           }""" ;
+.
