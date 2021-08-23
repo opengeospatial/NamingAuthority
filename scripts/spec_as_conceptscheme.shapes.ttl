@@ -111,27 +111,58 @@ WHERE {
 
 :NodeShape_class_dependency
   a sh:NodeShape ;
-  sh:rule :classdependencies ;
-  rdfs:domain [
-      a owl:Class ;
-      owl:unionOf (
-          spec:RequirementsClass
-          spec:ConformanceClass
-        ) ;
-    ] ;
+  #sh:rule :specNarrower ;
+  #sh:rule :specBroader ;
+  sh:rule :inscheme ;
+  sh:targetClass skos:Concept ;
 .
 
-:classdependencies
+:specBroader
   a sh:SPARQLRule ;
   rdfs:label "Create skos:broader hierarchy for spec:dependency" ;
   sh:construct """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
-  		     prefix spec: <http://www.opengis.net/def/ont/modspec/>
-           CONSTRUCT {
-           ?c skos:broader ?this .
-           ?this skos:narrower ?c .
-           }
-           WHERE {
-               ?c spec:dependency ?this
-               FILTER NOT EXISTS { ?c skos:broader ?this } #not sure if this is most effective to query it instead of just adding second time same relation
-           }""" ;
+                  prefix spec: <http://www.opengis.net/def/ont/modspec/>
+                  CONSTRUCT {
+                    ?this skos:broader ?c .
+                    ?c skos:narrower ?this .
+                    }
+                    WHERE {
+                         ?this spec:dependency ?c
+                  }""" ;
+  sh:prefixes <http://www.w3.org/2004/02/skos/core> ;
+
+.
+
+:specNarrower
+  a sh:SPARQLRule ;
+  rdfs:label "Create skos:narrower hierarchy for modspec properties" ;
+  sh:construct """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+                  prefix spec: <http://www.opengis.net/def/ont/modspec/>
+                  CONSTRUCT {
+                    ?this skos:narrower ?c .
+                    ?c skos:broader ?this .
+                    }
+                    WHERE {
+                        { ?this spec:requirementsTested ?c }
+                        UNION { ?this spec:requirement ?c }
+                        UNION { ?this spec:conformanceTest ?c }
+                  }""" ;
+.
+
+:inscheme
+ a sh:SPARQLRule ;
+  rdfs:label "Add inScheme if missing"@en;
+  rdfs:comment "spin rule to create and link skos:inScheme not present. Run at conceptscheme for single pass efficiency"@en ;
+  sh:construct """
+		     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+		     PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+		     CONSTRUCT  {
+				 ?this skos:inScheme ?s .
+				}
+			 WHERE {
+			    ?s a skos:ConceptScheme .
+			    { ?this a skos:Concept }  UNION {?this a skos:Collection }
+			    FILTER NOT EXISTS{ ?this skos:inScheme ?cs } .
+			    }
+			""" ;
 .
