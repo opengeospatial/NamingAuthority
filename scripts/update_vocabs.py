@@ -1,3 +1,4 @@
+
 import json
 from glob import glob
 from typing import List
@@ -10,6 +11,7 @@ from pyshacl import validate
 from rdflib import Graph, URIRef
 from rdflib.namespace import RDF, SKOS
 import os
+
 
 def get_closure_graph( vlist: List[str] ):
     g = Graph()
