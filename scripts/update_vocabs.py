@@ -179,15 +179,24 @@ def log(param):
 
 def perform_entailments(rulegraphlist, f, g=None, extra=None):
     """ run skos graph entailments """
+    entailed_extra = extra
     if not g:
         g = Graph().parse(str(f), format="ttl")
     for rules in rulegraphlist:
         shg = Graph().parse(rules, format="ttl")
+        if extra:
+            entailed_extra = extra
+            try:
+                validate(entailed_extra, shacl_graph=shg, ont_graph=None, advanced=True, inplace=True)
+            except Exception as e:
+                raise Exception("SHACL error entailing baseline for closure in {} : {}".format(rules,str(e)))
         try:
             validate(g, shacl_graph=shg, ont_graph=extra, advanced=True, inplace=True )
         except Exception as e:
             raise Exception ( "SHACL error in {}: {}".format(rules, str(e)))
-    return g
+    cleaned = g-entailed_extra
+    cleaned.namespace_manager = g.namespace_manager
+    return cleaned
 
 
 if __name__ == "__main__":
