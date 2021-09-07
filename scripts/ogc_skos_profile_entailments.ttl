@@ -18,18 +18,19 @@
   a owl:Ontology ;
   owl:imports <http://datashapes.org/dash> ;
   owl:imports <http://www.w3.org/2004/02/skos/core> ;
-  owl:versionInfo "Created with TopBraid Composer" ;
+  dcterms:creator "Rob Atkinson"
 .
 :NodeShape_concept
   a sh:NodeShape ;
   sh:rule :status ;
+  sh:rule :inscheme ;
   sh:targetClass skos:Concept ;
 .
 
 :NodeShape_conceptscheme
   a sh:NodeShape ;
   sh:rule :topcollection ;
-  sh:rule :inscheme ;
+  sh:rule :inscheme_by_uriroot ;
         # :rdfslabel> ;
   sh:targetClass skos:ConceptScheme ;
 .
@@ -63,7 +64,7 @@
 """ ;
 .
 
-:inscheme
+:inscheme_by_uriroot
  a sh:SPARQLRule ;
   rdfs:label "Add inScheme if missing"@en;
   rdfs:comment "spin rule to create and link skos:inScheme not present. Run at conceptscheme for single pass efficiency"@en ;
@@ -78,6 +79,26 @@
 			    ?c a skos:Concept
 			    FILTER ( STRSTARTS(str(?c),str(?this)) )
 			    FILTER NOT EXISTS {  ?c skos:inScheme ?cs }
+
+			    }
+			""" ;
+.
+
+:inscheme
+ a sh:SPARQLRule ;
+  rdfs:label "Add inScheme if missing"@en;
+  rdfs:comment "SHACL rule to create and link skos:inScheme if not present, based on finding a scheme with matching base URI."@en ;
+  sh:construct """
+		     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+		     PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+		     CONSTRUCT  {
+				 ?this skos:inScheme ?scheme .
+				}
+			 WHERE {
+			    ?scheme a skos:ConceptScheme .
+			    ?this a skos:Concept
+			    FILTER ( STRSTARTS(str(?this),str(?scheme)) )
+			    FILTER NOT EXISTS {  ?this skos:inScheme ?cs }
 
 			    }
 			""" ;
