@@ -27,15 +27,19 @@ def get_closure_graph( vlist: List[str] ):
     return g
 
 SKOS_RULES = [ 'scripts/skosbasics.shapes.ttl', 'scripts/ogc_skos_profile_entailments.ttl', 'scripts/skos_vocprez.shapes.ttl' ]
-COMMON_VALIDATORS = [ "https://w3id.org/profile/vocpub/validator" ]
+#COMMON_VALIDATORS = [ "https://w3id.org/profile/vocpub/validator" ]
+COMMON_VALIDATORS = [ 'scripts/vocprez.shapes.ttl' ]
 #OWL_RULES = [ 'scripts/owl2skos.shapes.ttl' , 'scripts/skos2ftc.shapes.ttl'] + SKOS_RULES
 OWL_RULES = [ 'scripts/owl2skos.shapes.ttl' , 'scripts/owl2feature.shapes.ttl'] + SKOS_RULES
 SPEC_RULES = [ 'scripts/spec_as_conceptscheme.shapes.ttl'  ] + SKOS_RULES
+PROFILE_RULES = [ 'scripts/prof_as_skos.shapes.ttl'  ] + SKOS_RULES
+
 # , 'scripts/modspec_entailmenthelpers.ttl'
 #SPEC_VALIDATORS = [ 'definitions/models/modspec_shacl.ttl']
 SPEC_VALIDATORS = [ 'definitions/models/modspec-owl2sh-semi-closed.ttl']
 #DOCREG_CLOSURE = [ "definitions/conceptschemes/docs.ttl" ]
 SPECMODEL_CLOSURE = [ 'definitions/models/modspec_validations.ttl', 'definitions/conceptschemes/status.ttl' ]
+PROFMODEL_CLOSURE = [ 'definitions/conceptschemes/profiles.ttl' ]
 # 'definitions/models/modspec.ttl',
 
 # SPECMODEL_CLOSURE = [ 'scripts/modspecs_entailmenthelpers.ttl']
@@ -50,6 +54,7 @@ DOMAINS = [ ( "definitions/conceptschemes", "/*.ttl" , SKOS_RULES , SKOS_VALIDAT
             ("incubation/binary-array-ld",  "/*.ttl" ,OWL_RULES, SKOS_VALIDATOR, None , '/def/') ,
             ("scripts/tests", "/*.ttl", [] , TEST_VALIDATOR , [ 'scripts/test/test_closure.ttl'] , '/test/') ,
             ("incubation/cybele-semantic-model", "/*_flat.ttl",  OWL_RULES, SKOS_VALIDATOR, None , '/w3id.org/') ,
+            ("definitions/profiles", "/*.ttl", PROFILE_RULES, SKOS_VALIDATOR, PROFMODEL_CLOSURE, '/def/'),
             ("/repos/rob-metalinkage/DEMETER/profiles", "/*/*_flat.ttl" , OWL_RULES, SKOS_VALIDATOR, None , '/w3id.org/')
             ]
 
@@ -97,13 +102,12 @@ def remove_vocabs(vocabs: List[Path], mappings: dict):
 
 
 def get_graph_uri_for_vocab(vocab: Path, g: Graph = None) -> URIRef:
-    """We can get the Graph URI for a vocab from the vocab file as we know that all VocPub-conformant vocabs
-    have one and only one ConceptScheme per file and that the ICSM VocPrez installation uses the ConceptScheme URI
-    as the Graph URI"""
+    """We can get the Graph URI for a vocab using assumption that the ConceptScheme is declared in the graph being processed."""
     if not g:
         g = Graph().parse(str(vocab), format="ttl")
     for s in g.subjects(predicate=RDF.type, object=SKOS.ConceptScheme):
         yield str(s)
+
 
 
 def get_all_vocabs_uris(vocabs: List[Path]) -> dict:
@@ -142,12 +146,13 @@ def get_entailedpath(f, g:Graph , fmt, rootpattern='/def/'):
         try:
             canonical_filename = graphuri.rsplit(rootpattern)[1]
             conceptscheme = graphuri
+            cpaths = os.path.split(canonical_filename)
         except:
             print ('Ignoring concept scheme that does not match domain path {}  : {}'.format(rootpattern,graphuri))
     if not canonical_filename:
-        print('Warning - file {} contains no concept schemes matching domain root URI {}'.format(f, rootpattern))
-        return None,filename,None,None
-    cpaths = os.path.split(canonical_filename)
+        print('Warning - file {} contains no concept schemes matching domain root URI {} - using input filename '.format(f, rootpattern))
+        cpaths = ( filename, )
+        conceptscheme = None
     return ( os.path.join( path,'entailed',*cpaths) + "." + fmt , filename, canonical_filename , conceptscheme)
 
 FMTS = { 'ttl':'ttl' , 'rdf':'xml'  }
@@ -187,16 +192,19 @@ def perform_entailments(rulegraphlist, f, g=None, extra=None):
         if extra:
             entailed_extra = extra
             try:
-                validate(entailed_extra, shacl_graph=shg, ont_graph=None, advanced=True, inplace=True)
+                validate(entailed_extra, shacl_graph=shg, ont_graph=None,  advanced=True, inplace=True)
             except Exception as e:
                 raise Exception("SHACL error entailing baseline for closure in {} : {}".format(rules,str(e)))
         try:
-            validate(g, shacl_graph=shg, ont_graph=extra, advanced=True, inplace=True )
+            validate(g, shacl_graph=shg, ont_graph=extra,  advanced=True, inplace=True )
         except Exception as e:
             raise Exception ( "SHACL error in {}: {}".format(rules, str(e)))
-    cleaned = g-entailed_extra
-    cleaned.namespace_manager = g.namespace_manager
-    return cleaned
+    if entailed_extra:
+        cleaned = g-entailed_extra
+        cleaned.namespace_manager = g.namespace_manager
+        return cleaned
+    else:
+        return g
 
 
 if __name__ == "__main__":
@@ -317,14 +325,18 @@ if __name__ == "__main__":
         for f in modified + added:
             try:
                 newg = perform_entailments(rules,f,extra=extra_ont)
-                v = validate(data_graph=newg, ont_graph=extra_ont , shacl_graph=validator)
+                v = validate(data_graph=newg, ont_graph=extra_ont , inference='rdfs', shacl_graph=validator)
                 if True or not v[0]:
                     with open( str(f).replace('.ttl','.txt') , "w" ) as vr:
                         vr.write(v[2])
                 loadable_path = make_rdf(f, g=newg, rootpath=domain_rootpath)
                 if args.update:
                     try:
-                        loc = load_vocab( loadable_path, list(get_graph_uri_for_vocab(None,newg))[0])
+                        try:
+                            gname = list(get_graph_uri_for_vocab(None,newg))[0]
+                        except:
+                            gname = "x-urn:{}".format(str(f).replace('\\',':'))
+                        loc = load_vocab( loadable_path, gname)
                         log("Uploaded {} for {} to   {} ".format(loadable_path, f, loc))
                     except  Exception as e:
                         log("Failed to upload {} for {} : ( {} )".format(loadable_path, f, e))
