@@ -31,7 +31,7 @@
 :add_to_docs
  a sh:SPARQLRule ;
   rdfs:label "Add spec as a Concept in /def/docs/ if not present"@en;
-  rdfs:comment "May be details of an unpublished doc"@en ;
+  rdfs:comment "May be details of an unpublished doc. In which case will need to specify the OGC document type to add to the right collections"@en ;
   sh:construct """
 		     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 		     PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
@@ -53,7 +53,7 @@
 
 :NodeShape_ConceptScheme
   a sh:NodeShape ;
-  sh:rule :status ;
+  sh:rule :status , :doc_concept_scheme;
   sh:targetClass skos:ConceptScheme ;
 .
 
@@ -81,30 +81,64 @@
 
 :NodeShape_conformance_class
   a sh:NodeShape ;
-  sh:rule :specelements ;
+  sh:rule :topconcepts ;
   sh:targetClass spec:ConformanceClass ;
 .
 
-:specelements
+:doc_concept_scheme
   a sh:SPARQLRule ;
-  rdfs:label "Create missing concept scheme" ;
+  rdfs:label "document concept scheme" ;
   sh:construct """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
   		     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+			 PREFIX policy: <http://www.opengis.net/def/metamodel/ogc-na/>
+			 prefix spec: <http://www.opengis.net/def/ont/modspec/>
+			 PREFIX specrel: <http://www.opengis.net/def/ont/specrel/>
+			 PREFIX dct: <http://purl.org/dc/terms/>
 CONSTRUCT {
-  ?cs a skos:ConceptScheme ;
-    rdfs:label ?cslabel ;
-    skos:topConcept ?this ;
+  ?this a skos:ConceptScheme ;
+    skos:prefLabel ?cslabel ;
+    dct:source ?doc ;
+    skos:definition ?csdef ;
+    dct:created ?cscreated ;
+    dct:modified ?csmodified ;
     .
+}
+WHERE {
+    ?doc specrel:modspec ?this .
+    ?doc rdfs:label|skos:prefLabel ?doclabel .
+
+    OPTIONAL { ?this skos:prefLabel|rdfs:label|dct:title  ?existingcslabel }
+    BIND ( COALESCE(?existingcslabel, CONCAT( "ModSpec view: ",?doclabel )) AS ?cslabel ).
+
+    OPTIONAL { ?this skos:definition|dct:description ?existingcsdef }
+    BIND ( COALESCE(?existingcsdef, "Specification elements described using the OGC Modular Specification model" ) AS ?csdef ).
+
+    OPTIONAL { ?this dct:created  ?existingcscreated }
+    OPTIONAL { ?doc dct:created  ?doccreated }
+     BIND ( COALESCE(?existingcscreated, ?doccreated, now() ) AS ?cscreated ).
+     BIND ( now()  AS ?csmodified ).
+}""" ;
+.
+
+:topconcepts
+  a sh:SPARQLRule ;
+  rdfs:label "Add conformance classes as top concepts" ;
+  sh:construct """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+  		     PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+			 PREFIX policy: <http://www.opengis.net/def/metamodel/ogc-na/>
+			 prefix spec: <http://www.opengis.net/def/ont/modspec/>
+			 PREFIX specrel: <http://www.opengis.net/def/ont/specrel/>
+			 PREFIX dct: <http://purl.org/dc/terms/>
+CONSTRUCT {
+  ?cs     skos:hasTopConcept ?this .
   ?this a skos:Concept ;
     skos:topConceptOf ?cs ;
     skos:inScheme ?cs ;
-    skos:narrower ?req ;
-  .
-  ?req skos:broader ?this .
 }
 WHERE {
+    ?doc specrel:modspec ?cs .
+    FILTER ( STRSTARTS(str(?this), str(?cs) ) )
 
-    FILTER NOT EXISTS { ?c skos:broader ?this }
 }""" ;
 .
 
@@ -137,6 +171,7 @@ WHERE {
   sh:construct """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
                   prefix spec: <http://www.opengis.net/def/ont/modspec/>
                   CONSTRUCT {
+                    ?this a skos:Concept .
                     ?this skos:narrower ?c .
                     ?c skos:broader ?this .
                     }
