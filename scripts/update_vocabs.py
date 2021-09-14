@@ -55,7 +55,8 @@ DOMAINS = [ ( "definitions/conceptschemes", "/*.ttl" , SKOS_RULES , SKOS_VALIDAT
             ("scripts/tests", "/*.ttl", [] , TEST_VALIDATOR , [ 'scripts/test/test_closure.ttl'] , '/test/') ,
             ("incubation/cybele-semantic-model", "/*_flat.ttl",  OWL_RULES, SKOS_VALIDATOR, None , '/w3id.org/') ,
             ("definitions/profiles", "/*.ttl", PROFILE_RULES, SKOS_VALIDATOR, PROFMODEL_CLOSURE, '/def/'),
-            ("/repos/rob-metalinkage/DEMETER/profiles", "/*/*_flat.ttl" , OWL_RULES, SKOS_VALIDATOR, None , '/w3id.org/')
+            ("entities", "/*.ttl", SKOS_RULES , SKOS_VALIDATOR , None, '/def/'),
+#            ("/repos/rob-metalinkage/DEMETER/profiles", "/*/*_flat.ttl" , OWL_RULES, SKOS_VALIDATOR, None , '/w3id.org/')
             ]
 
 RDF4JSERVER = 'http://defs-dev.opengis.net:8080/'
