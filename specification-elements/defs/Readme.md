@@ -7,6 +7,7 @@ Directory contain:
 
 ## Namespaces used in this documents
 
+[%hardbreaks]
 @prefix adms: <http://www.w3.org/ns/adms#> .
 @prefix dcat: <http://www.w3.org/ns/dcat#> .
 @prefix dct: <http://purl.org/dc/terms/> .
@@ -24,24 +25,72 @@ Directory contain:
 
 ## Specification modules
 
-* Specification document - obligatory
-  * dct:creator - author - rdfs:literal
-  * dct:dateAccepted - xsd:date ;
-  * dct:dateSubmitted - xsd:date ;
-  * dct:identifier "http://www.opengis.net/doc/is/OMS/3.0"
-  * na:doctype - from http://www.opengis.net/def/doc-type
-  * spec:status - from http://www.opengis.net/def/status/
-  * dct:source - one of ../../entities/bodies.ttl
-  * spec:authority - "Open Geospatial Consortium"
-  * spec:class - spec:ConformanceClass(es)
-  * spec:date - xsd:date
-  * specrel:modspec <http://www.opengis.net/spec/OMS/3.0>
-  * skos:notation - internal ID compliant with na:doc_no type
-  * skos:prefLabel - title, rdfs:literal
-  * adms:version - version e.g. "X.Y", rdfsliteral
-* Specification document - optional
-  * adms:prev - URI of the previous version of the specification, can be multiple, but direct ancestors shall be referred only
-  * dcat:landingPage - URL of specification document on the web
+Paragraph define convention of the Specification that shall be followed for each document in the directory as the minimum T-Box.
+All the titles shall contain modular specification name followed by colon and space, e.g. "ConformanceClass: [name_of_the_conformance_class]".
+
+
+* Schema
+** concept scheme have to be defined e.g.: <http://www.opengis.net/spec/OMS/3.0> a skos:ConceptScheme
+
+
+* spec:Specification document - obligatory
+** dct:creator - author - rdfs:literal
+** dct:dateAccepted - xsd:date ;
+** dct:dateSubmitted - xsd:date ;
+** dct:identifier "http://www.opengis.net/doc/is/OMS/3.0"
+** na:doctype - from http://www.opengis.net/def/doc-type
+** spec:status - from http://www.opengis.net/def/status/
+** dct:source - one of ../../entities/bodies.ttl, replaces deprecated prov:wasAttributedTo
+** spec:authority - "Open Geospatial Consortium"
+** spec:class - spec:ConformanceClass(es) *top level* classes
+** spec:date - xsd:date
+** specrel:modspec <http://www.opengis.net/spec/OMS/3.0>
+** skos:notation - internal ID compliant with na:doc_no type
+** skos:prefLabel - title, rdfs:literal
+** adms:version - version e.g. "X.Y", rdfsliteral
+
+* spec:Specification document - optional
+** adms:prev/adms:next - URI of the previous/next version of the specification, can be multiple, but only direct ancestors/descendants shall be referred,
+** dcat:landingPage - URL of specification document on the web
+** specrel:implementation/implements - relation between abstract specification and its implementation
+
+* spec:ConformanceClass - obligatory
+** spec:conformanceTest - spec:ConformanceTest(s), it is skos:narrower relation
+** spec:requirementsTested - spec:RequirementsClass covered by the ConformanceClass, it is skos:narrower relation
+** skos:definition - description, rdfs:Literal
+** skos:prefLabel - title, rdfs:Literal
+
+* spec:ConformanceClass - optional
+** spec:dependency - dependency, usually parent spec:ConformnceClass, it is skos:broader relation
+** skos:topConceptOf - schema URI
+
+*_NOTE: either spec:dependency or skos:topConceptOf shall be defined for the spec:ConformanceClass_*
+
+* spec:ConformanceTest - obligatory
+** skos:prefLabel  - title, rdfs:Literal
+** skos:definition - general description, rdfs:Literal
+** spec:method - test method description, rdfs:Literal
+** spec:purpose - test purpose description, rdfs:Literal
+** spec:requirement - requiremnt(s) covered by test, spec:Requirement; it is skos:narrower relation
+** spec:testType - spec:Capabilities or spec:Basic
+
+* spec:Requirement - obligatory
+** skos:prefLabel - title, rdfs:Literal
+** skos:definition - description, rdfs:Literal
+* Requirement - optional
+** spec:dependency - parent Requirement, it is skos:broader relation
+
+* spec:RequirementsClass
+** skos:prefLabel - title, rdfs:Literal
+** skos:definition - description, rdfs:Literal
+** spec:normativeStatement - spec:Requirement(s); it is skos:narrower relation
+
+
+_NOTE: there are no RequirementsModule in the base ../../definitions/models/modspec.ttl_
+_NOTE: any skos:broader/narrower relation assume system generate reverse direction relation in the entailment_
+
+_For the moment, recomendations that have no related conformnceTest will not be navigable from schema_
+
 
 ## Entailment, validtion and upload
 
