@@ -40,12 +40,20 @@ The process is to entail using an ordered list of profiles:
 
 The script is configured to operate on "domains" defined by a directory path within the repository, and the (ordered) set of entailments and validations to be performed.
 
+
+
 ## Execution
 The script runs automatically on commit of files, detecting updates and additions of RDF graphs (.ttl) within the target domains.
 
 It may be executed manually (provision for a batch mode) and may be run locally against a working copy of the repository - using pyCharm or similar.
 
-e.g. python scripts\update_vocabs.py -m specification-elements/defs/15-111r1.ttl
+e.g. 
+
+```python scripts\update_vocabs.py -m specification-elements/defs/15-111r1.ttl```
+
+```python scripts\update_vocabs.py -m definitions/conceptschemes/auth.ttl```
+
+these will generate an entailed version under ./entailed/<uri path>  and a SHACL validation report under <file>.txt 
 
 ```(venv) C:\repos\ogc\NamingAuthority>python scripts\update_vocabs.py -h
 usage: update_vocabs.py [-h] [-m MODIFIED] [-a ADDED] [-r REMOVED]
