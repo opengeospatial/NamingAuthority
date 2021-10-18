@@ -33,6 +33,7 @@ COMMON_VALIDATORS = [ 'scripts/vocprez.shapes.ttl' ]
 OWL_RULES = [ 'scripts/owl2skos.shapes.ttl' , 'scripts/owl2feature.shapes.ttl'] + SKOS_RULES
 SPEC_RULES = [ 'scripts/spec_as_conceptscheme.shapes.ttl'  ] + SKOS_RULES
 PROFILE_RULES = [ 'scripts/prof_as_skos.shapes.ttl'  ] + SKOS_RULES
+DOC_RULES =  [ 'scripts/docs_entailments.shapes.ttl'  ] + SKOS_RULES
 
 # , 'scripts/modspec_entailmenthelpers.ttl'
 #SPEC_VALIDATORS = [ 'definitions/models/modspec_shacl.ttl']
@@ -49,15 +50,67 @@ SPEC_VALIDATOR =  get_closure_graph ( SPEC_VALIDATORS  ) + SKOS_VALIDATOR
 #DOCREGISTER_GRAPH = get_closure_graph( DOCREG_CLOSURE )
 TEST_VALIDATOR = get_closure_graph([ 'scripts/test/test_validator.ttl'])
 
-DOMAINS = [ ( "definitions/conceptschemes", "/*.ttl" , SKOS_RULES , SKOS_VALIDATOR , None, '/def/'),
-            ( "specification-elements/defs" , "/*.ttl", SPEC_RULES , SPEC_VALIDATOR, SPECMODEL_CLOSURE, '/spec/' ) ,
-            ("incubation/binary-array-ld",  "/*.ttl" ,OWL_RULES, SKOS_VALIDATOR, None , '/def/') ,
-            ("scripts/tests", "/*.ttl", [] , TEST_VALIDATOR , [ 'scripts/test/test_closure.ttl'] , '/test/') ,
-            ("incubation/cybele-semantic-model", "/*_flat.ttl",  OWL_RULES, SKOS_VALIDATOR, None , '/w3id.org/') ,
-            ("definitions/profiles", "/*.ttl", PROFILE_RULES, SKOS_VALIDATOR, PROFMODEL_CLOSURE, '/def/'),
-            ("entities", "/*.ttl", SKOS_RULES , SKOS_VALIDATOR , None, '/def/'),
-#            ("/repos/rob-metalinkage/DEMETER/profiles", "/*/*_flat.ttl" , OWL_RULES, SKOS_VALIDATOR, None , '/w3id.org/')
-            ]
+DOMAIN_CFG = {}
+
+DOMAIN_CFG['definitions/conceptschemes'] =  { 'description': "Set of terms registered with OGC NA not covered by specialised domains" ,
+    'glob': '/*.ttl', 'rulelist': SKOS_RULES, 'validator': SKOS_VALIDATOR,
+    'extraont': None,
+    'uri_root_filter': '/def/'}
+
+DOMAIN_CFG[ 'specification-elements/defs'] =  {
+  'description': 'Specification Elements defined according the OGC modular specification and relevant policies' ,
+  'glob': '/*.ttl',
+  'rulelist': SPEC_RULES,
+  'validator': SPEC_VALIDATOR,
+  'extraont': ['definitions/models/modspec_validations.ttl',
+   'definitions/conceptschemes/status.ttl'],
+  'uri_root_filter': '/spec/'}
+
+DOMAIN_CFG[ 'definitions/docs'] =  {
+  'description': 'Document Register' ,
+  'glob': '/*.ttl',
+  'rulelist': DOC_RULES,
+  'validator': SKOS_VALIDATOR,
+  'extraont': ['definitions/conceptschemes/doc-type.ttl'],
+  'annotations': ['definitions/docs/annotations/docs_upper_collections.ttl'],
+  'uri_root_filter': '/def/'}
+
+DOMAIN_CFG[ 'incubation/binary-array-ld'] =  {
+  'glob': '/*.ttl',
+  'rulelist': OWL_RULES,
+  'validator': SKOS_VALIDATOR,
+  'extraont': None,
+  'uri_root_filter': '/def/'}
+
+DOMAIN_CFG[ 'scripts/tests'] = {
+  'glob': '/*.ttl',
+  'rulelist': [],
+  'validator': TEST_VALIDATOR,
+  'extraont': ['scripts/test/test_closure.ttl'],
+  'uri_root_filter': '/test/'}
+
+DOMAIN_CFG[ 'incubation/cybele-semantic-model'] = {
+  'glob': '/*_flat.ttl',
+  'rulelist': OWL_RULES,
+  'validator': SKOS_VALIDATOR,
+  'extraont': None,
+  'uri_root_filter': '/w3id.org/'}
+
+DOMAIN_CFG['definitions/profiles'] = {
+  'glob': '/*.ttl',
+  'rulelist':  PROFILE_RULES,
+  'validator':SKOS_VALIDATOR,
+  'extraont': PROFMODEL_CLOSURE,
+  'uri_root_filter': '/def/'}
+
+DOMAIN_CFG['entities'] = {
+  'glob': '/*.ttl',
+  'rulelist': SKOS_RULES,
+  'validator': SKOS_VALIDATOR,
+  'extraont': None,
+  'uri_root_filter': '/def/'
+  }
+
 
 RDF4JSERVER = 'http://defs-dev.opengis.net:8080/'
 REPO = 'ogc-na'
@@ -183,12 +236,21 @@ def log(param):
    print ( param)
 
 
-def perform_entailments(rulegraphlist, f, g=None, extra=None):
-    """ run skos graph entailments """
+def perform_entailments(rulegraphlist, f, g=None, extra=None, anno=[]):
+    """ run skos graph entailments
+    @param anno:
+    @param rulegraphlist: ordered list of entailment rules to apply in provided order
+    @param f:
+    @param g:
+    @param extra:
+    @param annotations:
+    @return:
+    """
     entailed_extra = extra
     if not g:
         g = Graph().parse(str(f), format="ttl")
     for rules in rulegraphlist:
+        break
         shg = Graph().parse(rules, format="ttl")
         if extra:
             entailed_extra = extra
@@ -235,7 +297,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-d",
+        "-dm",
         "--domain",
         help="Batch process specific domain",
     )
@@ -293,11 +355,17 @@ if __name__ == "__main__":
     if args.added:
         addedlist = args.added.split(",")
 
-    for scopepath,scopeglobpattern,rules,validator,extra_ont_list,domain_rootpath in DOMAINS:
+    for scopepath in DOMAIN_CFG.keys():
+        cfg = DOMAIN_CFG[scopepath]
+        try:
+            annotations = cfg['annotations']
+        except:
+            annotations = []
+
         if args.domain and args.domain != scopepath:
             continue
         modified = []
-        domainlist = [os.path.normpath(i) for i in glob(scopepath+scopeglobpattern)]
+        domainlist = [os.path.normpath(i) for i in glob(scopepath+cfg['glob'])]
 
         if args.batch:
             # update modified list to be everything missing, or everything if -f
@@ -305,7 +373,7 @@ if __name__ == "__main__":
                 modified = domainlist
             else:
                 # fix - this will be broken for globbing pattern
-                modified = list ( set(domainlist) - set(glob(scopepath+ "/entailed" + scopeglobpattern)))
+                modified = list ( set(domainlist) - set(glob(scopepath+ "/entailed" + cfg['glob'])))
 
 
         for f in modlist:
@@ -319,28 +387,39 @@ if __name__ == "__main__":
                 p = Path(f)
                 added.append(p)
         if modified + added :
-            if extra_ont_list:
-                extra_ont = get_closure_graph(extra_ont_list)
+            if 'extraont' in cfg and cfg['extraont'] :
+                extra_ont = get_closure_graph(cfg['extraont'])
             else:
                 extra_ont = None
+
+
         for f in modified + added:
             try:
-                newg = perform_entailments(rules,f,extra=extra_ont)
-                v = validate(data_graph=newg, ont_graph=extra_ont , inference='rdfs', shacl_graph=validator)
+                newg = perform_entailments(cfg['rulelist'],f,extra=extra_ont, anno=annotations)
+                v = validate(data_graph=newg, ont_graph=extra_ont , inference='rdfs', shacl_graph=cfg['validator'])
                 if True or not v[0]:
                     with open( str(f).replace('.ttl','.txt') , "w" ) as vr:
                         vr.write(v[2])
-                loadable_path = make_rdf(f, g=newg, rootpath=domain_rootpath)
+                loadable_path = make_rdf(f, g=newg, rootpath=cfg['uri_root_filter'])
                 if args.update:
+                    loadlist = [loadable_path]
+                    if annotations:
+                        loadlist += annotations
                     try:
+                        gname = list(get_graph_uri_for_vocab(None, newg))[0]
+                    except:
+                        gname = "x-urn:{}".format(str(f).replace('\\', ':'))
+                    for n,loadable in enumerate(loadlist):
                         try:
-                            gname = list(get_graph_uri_for_vocab(None,newg))[0]
-                        except:
-                            gname = "x-urn:{}".format(str(f).replace('\\',':'))
-                        loc = load_vocab( loadable_path, gname)
-                        log("Uploaded {} for {} to   {} ".format(loadable_path, f, loc))
-                    except  Exception as e:
-                        log("Failed to upload {} for {} : ( {} )".format(loadable_path, f, e))
+                            # need to add annotations to a new context
+                            loc = load_vocab( loadable, gname)
+                            log("Uploaded {} for {} to   {} ".format(loadable, f, loc))
+                        except  Exception as e:
+                            log("Failed to upload {} for {} : ( {} )".format(loadable, f, e))
+                        if n == 0 :
+                            gname = gname+str(n+1)
+                        else:
+                            gname = gname[:-1] +str(n+1)
             except Exception as e:
                 log("Failed to generate {} : ( {}  )".format(f, e))
 
