@@ -7,22 +7,7 @@ additional files embracing several specifications or commonly referenced definit
 
 ## Namespaces used in this documents
 
-[%hardbreaks]
-<<<<<<< HEAD
-* @prefix adms: <http://www.w3.org/ns/adms#>
-* @prefix dcat: <http://www.w3.org/ns/dcat#>
-* @prefix dct: <http://purl.org/dc/terms/>
-* @prefix na: <http://www.opengis.net/def/metamodel/ogc-na/>
-* @prefix ogcdt: <http://www.opengis.net/def/doc-type/>
-* @prefix owl: <http://www.w3.org/2002/07/owl#>
-* @prefix reg: <http://purl.org/linked-data/registry#>
-* @prefix skos: <http://www.w3.org/2004/02/skos/core#>
-* @prefix spec: <http://www.opengis.net/def/ont/modspec/>
-* @prefix specrel: <http://www.opengis.net/def/ont/specrel/>
-* @prefix xsd: <http://www.w3.org/2001/XMLSchema#>
-* @prefix status: <http://www.opengis.net/def/status/>
-* @prefix bodies: <http://www.opengis.net/def/entities/bodies/>
-=======
+
 * @prefix adms: <http://www.w3.org/ns/adms#> 
 * @prefix dcat: <http://www.w3.org/ns/dcat#> 
 * @prefix dct: <http://purl.org/dc/terms/> 
@@ -36,7 +21,7 @@ additional files embracing several specifications or commonly referenced definit
 * @prefix xsd: <http://www.w3.org/2001/XMLSchema#> 
 * @prefix status: <http://www.opengis.net/def/status/> 
 * @prefix bodies: <http://www.opengis.net/def/entities/bodies/> 
->>>>>>> e99e6438a8375c949c19af738e90745aa7068814
+
 
 
 ## Specification modules
@@ -66,7 +51,6 @@ spec:Specification document - obligatory
 * skos:prefLabel - title, rdfs:literal
 * adms:version - version e.g. "X.Y", rdfsliteral
 
-<<<<<<< HEAD
 spec:Specification document - conditional
 * adms:prev/adms:next - URI of the previous/next version of the specification, can be multiple, but only direct ancestors/descendants shall be referred,
 * dcat:landingPage - URL of specification document on the web
@@ -76,12 +60,7 @@ spec:Specification document - conditional
 * specrel:relatesTo - unspecified relation to the referenced document
 * skos:exactMatch - equivalent specification that can be used in exchange
 * specrel:wasInfluencedBy - artifact that influenced subject document editors but is not referenced
-=======
-spec:Specification document - optional
-* adms:prev/adms:next - URI of the previous/next version of the specification, can be multiple, but only direct ancestors/descendants shall be referred,
-* dcat:landingPage - URL of specification document on the web
-* specrel:implementation/implements - relation between abstract specification and its implementation
->>>>>>> e99e6438a8375c949c19af738e90745aa7068814
+
 
 spec:ConformanceClass - obligatory
 * spec:conformanceTest - spec:ConformanceTest(s), it is skos:narrower relation
@@ -89,19 +68,12 @@ spec:ConformanceClass - obligatory
 * skos:definition - description, rdfs:Literal
 * skos:prefLabel - title, rdfs:Literal
 
-<<<<<<< HEAD
 spec:ConformanceClass - conditional
 * spec:dependency - the class witch which one must be conformant if conformant with this class
 * dct:hasPart - composite of the this conformance class
 
 * _NOTE:ConformanceClass without spec:dependency is the top concepts of the Scheme_*
-=======
-spec:ConformanceClass - optional
-* spec:dependency - dependency, usually parent spec:ConformnceClass, it is skos:broader relation
-* skos:topConceptOf - schema URI
 
-* _NOTE: either spec:dependency or skos:topConceptOf shall be defined for the spec:ConformanceClass_* 
->>>>>>> e99e6438a8375c949c19af738e90745aa7068814
 
 spec:ConformanceTest - obligatory
 * skos:prefLabel  - title, rdfs:Literal
@@ -117,11 +89,9 @@ spec:Requirement - obligatory
 spec:Requirement - optional
 * spec:dependency - parent Requirement, it is skos:broader relation
 
-<<<<<<< HEAD
+
 spec:RequirementsClass - obligatory
-=======
-spec:RequirementsClass
->>>>>>> e99e6438a8375c949c19af738e90745aa7068814
+
 * skos:prefLabel - title, rdfs:Literal
 * skos:definition - description, rdfs:Literal
 * spec:normativeStatement - spec:Requirement(s); it is skos:narrower relation
