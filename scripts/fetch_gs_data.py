@@ -124,6 +124,8 @@ def main():
     g = parse_conf_classes(g)
     g = parse_conf_relations(g)
 
+    print("Graph: " + str(g.serialize(format="turtle")))
+    
     formatted_ttl: str = str(g.serialize(format="turtle"), "utf-8")
     print(formatted_ttl)
     with open(outputDir + "/" + spec_id + "_" + spreadsheetId + ".ttl", 'w') as fout_ttl:
