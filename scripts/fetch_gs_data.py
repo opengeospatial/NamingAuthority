@@ -113,7 +113,7 @@ def load_matrix(query, gs_range, gs_sheet_name):
                          "/gviz/tq?tqx=out:csv&sheet=" + gs_sheet_name +
                          "&range=" + gs_range +
                          "&tq=" + query)
-    # print(response.url)
+    print(response.url)
     csv = response.text
     # print(csv)
     return csv2array(csv)
