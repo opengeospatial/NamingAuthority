@@ -154,9 +154,9 @@ if __name__ == '__main__':
     spreadsheetId = None
     outputDir = None
     if args.url:
-        s = args.url.strip('https://docs.google.com/spreadsheets/d/')
-        ss = s.split('/')
-        spreadsheetId = ss[0]
+        # s = args.url.strip('https://docs.google.com/spreadsheets/d/')
+        ss = args.url.split('/')
+        spreadsheetId = ss[len(ss) - 2]
     if args.id:
         spreadsheetId = args.id
     if args.output:
