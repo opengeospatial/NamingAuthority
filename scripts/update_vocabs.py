@@ -96,11 +96,27 @@ DOMAIN_CFG[ 'incubation/cybele-semantic-model'] = {
   'extraont': None,
   'uri_root_filter': '/w3id.org/'}
 
+DOMAIN_CFG[ '/repos/rob-metalinkage/DEMETER/profiles'] = [ {
+  'glob': '/*/*_flat.ttl',
+  'rulelist': OWL_RULES,
+  'validator': SKOS_VALIDATOR,
+  'extraont': None,
+  'uri_root_filter': '/w3id.org/'},
+{
+  'glob': '/*/*_prof.ttl',
+  'rulelist': PROFILE_RULES,
+  'validator': SKOS_VALIDATOR,
+  'extraont': PROFMODEL_CLOSURE,
+  'uri_root_filter': '/w3id.org/'}
+    ]
+
+
 DOMAIN_CFG['definitions/profiles'] = {
   'glob': '/*.ttl',
   'rulelist':  PROFILE_RULES,
   'validator':SKOS_VALIDATOR,
   'extraont': PROFMODEL_CLOSURE,
+    'annotations': ['definitions/conceptschemes/profiles.ttl'],
   'uri_root_filter': '/def/'}
 
 DOMAIN_CFG['entities'] = {
@@ -250,7 +266,6 @@ def perform_entailments(rulegraphlist, f, g=None, extra=None, anno=[]):
     if not g:
         g = Graph().parse(str(f), format="ttl")
     for rules in rulegraphlist:
-        break
         shg = Graph().parse(rules, format="ttl")
         if extra:
             entailed_extra = extra
@@ -356,101 +371,104 @@ if __name__ == "__main__":
         addedlist = args.added.split(",")
 
     for scopepath in DOMAIN_CFG.keys():
-        cfg = DOMAIN_CFG[scopepath]
-        try:
-            annotations = cfg['annotations']
-        except:
-            annotations = []
-
-        if args.domain and args.domain != scopepath:
-            continue
-        modified = []
-        domainlist = [os.path.normpath(i) for i in glob(scopepath+cfg['glob'])]
-
-        if args.batch:
-            # update modified list to be everything missing, or everything if -f
-            if args.force :
-                modified = domainlist
-            else:
-                # fix - this will be broken for globbing pattern
-                modified = list ( set(domainlist) - set(glob(scopepath+ "/entailed" + cfg['glob'])))
-
-
-        for f in modlist:
-            # if the file matches the glob using the scopepath and glob pattern  it's a vocab file
-            if f.startswith(scopepath) and f.endswith(".ttl") and os.path.normpath(f) in domainlist:
-                modified.append(Path(f))
-
-        added = []
-        for f in addedlist:
-            if f.startswith(scopepath) and f.endswith(".ttl") and os.path.normpath(f) in domainlist:
-                p = Path(f)
-                added.append(p)
-        if modified + added :
-            if 'extraont' in cfg and cfg['extraont'] :
-                extra_ont = get_closure_graph(cfg['extraont'])
-            else:
-                extra_ont = None
-
-
-        for f in modified + added:
+        cfglist = DOMAIN_CFG[scopepath]
+        if not isinstance( cfglist,list) :
+            cfglist = [cfglist]
+        for cfg in cfglist:
             try:
-                newg = perform_entailments(cfg['rulelist'],f,extra=extra_ont, anno=annotations)
-                v = validate(data_graph=newg, ont_graph=extra_ont , inference='rdfs', shacl_graph=cfg['validator'])
-                if True or not v[0]:
-                    with open( str(f).replace('.ttl','.txt') , "w" ) as vr:
-                        vr.write(v[2])
-                loadable_path = make_rdf(f, g=newg, rootpath=cfg['uri_root_filter'])
-                if args.update:
-                    loadlist = [loadable_path]
-                    if annotations:
-                        loadlist += annotations
-                    try:
-                        gname = list(get_graph_uri_for_vocab(None, newg))[0]
-                    except:
-                        gname = "x-urn:{}".format(str(f).replace('\\', ':'))
-                    for n,loadable in enumerate(loadlist):
-                        try:
-                            # need to add annotations to a new context
-                            loc = load_vocab( loadable, gname)
-                            log("Uploaded {} for {} to   {} ".format(loadable, f, loc))
-                        except  Exception as e:
-                            log("Failed to upload {} for {} : ( {} )".format(loadable, f, e))
-                        if n == 0 :
-                            gname = gname+str(n+1)
-                        else:
-                            gname = gname[:-1] +str(n+1)
-            except Exception as e:
-                log("Failed to generate {} : ( {}  )".format(f, e))
+                annotations = cfg['annotations']
+            except:
+                annotations = []
 
-        removed = []
-        if args.removed:
-            for f in args.removed.split(","):
-                # if the file is in the vocabularies/ folder and ends with .ttl, it's a vocab file
-                if f.startswith(scopepath) and f.endswith(".ttl"):
+            if args.domain and args.domain != scopepath:
+                continue
+            modified = []
+            domainlist = [os.path.normpath(i) for i in glob(scopepath+cfg['glob'])]
+
+            if args.batch:
+                # update modified list to be everything missing, or everything if -f
+                if args.force :
+                    modified = domainlist
+                else:
+                    # fix - this will be broken for globbing pattern
+                    modified = list ( set(domainlist) - set(glob(scopepath+ "/entailed" + cfg['glob'])))
+
+
+            for f in modlist:
+                # if the file matches the glob using the scopepath and glob pattern  it's a vocab file
+                if f.startswith(scopepath) and f.endswith(".ttl") and os.path.normpath(f) in domainlist:
+                    modified.append(Path(f))
+
+            added = []
+            for f in addedlist:
+                if f.startswith(scopepath) and f.endswith(".ttl") and os.path.normpath(f) in domainlist:
                     p = Path(f)
-                    removed.append(p)
+                    added.append(p)
+            if modified + added :
+                if 'extraont' in cfg and cfg['extraont'] :
+                    extra_ont = get_closure_graph(cfg['extraont'])
+                else:
+                    extra_ont = None
 
-    #i = Path(__file__).parent.parent / "vocabularies" / "index.json"
-    #with open(i, "r") as f:
-    #    mappings = json.load(f)
-    # remove all removed and modified vocabs
-    #remove_vocabs(removed + modified, mappings)
 
-    # add all added and modified vocabs
-    #add_vocabs(added + modified, mappings)
+            for f in modified + added:
+                try:
+                    newg = perform_entailments(cfg['rulelist'],f,extra=extra_ont, anno=annotations)
+                    v = validate(data_graph=newg, ont_graph=extra_ont , inference='rdfs', shacl_graph=cfg['validator'])
+                    if True or not v[0]:
+                        with open( str(f).replace('.ttl','.txt') , "w" ) as vr:
+                            vr.write(v[2])
+                    loadable_path = make_rdf(f, g=newg, rootpath=cfg['uri_root_filter'])
+                    if args.update:
+                        loadlist = [loadable_path]
+                        if annotations:
+                            loadlist += annotations
+                        try:
+                            gname = list(get_graph_uri_for_vocab(None, newg))[0]
+                        except:
+                            gname = "x-urn:{}".format(str(f).replace('\\', ':'))
+                        for n,loadable in enumerate(loadlist):
+                            try:
+                                # need to add annotations to a new context
+                                loc = load_vocab( loadable, gname)
+                                log("Uploaded {} for {} to   {} ".format(loadable, f, loc))
+                            except  Exception as e:
+                                log("Failed to upload {} for {} : ( {} )".format(loadable, f, e))
+                            if n == 0 :
+                                gname = gname+str(n+1)
+                            else:
+                                gname = gname[:-1] +str(n+1)
+                except Exception as e:
+                    log("Failed to generate {} : ( {}  )".format(f, e))
 
-        # print for testing
-        print ( "Scope : {}".format(scopepath))
-        if modified:
-            print("modified:")
-            print([str(x) for x in modified])
-        if added:
-            print("added:")
-            print([str(x) for x in added])
-        if removed:
-            print("removed:")
-            print([str(x) for x in removed])
+            removed = []
+            if args.removed:
+                for f in args.removed.split(","):
+                    # if the file is in the vocabularies/ folder and ends with .ttl, it's a vocab file
+                    if f.startswith(scopepath) and f.endswith(".ttl"):
+                        p = Path(f)
+                        removed.append(p)
+
+        #i = Path(__file__).parent.parent / "vocabularies" / "index.json"
+        #with open(i, "r") as f:
+        #    mappings = json.load(f)
+        # remove all removed and modified vocabs
+        #remove_vocabs(removed + modified, mappings)
+
+        # add all added and modified vocabs
+        #add_vocabs(added + modified, mappings)
+
+            # print for testing
+            print ( "Scope : {}".format(scopepath))
+            if modified:
+                print("modified:")
+                print([str(x) for x in modified])
+            if added:
+                print("added:")
+                print([str(x) for x in added])
+            if removed:
+                print("removed:")
+                print([str(x) for x in removed])
 
     # rebuild VocPrez' cache
     #r = httpx.get("http://defs-dev.opengis.net/vocprez/cache-reload")
