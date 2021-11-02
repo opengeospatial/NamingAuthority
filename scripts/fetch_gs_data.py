@@ -2,7 +2,7 @@
 import sys
 import urllib.request
 from typing import List, Any
-
+import argparse
 import httpx
 import rdflib
 from rdflib.namespace import DC, DCTERMS, SKOS, OWL, RDF, RDFS, XSD, DCAT
@@ -11,8 +11,8 @@ from rdflib.namespace import DC, DCTERMS, SKOS, OWL, RDF, RDFS, XSD, DCAT
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly']
 
-SPREADSHEET_ID = sys.argv[1]
-DIR_PATH = sys.argv[2]
+# var SPREADSHEET_ID = sys.argv[1]
+# var DIR_PATH = sys.argv[2]
 # SPREADSHEET_ID = '1ydKaFTibayXy7nbJwpMJTyyc78NE75J-axDClDRGg_c'
 GS_URL = "https://docs.google.com/spreadsheets/d/"
 # SAMPLE_RANGE_NAME = 'Class Data!A1:D'
@@ -109,7 +109,7 @@ def csv2array(csv):
 
 
 def load_matrix(query, gs_range, gs_sheet_name):
-    response = httpx.get(GS_URL + SPREADSHEET_ID +
+    response = httpx.get(GS_URL + spreadsheetId +
                          "/gviz/tq?tqx=out:csv&sheet=" + gs_sheet_name +
                          "&range=" + gs_range +
                          "&tq=" + query)
@@ -126,10 +126,40 @@ def main():
 
     formatted_ttl: str = str(g.serialize(format="turtle"), "utf-8")
     print(formatted_ttl)
-    with open(DIR_PATH + "/" + spec_id + "_" + SPREADSHEET_ID + ".ttl", 'w') as fout_ttl:
+    with open(outputDir + "/" + spec_id + "_" + spreadsheetId + ".ttl", 'w') as fout_ttl:
         fout_ttl.write(formatted_ttl)
         fout_ttl.close()
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "-i",
+        "--id",
+        help="Spreadsheet ID",
+    )
+
+    parser.add_argument(
+        "-u",
+        "--url",
+        help="Spreadsheet URL",
+    )
+
+    parser.add_argument(
+        "-o",
+        "--output",
+        help="Output directory",
+    )
+    args = parser.parse_args()
+    spreadsheetId = None
+    outputDir = None
+    if args.url:
+        s = args.url.strip('https://docs.google.com/spreadsheets/d/')
+        ss = s.split('/')
+        spreadsheetId = ss[0]
+    if args.id:
+        spreadsheetId = args.id
+    if args.output:
+        outputDir = args.output
+
     main()
