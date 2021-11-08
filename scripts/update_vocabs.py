@@ -89,13 +89,19 @@ DOMAIN_CFG[ 'scripts/tests'] = {
   'extraont': ['scripts/test/test_closure.ttl'],
   'uri_root_filter': '/test/'}
 
-DOMAIN_CFG[ 'incubation/cybele-semantic-model'] = {
+DOMAIN_CFG[ '/repos/misc/cybele-common-semantic-model/profiles/model'] =  [ {
   'glob': '/*_flat.ttl',
   'rulelist': OWL_RULES,
   'validator': SKOS_VALIDATOR,
   'extraont': None,
+  'uri_root_filter': '/w3id.org/'},
+{
+  'glob': '/*_prof.ttl',
+  'rulelist': PROFILE_RULES,
+  'validator': SKOS_VALIDATOR,
+  'extraont': PROFMODEL_CLOSURE,
   'uri_root_filter': '/w3id.org/'}
-
+    ]
 DOMAIN_CFG[ '/repos/rob-metalinkage/DEMETER/profiles'] = [ {
   'glob': '/*/*_flat.ttl',
   'rulelist': OWL_RULES,

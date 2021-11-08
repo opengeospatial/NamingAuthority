@@ -1,32 +1,48 @@
+# baseURI: urn:x-evn-master:skos_shared
+# imports: http://datashapes.org/graphql
+# imports: http://topbraid.org/teamworkconstraints
+# imports: http://www.w3.org/2004/02/skos/core
+
+@prefix metadata: <http://topbraid.org/metadata#> .
+@prefix dct:   <http://purl.org/dc/terms/> .
 @prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix sh:    <http://www.w3.org/ns/shacl#> .
 @prefix owl:   <http://www.w3.org/2002/07/owl#> .
+@prefix teamwork: <http://topbraid.org/teamwork#> .
+@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
 @prefix skos:  <http://www.w3.org/2004/02/skos/core#> .
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dash:  <http://datashapes.org/dash#> .
 @prefix skos_shared: <http://www.opengis.net/def/metamodel/profiles/skos_shared/> .
-@prefix dcterms: <http://purl.org/dc/terms/> .
 
 skos:Concept  rdfs:label  "Concept" ;
         rdf:type         sh:NodeShape ;
         rdfs:subClassOf  owl:Thing ;
-        sh:property      skos:Concept-InScheme .
+        sh:property      skos:Concept-InScheme ;
+        sh:property      skos:Concept-prefLabel ;
+        sh:property      skos:Concept-Definition .
 
 skos:ConceptScheme  rdf:type  sh:NodeShape ;
         rdf:type     rdfs:Class ;
         sh:property  skos:ConceptScheme-Source ;
-        sh:property  skos:ConceptScheme-Publisher .
+        sh:property  skos:ConceptScheme-Publisher ;
+        sh:property  skos:ConceptScheme-prefLabel ;
+        sh:property  skos:ConceptScheme-source .
 
-skos_shared:
+<urn:x-evn-master:skos_shared>
         owl:imports      <http://www.w3.org/2004/02/skos/core> ;
+        owl:imports      <http://datashapes.org/graphql> ;
         rdfs:label       "SKOS Shared" ;
         rdf:type         owl:Ontology ;
+        <http://topbraid.org/swa#defaultNamespace>  "http://www.opengis.net/def/metamodel/profiles/skos_shared/" ;
+        metadata:status  metadata:UnderDevelopmentStatus ;
         rdfs:comment     "Provides a minimal profile for sharing of terms across multiple environments using SKOS. \n  \n  The requirement here is that the source of each term can be unambiguosly identified without dereferencing the term successfully in an online environment and successfully navigating to metadata about the scheme that defines the term." .
 
 skos_shared:ProvenancePropertyGroup
         rdfs:label    "Provenance" ;
         rdf:type      sh:PropertyGroup ;
         rdfs:comment  "Properties to describe the provenance of a shared Concept Scheme." ;
-        sh:order      "11"^^<http://www.w3.org/2001/XMLSchema#decimal> .
+        sh:order      "11"^^xsd:decimal .
 
 skos:Concept-InScheme
         rdf:type        sh:PropertyShape ;
@@ -39,20 +55,81 @@ skos:Concept-InScheme
 
 skos:ConceptScheme-Source
         rdf:type        sh:PropertyShape ;
-        sh:path         dcterms:source ;
+        sh:path         dct:source ;
         sh:name         "Source" ;
         sh:class        rdfs:Resource ;
         sh:description  "This property is intended to be used with non-literal values. The described resource may be derived from the related resource in whole or in part. Best practice is to identify the related resource by means of a URI or a string conforming to a formal identification system." ;
-        sh:group        skos_shared:ProvenancePropertyGroup ;
-        sh:minCount     1 .
+        sh:group        skos_shared:ProvenancePropertyGroup .
 
 skos:ConceptScheme-Publisher
         rdf:type        sh:PropertyShape ;
-        sh:path         dcterms:publisher ;
+        sh:path         dct:publisher ;
         sh:name         "Publisher" ;
         sh:class        rdfs:Resource ;
         sh:description  "An entity responsible for making the resource available." ;
         sh:group        skos_shared:ProvenancePropertyGroup ;
         sh:maxCount     1 ;
-        sh:order        "1"^^<http://www.w3.org/2001/XMLSchema#decimal> .
+        sh:order        "1"^^xsd:decimal .
 
+_:b0    sh:datatype  xsd:string .
+
+_:b1    rdf:rest   _:b2 ;
+        rdf:first  _:b0 .
+
+_:b2    rdf:rest   rdf:nil ;
+        rdf:first  _:b3 .
+
+skos:Concept-prefLabel
+        rdf:type       sh:PropertyShape ;
+        sh:path        skos:prefLabel ;
+        sh:group       <http://topbraid.org/tosh#DefinitionPropertyGroup> ;
+        sh:minCount    1 ;
+        sh:message     "SKOS Sharable: Each skos:Concept instance _MUST_ have one and only one label per language that must be a text literal value of the `skos:prefLabel` property " ;
+        sh:or          _:b1 ;
+        sh:uniqueLang  true .
+
+_:b3    sh:datatype  rdf:langString .
+
+skos:Concept-Definition
+        rdf:type     sh:PropertyShape ;
+        sh:path      skos:definition ;
+        sh:name      "Definition" ;
+        sh:group     <http://topbraid.org/tosh#DefinitionPropertyGroup> ;
+        sh:minCount  1 ;
+        sh:order     "1"^^xsd:decimal ;
+        sh:or        dash:HTMLOrStringOrLangString .
+
+skos:ConceptScheme-prefLabel
+        rdf:type     sh:PropertyShape ;
+        sh:path      skos:prefLabel ;
+        sh:name      "Title" ;
+        sh:group     metadata:DescriptionPropertyGroup ;
+        sh:minCount  1 ;
+        sh:or        dash:StringOrLangString .
+
+skos:ConceptScheme-source
+        rdf:type        sh:PropertyShape ;
+        sh:path         _:b4 ;
+        sh:name         "SourceOrPublisher" ;
+        sh:description  "Source Or Publisher required" ;
+        sh:group        skos_shared:ProvenancePropertyGroup ;
+        sh:minCount     1 ;
+        sh:order        "2"^^xsd:decimal .
+
+_:b4    sh:alternativePath  _:b5 .
+
+_:b5    rdf:rest   _:b6 ;
+        rdf:first  dct:source .
+
+_:b6    rdf:rest   rdf:nil ;
+        rdf:first  dct:publisher .
+
+teamwork:Vocabulary  rdfs:subClassOf  owl:Ontology .
+
+<http://teamwork.topbraidlive.org/ontologyprojects#Ontology>
+        rdfs:subClassOf  teamwork:Vocabulary .
+
+<urn:x-evn-master:skos_shared>
+        owl:imports  <http://topbraid.org/teamworkconstraints> ;
+        rdf:type     teamwork:Vocabulary ;
+        rdf:type     <http://teamwork.topbraidlive.org/ontologyprojects#Ontology> .
