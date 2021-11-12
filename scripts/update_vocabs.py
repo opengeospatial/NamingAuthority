@@ -231,7 +231,7 @@ def get_entailedpath(f, g:Graph , fmt, rootpattern='/def/'):
         conceptscheme = None
     return ( os.path.join( path,'entailed',*cpaths) + "." + fmt , filename, canonical_filename , conceptscheme)
 
-FMTS = { 'ttl':'ttl' , 'rdf':'xml'  }
+FMTS = { 'ttl':'ttl' , 'rdf':'xml', 'jsonld':'json-ld'  }
 
 def make_rdf(f,g=None,rootpath='/def/',):
     loadable_ttl = None
