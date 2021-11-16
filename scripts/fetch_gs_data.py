@@ -220,7 +220,7 @@ def main(replace):
             print((s, p, None) in g)
             if not (s, p, None) in g:
                 g.add((s, p, o))
-        print("Merged Graph: " + str(g.serialize(format="turtle"), 'utf-8'))
+        print("Merged Graph: " + str(g.serialize(format="turtle")))
 
     formatted_ttl: str = str(g.serialize(format="turtle"))
     # print(formatted_ttl)
