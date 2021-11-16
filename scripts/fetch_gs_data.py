@@ -203,7 +203,7 @@ def main(replace):
     g, relations = parse_conf_relations(g, conf_classes)
     add_schema(g, spec_id, base_url, created, modified, conf_classes)
 
-    print("Spreadsheet Graph: " + str(g.serialize(format="turtle"), 'utf-8'))
+    # print("Spreadsheet Graph: " + str(g.serialize(format="turtle")))
 
     if not replace:
         stored_spec_file = inputDir + "/" + spec_id + ".ttl"
@@ -220,7 +220,7 @@ def main(replace):
             print((s, p, None) in g)
             if not (s, p, None) in g:
                 g.add((s, p, o))
-        print("Merged Graph: " + str(g.serialize(format="turtle")))
+        # print("Merged Graph: " + str(g.serialize(format="turtle")))
 
     formatted_ttl: str = str(g.serialize(format="turtle"))
     # print(formatted_ttl)
