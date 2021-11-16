@@ -371,6 +371,7 @@ if __name__ == "__main__":
 
     modlist = []
     addedlist = []
+    print("Modified: " + args.modified)
     if args.modified:
         modlist = args.modified.split(",")
     if args.added:
