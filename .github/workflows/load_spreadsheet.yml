@@ -14,12 +14,45 @@ on:
 
 jobs:
   # This workflow contains a single job called "greet"
-  greet:
+  generate:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
     # Runs a single command using the runners shell
-    - name: Send greeting
+    - name: Log id
       run: echo "Loading ${{ github.event.inputs.sheetUrl }}"
+    - name: Bring in repo
+      uses: actions/checkout@v2
+      with:
+        ref: 'GS-update'
+    - name: install Python dependencies
+      run: |
+        python -m pip install -U pip
+        pip install -r scripts/gs_requirements.txt
+        pip install -r scripts/requirements.txt
+    - name: generate ttl files
+      run: |
+        echo 'generating ttl...'
+        url="${{ github.event.inputs.sheetUrl }}"
+        outd="specification-elements/defs/"
+        python scripts/fetch_gs_data.py -r -u $url -o $outd
+    - name: entail and update db
+      env:
+          DB_USERNAME: ${{secrets.DB_USERNAME}}
+          DB_PASSWORD: ${{secrets.DB_PASSWORD}}
+      run: |
+        echo 'Run update script...'
+        git add .
+        modified=$(git status --porcelain | awk 'match($1, "M"){print $2}')
+        added=$(git status --porcelain | awk 'match($1, "A"){print $2}')
+        if [ -z $added ]; then added="x"; fi
+        if [ -z $modified ]; then modified="x"; fi
+        python scripts/update_vocabs.py -u -m $modified -a $added
+    - name: commit normalised input from spreadsheet
+      uses: EndBug/add-and-commit@v7 # You can change this to use a specific version
+      with:
+        add: .
+        message: "Generated definitions from spreadsheet"
+        default_author: github_actions
