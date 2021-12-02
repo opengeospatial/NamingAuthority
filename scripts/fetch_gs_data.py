@@ -33,6 +33,7 @@ def parse_spec_data():
     g = init_graph()
     spec = rdflib.URIRef(spec_uri)
     g.add((spec, RDF.type, rdflib.URIRef("http://www.opengis.net/def/ont/modspec/Specification")))
+    g.add((spec, rdflib.URIRef("http://www.opengis.net/def/ont/specrel/modspec"), rdflib.URIRef(base_uri)))
     published = accepted = submitted = base_url = None
 
     for r in matrix[2:]:
@@ -195,7 +196,7 @@ def add_schema(g, spec_id, base_url, date_created, date_modified, top_conf_class
         g.add((scheme, DCTERMS.created, rdflib.Literal(date_created, datatype=XSD.date)))
     if top_conf_classes is not None:
         for cc in top_conf_classes:
-            g.add((scheme, SKOS.hasTopConcept, rdflib.URIRef(cc)))
+            g.add((spec, rdflib.URIRef("http://www.opengis.net/def/ont/modspec/class"), rdflib.URIRef(cc)))
 
 def main(replace):
     spec_id, g, base_url, created, modified = parse_spec_data()
