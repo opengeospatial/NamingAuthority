@@ -82,16 +82,18 @@ def parse_conf_classes(g):
     matrix = load_matrix(query, gs_range, gs_sheet_name)
     conf_classes = []
 
+
     for r in matrix:
-        conf_class = rdflib.URIRef(trim_citation(r[0]))
-        conf_classes.append(trim_citation(r[0]))
-        g.add((conf_class, RDF.type, rdflib.URIRef("http://www.opengis.net/def/ont/modspec/ConformanceClass")))
-        if trim_citation(r[1]) != "":
-            g.add((conf_class, SKOS.prefLabel, rdflib.Literal(trim_citation(r[1]))))
-        if trim_citation(r[2]) != "":
-            g.add((conf_class, SKOS.definition, rdflib.Literal(trim_citation(r[2]))))
-        if trim_citation(r[3]) != "":
-            g.add((conf_class, DCAT.landingPage, rdflib.Literal(trim_citation(r[3]))))
+        if r is not None and len(r) > 3:
+            conf_class = rdflib.URIRef(trim_citation(r[0]))
+            conf_classes.append(trim_citation(r[0]))
+            g.add((conf_class, RDF.type, rdflib.URIRef("http://www.opengis.net/def/ont/modspec/ConformanceClass")))
+            if trim_citation(r[1]) != "":
+                g.add((conf_class, SKOS.prefLabel, rdflib.Literal(trim_citation(r[1]))))
+            if trim_citation(r[2]) != "":
+                g.add((conf_class, SKOS.definition, rdflib.Literal(trim_citation(r[2]))))
+            if trim_citation(r[3]) != "":
+                g.add((conf_class, DCAT.landingPage, rdflib.Literal(trim_citation(r[3]))))
     return g, conf_classes
 
 
@@ -103,20 +105,21 @@ def parse_conf_relations(g, conf_classes):
     matrix = load_matrix(query, gs_range, gs_sheet_name)
 
     for r in matrix:
-        g.add((rdflib.URIRef(trim_citation(r[0])),
-               rdflib.URIRef(trim_citation(r[1])),
-               rdflib.URIRef(trim_citation(r[2]))
-               ))
-        if trim_citation(r[1]) == 'http://purl.org/dc/terms/hasPart':
-            conf_classes.remove(trim_citation(r[2]))
-        if trim_citation(r[1]) == 'http://www.opengis.net/def/ont/specrel/dependency':
-            try:
-                base_url1 = r[0].split("/conf/")[0]
-                base_url2 = r[2].split("/conf/")[0]
-                if base_url1 == base_url2 and conf_classes.__contains__(trim_citation(r[0])):
-                    conf_classes.remove(trim_citation(r[0]))
-            except Exception:
-                print("cannot remove class with dependencies from the root level: " + r[0])
+        if r is not None and len(r) > 3:
+            g.add((rdflib.URIRef(trim_citation(r[0])),
+                   rdflib.URIRef(trim_citation(r[1])),
+                   rdflib.URIRef(trim_citation(r[2]))
+                   ))
+            if trim_citation(r[1]) == 'http://purl.org/dc/terms/hasPart':
+                conf_classes.remove(trim_citation(r[2]))
+            if trim_citation(r[1]) == 'http://www.opengis.net/def/ont/specrel/dependency':
+                try:
+                    base_url1 = r[0].split("/conf/")[0]
+                    base_url2 = r[2].split("/conf/")[0]
+                    if base_url1 == base_url2 and conf_classes.__contains__(trim_citation(r[0])):
+                        conf_classes.remove(trim_citation(r[0]))
+                except Exception:
+                    print("cannot remove class with dependencies from the root level: " + r[0])
 
     return g, conf_classes
 
