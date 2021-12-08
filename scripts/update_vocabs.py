@@ -41,6 +41,7 @@ SPEC_VALIDATORS = [ 'definitions/models/modspec-owl2sh-semi-closed.ttl']
 #DOCREG_CLOSURE = [ "definitions/conceptschemes/docs.ttl" ]
 SPECMODEL_CLOSURE = [ 'definitions/models/modspec_validations.ttl', 'definitions/conceptschemes/status.ttl' ]
 PROFMODEL_CLOSURE = [ 'definitions/conceptschemes/profiles.ttl' ]
+APPSCHEMA_CLOSURE = [ 'definitions/models/featuretypes.ttl' ]
 # 'definitions/models/modspec.ttl',
 
 # SPECMODEL_CLOSURE = [ 'scripts/modspecs_entailmenthelpers.ttl']
@@ -88,6 +89,14 @@ DOMAIN_CFG[ 'scripts/tests'] = {
   'validator': TEST_VALIDATOR,
   'extraont': ['scripts/test/test_closure.ttl'],
   'uri_root_filter': '/test/'}
+
+DOMAIN_CFG[ 'definitions/schema/hy_features/hyf'] =  {
+  'glob': '/hyf.ttl',
+  'rulelist': OWL_RULES,
+  'validator': SKOS_VALIDATOR,
+  'extraont': APPSCHEMA_CLOSURE + [ 'definitions/schema/hy_features/hyf/hyf_anno.ttl'],
+  'annotations':  APPSCHEMA_CLOSURE + [ 'definitions/schema/hy_features/hyf/hyf_anno.ttl'],
+  'uri_root_filter': '/def/'}
 
 DOMAIN_CFG[ '/repos/misc/cybele-common-semantic-model/profiles/model'] =  [ {
   'glob': '/*_flat.ttl',
