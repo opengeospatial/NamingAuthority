@@ -134,7 +134,7 @@ DOMAIN_CFG['entities'] = {
   }
 
 
-RDF4JSERVER = 'http://defs-dev.opengis.net:8080/'
+RDF4JSERVER = 'http://defs-dev.opengis.net:8080'
 REPO = 'ogc-na'
 
 def load_vocab(vocab: Path, guri):
@@ -144,8 +144,8 @@ def load_vocab(vocab: Path, guri):
     except:
         pass
     context = "{}/rdf4j-server/repositories/{}/statements?context=<{}>".format(RDF4JSERVER, REPO, quote_plus(guri))
-
-
+    
+    
     r = httpx.delete(
         # "http://"+os.environ["VOCAB_HOST"] + "/rdf4j-server/repositories/ogc-na" ,
         context,
