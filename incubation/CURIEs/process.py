@@ -109,10 +109,16 @@ with open(csvFileName, 'r') as csvfile:
           rdflib.Literal(datetime.now(), datatype=XSD.dateTime)
       ))
       g.add((
+        rdflib.URIRef(conceptURI),
+        SKOS.inScheme,
+        rdflib.URIRef(schemeURI)
+      ))
+      g.add((
           rdflib.URIRef(collectionURI),
           SKOS.member,
           rdflib.URIRef(conceptURI)
       ))
+
 
 
 fout = open(ttlOutputFileName,'w')
