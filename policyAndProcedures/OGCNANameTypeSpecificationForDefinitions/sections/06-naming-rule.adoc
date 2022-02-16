@@ -1,0 +1,106 @@
+[[naming_rule]]
+== Naming Rule
+
+This section describes the naming rule.
+
+=== OGC name schemes
+
+Two URI schemes https://datatracker.ietf.org/doc/html/rfc3986[IETF RFC 3986] are defined by OGC to provide persistent names for resources of interest in geographic information infrastructures. The generic syntax for OGC names is described in https://docs.opengeospatial.org/pol/09-046r6.html[OGC Naming Authority – Procedures].
+
+The generic syntax for OGC http URIs is
+
+[%unnumbered]
+[source]
+----
+  URI = "http://www.opengis.net/" OGCResource "/" ResourceSpecificPath
+----
+
+The generic syntax for OGC URNs is https://datatracker.ietf.org/doc/rfc5165/[IETF RFC 5165]
+
+[%unnumbered]
+[source]
+----
+  URN = "urn:ogc:" OGCResource ":" ResourceSpecificString
+----
+
+The following ABNF adapted from https://datatracker.ietf.org/doc/html/rfc3986[IETF RFC 3986] provides some basic definitions required in the rest of this document.
+
+[%unnumbered]
+[source]
+----
+  segment       = *pchar
+  segment-nc    = *pchar-nc
+  segment-nz    = 1*pchar
+  segment-nz-nc = 1*pchar-nc
+  pchar         = unreserved / pct-encoded / sub-delims / ":" / "@"
+  pchar-nc      = unreserved / pct-encoded / sub-delims / "@"
+  pct-encoded   = "%" HEXDIG HEXDIG
+  unreserved    = ALPHA / DIGIT / "-" / "." / "_" / "~"
+  reserved      = gen-delims / sub-delims
+  gen-delims    = ":" / "/" / "?" / "#" / "[" / "]" / "@"
+  sub-delims    = "!" / "$" / "&" / "'" / "(" / ")"
+                  / "*" / "+" / "," / ";" / "="
+----
+
+=== Production rule for definition URIs
+
+The basic form for an OGC name that identifies a definition shall be produced using the following rule:
+
+[%unnumbered]
+[source]
+----
+  OGCResource   = "def"
+  ResourceSpecificPath = definition-type "/" authority "/" version "/" code
+  ResourceSpecificString = definition-type ":" authority ":" versionURN ":" codeURN
+  definition-type = segment-nz-nc ; a token from the register of OGC definition types1
+  authority     = segment-nz-nc ; a token from the register of OGC authorities2
+  version       = segment-nz-nc / "0" ; use 0 for un-versioned names
+  code          = segment-nz-nc *( "/" segment-nz-nc )
+  versionURN    = segment-nc ; this may be a zero-length string
+  codeURN       = segment-nz-nc *( ":" segment-nz-nc )
+----
+
+"version" or "versionURN" is an optional field. For un-versioned definitions:
+
+* within the http URI form the version field shall be "0"
+* within the URN form versionURN shall be a zero-length string—so an un-versioned definition can be detected by a pair of colons "::".
+
+The actual code may be composed of a sequence of fields delimited by "/" in the http URI form, or ":" in the URN form.
+
+
+Note that the register of definition types (http://www.opengis.net/register/ogc-na/def-type) was previously presented as Table 2 in the OGC Best Practice Definition identifier URNs in OGC namespace OGC 07-092r1.
+
+Note that the register of authorities (http://www.opengis.net/register/ogc-na/authority) was previously presented as Table 1 in the OGC Best Practice Definition identifier URNs in OGC namespace OGC 07-092r1
+
+=== Compact URIs
+
+Compact URIs (https://www.w3.org/TR/curie/#P_curie[CURIEs]) are an abbreviation for strings that are intended to represent URIs. Their purpose is to support the definition of scoped names that map to URIs.
+
+The URI of *any* definition registered in OGC-NA controlled registers may be represented in shortened form through use of CURIEs.
+
+==== Register of CURIEs
+
+The OGC-NA maintains a register of CURIEs at http://www.opengis.net/def/curie. The register shall be used as a look-up for CURIEs commonly used in OGC Standards.
+
+CURIEs recorded in the register shall be treated as case sensitive.
+
+==== Use of Safe CURIEs
+
+OGC Standards should only allow https://www.w3.org/TR/curie/#P_safe_curie[safe CURIEs], unless support for other forms of CURIEs is inherited from another standard (e.g. GeoSPARQL inherits its support of CURIEs from SPARQL). Safe CURIEs are specified in square brackets. For example, the safe CURIE `[EPSG:3857]` may be used in an API request such as : `\https://example.org/foo/collections/bar/items?crs=[[EPSG:3857]]`
+
+==== Applying CURIEs to Coordinate Reference Systems
+
+CURIEs representing a shortened form of the URI of a registered Coordinate Reference System (CRS) may be used as an alternative to the full URI by following the syntax below:
+
+`{authority}:{identifier} == http://www.opengis.net/def/crs/{authority}/0/{identifier}`
+
+For example, EPSG:4326 may be used to represent http://www.opengis.net/def/crs/EPSG/0/4326
+
+When a CURIE is used to represent a CRS, the following shall apply:
+
+[loweralpha]
+. The version segment of the URI is assumed to be equal to `0`
+. The definition-type segment shall be assumed to be equal to `crs`.
+. The definition segment shall be assumed to be equal to `def`.
+
+Therefore "EPSG" as a prefix shall expand to `http://www.opengis.net/def/crs/EPSG/0/`.
