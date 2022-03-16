@@ -31,6 +31,8 @@ SKOS_RULES = [ 'scripts/skosbasics.shapes.ttl', 'scripts/ogc_skos_profile_entail
 COMMON_VALIDATORS = [ 'scripts/vocprez.shapes.ttl' ]
 #OWL_RULES = [ 'scripts/owl2skos.shapes.ttl' , 'scripts/skos2ftc.shapes.ttl'] + SKOS_RULES
 OWL_RULES = [ 'scripts/owl2skos.shapes.ttl' , 'scripts/owl2feature.shapes.ttl'] + SKOS_RULES
+#OWL_RULES = [ 'scripts/owl2skos.shapes.ttl' ] + SKOS_RULES
+
 SPEC_RULES = [ 'scripts/spec_as_conceptscheme.shapes.ttl'  ] + SKOS_RULES
 PROFILE_RULES = [ 'scripts/prof_as_skos.shapes.ttl'  ] + SKOS_RULES
 DOC_RULES =  [ 'scripts/docs_entailments.shapes.ttl'  ] + SKOS_RULES
@@ -98,7 +100,7 @@ DOMAIN_CFG[ 'definitions/schema/hy_features/hyf'] =  {
   'annotations':  APPSCHEMA_CLOSURE + [ 'definitions/schema/hy_features/hyf/hyf_anno.ttl'],
   'uri_root_filter': '/def/'}
 
-DOMAIN_CFG[ '/repos/misc/cybele-common-semantic-model/profiles/model'] =  [ {
+DOMAIN_CFG[ '/repos/ogc/cybele-common-semantic-model/profiles/model'] =  [ {
   'glob': '/*_flat.ttl',
   'rulelist': OWL_RULES,
   'validator': SKOS_VALIDATOR,
@@ -126,13 +128,20 @@ DOMAIN_CFG[ '/repos/rob-metalinkage/DEMETER/profiles'] = [ {
     ]
 
 
-DOMAIN_CFG['definitions/profiles'] = {
+DOMAIN_CFG['definitions/profiles'] = [ {
   'glob': '/*.ttl',
   'rulelist':  PROFILE_RULES,
   'validator':SKOS_VALIDATOR,
   'extraont': PROFMODEL_CLOSURE,
     'annotations': ['definitions/conceptschemes/profiles.ttl'],
-  'uri_root_filter': '/def/'}
+  'uri_root_filter': '/def/'},
+{
+  'glob': '/resources/*_owl.ttl',
+  'rulelist':  OWL_RULES,
+  'validator':SKOS_VALIDATOR,
+  'extraont': None,
+  'uri_root_filter': None}
+]
 
 DOMAIN_CFG['entities'] = {
   'glob': '/*.ttl',
@@ -142,8 +151,11 @@ DOMAIN_CFG['entities'] = {
   'uri_root_filter': '/def/'
   }
 
+try:
+    RDF4JSERVER = os.environ["RDF4JSERVER"]
+except:
+    RDF4JSERVER = 'http://defs-dev.opengis.net:8080'
 
-RDF4JSERVER = 'http://defs-dev.opengis.net:8080/'
 REPO = 'ogc-na'
 
 def load_vocab(vocab: Path, guri):
@@ -165,7 +177,7 @@ def load_vocab(vocab: Path, guri):
     #"http://"+os.environ["VOCAB_HOST"] + "/rdf4j-server/repositories/ogc-na" ,
     context,
     params={"graph":  guri },
-    headers={"Content-Type": "text/turtle"},
+    headers={"Content-Type": "application/x-turtle;charset=UTF-8"},
     content=open(vocab, "rb").read(),
     auth= authdetails
     )
@@ -225,6 +237,9 @@ def get_entailedpath(f, g:Graph , fmt, rootpattern='/def/'):
     path,filename = os.path.split(f)
     filename = os.path.splitext(filename)[0]
     canonical_filename = None
+    if not rootpattern :
+        # just assume filename is going to be fine
+        return( os.path.join(path, 'entailed', filename) + "." + fmt , filename, filename , get_graph_uri_for_vocab(f,g=g) )
     for graphuri in get_graph_uri_for_vocab(f,g=g):
         if canonical_filename:
             print ('Warning - file {} contains multiple concept schemes'.format(f))
@@ -242,7 +257,7 @@ def get_entailedpath(f, g:Graph , fmt, rootpattern='/def/'):
 
 FMTS = { 'ttl':'ttl' , 'rdf':'xml', 'jsonld':'json-ld'  }
 
-def make_rdf(f,g=None,rootpath='/def/',):
+def make_rdf(f,g=None,rootpath='/def/'):
     loadable_ttl = None
     if not g:
         g = Graph().parse(str(f), format="ttl")
@@ -380,8 +395,9 @@ if __name__ == "__main__":
 
     modlist = []
     addedlist = []
-    print("Modified: " + args.modified)
+
     if args.modified:
+        print("Modified: " + args.modified)
         modlist = args.modified.split(",")
     if args.added:
         addedlist = args.added.split(",")
