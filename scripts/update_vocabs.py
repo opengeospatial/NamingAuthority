@@ -42,7 +42,7 @@ DOC_RULES =  [ 'scripts/docs_entailments.shapes.ttl'  ] + SKOS_RULES
 SPEC_VALIDATORS = [ 'definitions/models/modspec-owl2sh-semi-closed.ttl']
 #DOCREG_CLOSURE = [ "definitions/conceptschemes/docs.ttl" ]
 SPECMODEL_CLOSURE = [ 'definitions/models/modspec_validations.ttl', 'definitions/conceptschemes/status.ttl' ]
-PROFMODEL_CLOSURE = [ 'definitions/conceptschemes/profiles.ttl' ]
+PROFMODEL_CLOSURE = [ 'definitions/conceptschemes/profiles.ttl' , 'definitions/models/prof.ttl'  ]
 APPSCHEMA_CLOSURE = [ 'definitions/models/featuretypes.ttl' ]
 # 'definitions/models/modspec.ttl',
 
@@ -133,7 +133,7 @@ DOMAIN_CFG['definitions/profiles'] = [ {
   'rulelist':  PROFILE_RULES,
   'validator':SKOS_VALIDATOR,
   'extraont': PROFMODEL_CLOSURE,
-    'annotations': ['definitions/conceptschemes/profiles.ttl'],
+    'annotations': ['definitions/conceptschemes/profiles.ttl', 'definitions/models/prof.ttl'],
   'uri_root_filter': '/def/'},
 {
   'glob': '/resources/*_owl.ttl',
