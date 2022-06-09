@@ -342,7 +342,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
-        "-dm",
+        "-d",
         "--domain",
         help="Batch process specific domain",
     )
