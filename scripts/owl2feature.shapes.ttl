@@ -28,6 +28,41 @@
   sh:targetClass owl:Class ;
 .
 
+:forcelabels a sh:NodeShape;
+   sh:rule :buildlabels ;
+        # skostopconcepts:rdfslabel> ;
+  sh:targetClass skos:ConceptScheme ;
+.
+
+:buildlabels
+ a sh:SPARQLRule ;
+  rdfs:label "Build labels for all concepts in scheme based on URI of containing conceptscheme" ;
+
+ # TBD need to edit this to support concepts not in scheme and follow imports where details may be defined.  Or make profilewiz force extract labels
+
+  sh:construct """
+    PREFIX prof: <http://www.w3.org/ns/dx/prof/>
+	  prefix skos: <http://www.w3.org/2004/02/skos/core#>
+      PREFIX afn: <http://jena.hpl.hp.com/ARQ/function#>
+      prefix dct: <http://purl.org/dc/terms/>
+      PREFIX ft: <http://www.opengis.net/def/metamodel/featuretypes/>
+      CONSTRUCT {
+        ?class skos:prefLabel ?bestpreflabel
+       }
+       WHERE {
+          ?class skos:inScheme ?this .
+          OPTIONAL { ?class rdfs:label ?clabel }
+          OPTIONAL { ?class skos:prefLabel ?cplabel }
+          OPTIONAL { ?class dct:title ?ctitle }
+
+	      BIND (STRLEN(str(?this))+2 AS ?ontlen) .
+
+
+            BIND( substr(str(?class),?ontlen) as ?classname )
+            BIND ( COALESCE (?cplabel,?ctitle,?clabel, str(?class)) AS ?bestpreflabel )
+            }
+      """ ;
+ .
 
 :buildFeature
   a sh:SPARQLRule ;
