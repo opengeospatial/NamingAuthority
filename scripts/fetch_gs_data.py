@@ -42,7 +42,7 @@ def parse_spec_data():
         obj = None
         obj = r[0].replace('"', '')
         if obj == "rdfs:Literal":
-            g.add((spec, pred, rdflib.Literal(r[2].replace('"', '')))) #, datatype=RDFS.Literal)))
+            g.add((spec, pred, rdflib.Literal(r[2].replace('"', '').replace(";",","), datatype=RDFS.Literal)))
         elif obj == "xsd:date":
             g.add((spec, pred, rdflib.Literal(r[2].replace('"', ''), datatype=XSD.date)))
         else:
@@ -105,7 +105,7 @@ def parse_conf_relations(g, conf_classes):
     matrix = load_matrix(query, gs_range, gs_sheet_name)
 
     for r in matrix:
-        if r is not None and len(r) > 3:
+        if r is not None and len(r) > 2:
             g.add((rdflib.URIRef(trim_citation(r[0])),
                    rdflib.URIRef(trim_citation(r[1])),
                    rdflib.URIRef(trim_citation(r[2]))
@@ -113,14 +113,14 @@ def parse_conf_relations(g, conf_classes):
             if trim_citation(r[1]) == 'http://purl.org/dc/terms/hasPart':
                 conf_classes.remove(trim_citation(r[2]))
             if trim_citation(r[1]) == 'http://www.opengis.net/def/ont/specrel/dependency':
-                try:
-                    base_url1 = r[0].split("/conf/")[0]
-                    base_url2 = r[2].split("/conf/")[0]
-                    if base_url1 == base_url2 and conf_classes.__contains__(trim_citation(r[0])):
-                        conf_classes.remove(trim_citation(r[0]))
-                except Exception:
-                    print("cannot remove class with dependencies from the root level: " + r[0])
-
+                #try:
+                #    base_url1 = r[0].split("/conf/")[0]
+                #    base_url2 = r[2].split("/conf/")[0]
+                #    if base_url1 == base_url2 and conf_classes.__contains__(trim_citation(r[0])):
+                #        conf_classes.remove(trim_citation(r[0]))
+                #except Exception:
+                #    print("cannot remove class with dependencies from the root level: " + r[0])
+                None
     return g, conf_classes
 
 
@@ -199,6 +199,7 @@ def add_schema(g, spec_id, base_url, date_created, date_modified, top_conf_class
         g.add((scheme, DCTERMS.created, rdflib.Literal(date_created, datatype=XSD.date)))
     if top_conf_classes is not None:
         for cc in top_conf_classes:
+            g.add((spec, rdflib.URIRef("http://www.opengis.net/def/ont/modspec/class"), rdflib.URIRef(cc)))
             g.add((spec, rdflib.URIRef("http://www.opengis.net/def/ont/modspec/class"), rdflib.URIRef(cc)))
 
 def main(replace):
