@@ -1,4 +1,3 @@
-
 import json
 from glob import glob
 from typing import List
@@ -13,7 +12,7 @@ from rdflib.namespace import RDF, SKOS
 import os
 
 
-def get_closure_graph( vlist: List[str] ):
+def get_closure_graph(vlist: List[str]):
     g = Graph()
     for v in vlist:
         if v.startswith("http:") or v.startswith("https:"):
@@ -25,6 +24,7 @@ def get_closure_graph( vlist: List[str] ):
             g += Graph().parse(source=v, format="turtle")
 
     return g
+
 
 SKOS_RULES = [ 'scripts/skosbasics.shapes.ttl', 'scripts/ogc_skos_profile_entailments.ttl', 'scripts/skos_vocprez.shapes.ttl' ]
 #COMMON_VALIDATORS = [ "https://w3id.org/profile/vocpub/validator" ]
@@ -44,21 +44,25 @@ SPEC_VALIDATORS = [ 'definitions/models/modspec-owl2sh-semi-closed.ttl']
 SPECMODEL_CLOSURE = [ 'definitions/models/modspec_validations.ttl', 'definitions/conceptschemes/status.ttl' ]
 PROFMODEL_CLOSURE = [ 'definitions/conceptschemes/profiles.ttl' , 'definitions/models/prof.ttl'  ]
 APPSCHEMA_CLOSURE = [ 'definitions/models/featuretypes.ttl' ]
+
+
 # 'definitions/models/modspec.ttl',
 
 # SPECMODEL_CLOSURE = [ 'scripts/modspecs_entailmenthelpers.ttl']
 
-SKOS_VALIDATOR = get_closure_graph ( COMMON_VALIDATORS  )
-SPEC_VALIDATOR =  get_closure_graph ( SPEC_VALIDATORS  ) + SKOS_VALIDATOR
-#DOCREGISTER_GRAPH = get_closure_graph( DOCREG_CLOSURE )
-TEST_VALIDATOR = get_closure_graph([ 'scripts/test/test_validator.ttl'])
+SKOS_VALIDATOR = get_closure_graph(COMMON_VALIDATORS)
+SPEC_VALIDATOR = get_closure_graph(SPEC_VALIDATORS) + SKOS_VALIDATOR
+# DOCREGISTER_GRAPH = get_closure_graph( DOCREG_CLOSURE )
+TEST_VALIDATOR = get_closure_graph(['scripts/test/test_validator.ttl'])
 
 DOMAIN_CFG = {}
 
-DOMAIN_CFG['definitions/conceptschemes'] =  { 'description': "Set of terms registered with OGC NA not covered by specialised domains" ,
+DOMAIN_CFG['definitions/conceptschemes'] = {
+    'description': "Set of terms registered with OGC NA not covered by specialised domains",
     'glob': '/*.ttl', 'rulelist': SKOS_RULES, 'validator': SKOS_VALIDATOR,
     'extraont': None,
     'uri_root_filter': '/def/'}
+
 
 DOMAIN_CFG[ 'specification-elements/defs'] =  {
   'description': 'Specification Elements defined according the OGC modular specification and relevant policies' ,
@@ -141,58 +145,157 @@ DOMAIN_CFG['definitions/profiles'] = [ {
   'validator':SKOS_VALIDATOR,
   'extraont': None,
   'uri_root_filter': None}
+
+DOMAIN_CFG['specification-elements/defs'] = {
+    'description': 'Specification Elements defined according the OGC modular specification and relevant policies',
+    'glob': '/*.ttl',
+    'rulelist': SPEC_RULES,
+    'validator': SPEC_VALIDATOR,
+    'extraont': ['definitions/models/modspec_validations.ttl',
+                 'definitions/conceptschemes/status.ttl'],
+    'uri_root_filter': '/spec/'}
+
+DOMAIN_CFG['definitions/docs'] = {
+    'description': 'Document Register',
+    'glob': '/*.ttl',
+    'rulelist': DOC_RULES,
+    'validator': SKOS_VALIDATOR,
+    'extraont': ['definitions/conceptschemes/doc-type.ttl'],
+    'annotations': ['definitions/docs/annotations/docs_upper_collections.ttl'],
+    'uri_root_filter': '/def/'}
+
+DOMAIN_CFG['incubation/binary-array-ld'] = {
+    'glob': '/*.ttl',
+    'rulelist': OWL_RULES,
+    'validator': SKOS_VALIDATOR,
+    'extraont': None,
+    'uri_root_filter': '/def/'}
+
+DOMAIN_CFG['scripts/tests'] = {
+    'glob': '/*.ttl',
+    'rulelist': [],
+    'validator': TEST_VALIDATOR,
+    'extraont': ['scripts/test/test_closure.ttl'],
+    'uri_root_filter': '/test/'}
+
+DOMAIN_CFG['definitions/schema/hy_features/hyf'] = {
+    'glob': '/hyf.ttl',
+    'rulelist': OWL_RULES,
+    'validator': SKOS_VALIDATOR,
+    'extraont': APPSCHEMA_CLOSURE + ['definitions/schema/hy_features/hyf/hyf_anno.ttl'],
+    'annotations': APPSCHEMA_CLOSURE + ['definitions/schema/hy_features/hyf/hyf_anno.ttl'],
+    'uri_root_filter': '/def/'}
+
+DOMAIN_CFG['/repos/ogc/cybele-common-semantic-model/profiles/model'] = [{
+    'glob': '/*_flat.ttl',
+    'rulelist': OWL_RULES,
+    'validator': SKOS_VALIDATOR,
+    'extraont': None,
+    'uri_root_filter': '/w3id.org/'},
+    {
+        'glob': '/*_prof.ttl',
+        'rulelist': PROFILE_RULES,
+        'validator': SKOS_VALIDATOR,
+        'extraont': PROFMODEL_CLOSURE,
+        'uri_root_filter': '/w3id.org/'}
+]
+DOMAIN_CFG['/repos/rob-metalinkage/DEMETER/profiles'] = [{
+    'glob': '/*/*_flat.ttl',
+    'rulelist': OWL_RULES,
+    'validator': SKOS_VALIDATOR,
+    'extraont': None,
+    'uri_root_filter': '/w3id.org/'},
+    {
+        'glob': '/*/*_prof.ttl',
+        'rulelist': PROFILE_RULES,
+        'validator': SKOS_VALIDATOR,
+        'extraont': PROFMODEL_CLOSURE,
+        'uri_root_filter': '/w3id.org/'}
+]
+
+DOMAIN_CFG['definitions/profiles'] = [{
+    'glob': '/*.ttl',
+    'rulelist': PROFILE_RULES,
+    'validator': SKOS_VALIDATOR,
+    'extraont': PROFMODEL_CLOSURE,
+    'annotations': ['definitions/conceptschemes/profiles.ttl', 'definitions/models/prof.ttl'],
+    'uri_root_filter': '/def/'},
+    {
+        'glob': '/resources/*_owl.ttl',
+        'rulelist': OWL_RULES,
+        'validator': SKOS_VALIDATOR,
+        'extraont': None,
+        'uri_root_filter': None}
 ]
 
 DOMAIN_CFG['entities'] = {
-  'glob': '/*.ttl',
-  'rulelist': SKOS_RULES,
-  'validator': SKOS_VALIDATOR,
-  'extraont': None,
-  'uri_root_filter': '/def/'
-  }
+    'glob': '/*.ttl',
+    'rulelist': SKOS_RULES,
+    'validator': SKOS_VALIDATOR,
+    'extraont': None,
+    'uri_root_filter': '/def/'
+}
 
 try:
     RDF4JSERVER = os.environ["RDF4JSERVER"]
 except:
     RDF4JSERVER = 'http://defs-dev.opengis.net:8080'
 
+try:
+    STORE = os.environ["TRIPLESERVER"] # Jena default: 'http://localhost:3030'
+except:  # [TODO] CHANGE TO STAGING
+    STORE = RDF4JSERVER
+
+
+
 REPO = 'ogc-na'
+context = None
+
+TRIPLESTORE = None
+def set_context(guri):
+    global context
+    print(TRIPLESTORE)
+    if TRIPLESTORE == 'FUSEKI':
+        context = "{}/{}?graph={}".format(STORE, REPO, quote_plus(guri))
+    else:
+        context = "{}/rdf4j-server/repositories/{}/statements?context=<{}>".format(STORE, REPO, quote_plus(guri))
+
+
+authdetails = None
+try:
+    authdetails = (os.environ["DB_USERNAME"], os.environ["DB_PASSWORD"])
+except:
+    pass
+
 
 def load_vocab(vocab: Path, guri):
-    authdetails = None
-    try:
-        authdetails = (os.environ["DB_USERNAME"], os.environ["DB_PASSWORD"])
-    except:
-        pass
-    context = "{}/rdf4j-server/repositories/{}/statements?context=<{}>".format(RDF4JSERVER, REPO, quote_plus(guri))
-
-
+    set_context(guri)
+    print(context)
     r = httpx.delete(
-        # "http://"+os.environ["VOCAB_HOST"] + "/rdf4j-server/repositories/ogc-na" ,
         context,
         auth=authdetails
     )
-    # print ( r.status_code )
+    print("Previous ", guri, " delete result: ", r.status_code)
     r = httpx.post(
     #"http://"+os.environ["VOCAB_HOST"] + "/rdf4j-server/repositories/ogc-na" ,
-    context,
-    params={"graph":  guri },
-    headers={"Content-Type": "application/x-turtle;charset=UTF-8"},
-    content=open(vocab, "rb").read(),
-    auth= authdetails
+        context,
+        params={"graph": guri},
+        headers={"Content-Type": "application/x-turtle;charset=UTF-8"}, #Jena: headers={"Content-Type": "text/turtle;charset=utf-8"},
+        content=open(vocab, "rb").read(),
+        auth=authdetails
+
     )
     assert 200 <= r.status_code <= 300, "Status code was {}".format(r.status_code)
     # add_to_vocab_index(vocab, get_graph_uri_for_vocab(vocab))
     return context
 
-
-
+#[TODO] not used, but in case it is needed why not delete like in the load_vocabs with http delete?
 def remove_vocabs(vocabs: List[Path], mappings: dict):
     for vocab in vocabs:
         r = httpx.post(
             "http://defs-dev.opengis,net:8080/rdf4j-server/repositories/ogc-na",
             data={"update": "DROP GRAPH <{}>".format(mappings[vocab.name])},
-            auth=(os.environ["DB_USERNAME"], os.environ["DB_PASSWORD"])
+            auth=authdetails
         )
         assert 200 <= r.status_code <= 300, "Status code was {}".format(r.status_code)
         # remove_from_vocab_index(vocab)
@@ -204,7 +307,6 @@ def get_graph_uri_for_vocab(vocab: Path, g: Graph = None) -> URIRef:
         g = Graph().parse(str(vocab), format="ttl")
     for s in g.subjects(predicate=RDF.type, object=SKOS.ConceptScheme):
         yield str(s)
-
 
 
 def get_all_vocabs_uris(vocabs: List[Path]) -> dict:
@@ -233,36 +335,43 @@ def get_all_vocabs_uris(vocabs: List[Path]) -> dict:
 #         f.write(json.dumps(mappings))
 
 
-def get_entailedpath(f, g:Graph , fmt, rootpattern='/def/'):
-    path,filename = os.path.split(f)
+def get_entailedpath(f, g: Graph, fmt, rootpattern='/def/'):
+    path, filename = os.path.split(f)
     filename = os.path.splitext(filename)[0]
     canonical_filename = None
+
     if not rootpattern :
         # just assume filename is going to be fine
         return( os.path.join(path, 'entailed', filename) + "." + fmt , filename, filename , get_graph_uri_for_vocab(f,g=g) )
     for graphuri in get_graph_uri_for_vocab(f,g=g):
+
         if canonical_filename:
-            print ('Warning - file {} contains multiple concept schemes'.format(f))
+            print('Warning - file {} contains multiple concept schemes'.format(f))
         try:
             canonical_filename = graphuri.rsplit(rootpattern)[1]
             conceptscheme = graphuri
             cpaths = os.path.split(canonical_filename)
         except:
-            print ('Ignoring concept scheme that does not match domain path {}  : {}'.format(rootpattern,graphuri))
+            print('Ignoring concept scheme that does not match domain path {}  : {}'.format(rootpattern, graphuri))
     if not canonical_filename:
-        print('Warning - file {} contains no concept schemes matching domain root URI {} - using input filename '.format(f, rootpattern))
-        cpaths = ( filename, )
+        print(
+            'Warning - file {} contains no concept schemes matching domain root URI {} - using input filename '.format(
+                f, rootpattern))
+        cpaths = (filename,)
         conceptscheme = None
-    return ( os.path.join( path,'entailed',*cpaths) + "." + fmt , filename, canonical_filename , conceptscheme)
+    return (os.path.join(path, 'entailed', *cpaths) + "." + fmt, filename, canonical_filename, conceptscheme)
 
-FMTS = { 'ttl':'ttl' , 'rdf':'xml', 'jsonld':'json-ld'  }
 
-def make_rdf(f,g=None,rootpath='/def/'):
+FMTS = {'ttl': 'ttl', 'rdf': 'xml', 'jsonld': 'json-ld'}
+
+
+
+def make_rdf(f, g=None, rootpath='/def/'):
     loadable_ttl = None
     if not g:
         g = Graph().parse(str(f), format="ttl")
-    #g.serialize(destination=f.replace(".ttl",".rdf"), format="xml")
-    for fmt in FMTS.keys() :
+    # g.serialize(destination=f.replace(".ttl",".rdf"), format="xml")
+    for fmt in FMTS.keys():
         newpath, filename, canonical_filename, conceptschemeuri = get_entailedpath(f, g, fmt, rootpattern=rootpath)
         if newpath:
             try:
@@ -279,7 +388,7 @@ def make_rdf(f,g=None,rootpath='/def/'):
 
 
 def log(param):
-   print ( param)
+    print(param)
 
 
 def perform_entailments(rulegraphlist, f, g=None, extra=None, anno=[]):
@@ -300,15 +409,15 @@ def perform_entailments(rulegraphlist, f, g=None, extra=None, anno=[]):
         if extra:
             entailed_extra = extra
             try:
-                validate(entailed_extra, shacl_graph=shg, ont_graph=None,  advanced=True, inplace=True)
+                validate(entailed_extra, shacl_graph=shg, ont_graph=None, advanced=True, inplace=True)
             except Exception as e:
-                raise Exception("SHACL error entailing baseline for closure in {} : {}".format(rules,str(e)))
+                raise Exception("SHACL error entailing baseline for closure in {} : {}".format(rules, str(e)))
         try:
-            validate(g, shacl_graph=shg, ont_graph=extra,  advanced=True, inplace=True )
+            validate(g, shacl_graph=shg, ont_graph=extra, advanced=True, inplace=True)
         except Exception as e:
-            raise Exception ( "SHACL error in {}: {}".format(rules, str(e)))
+            raise Exception("SHACL error in {}: {}".format(rules, str(e)))
     if entailed_extra:
-        cleaned = g-entailed_extra
+        cleaned = g - entailed_extra
         cleaned.namespace_manager = g.namespace_manager
         return cleaned
     else:
@@ -376,8 +485,8 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "-s",
-        "--server" ,
-        help="override server - default =  " + RDF4JSERVER ,
+        "--server",
+        help="override server - default =  " + STORE,
     )
 
     parser.add_argument(
@@ -386,10 +495,19 @@ if __name__ == "__main__":
         help="override triplestore repo - default =  " + REPO,
     )
 
+    parser.add_argument(
+        "-j",
+        "--jenafuseki",
+        action='store_true',
+        help="rdf4j replaced by Jena Fuseki",
+    )
+
     args = parser.parse_args()
 
+    if args.jenafuseki:
+        TRIPLESTORE = 'FUSEKI'
     if args.server:
-        RDF4JSERVER = args.server
+        STORE = args.server
     if args.triplerepo:
         REPO = args.triplerepo
 
@@ -404,7 +522,7 @@ if __name__ == "__main__":
 
     for scopepath in DOMAIN_CFG.keys():
         cfglist = DOMAIN_CFG[scopepath]
-        if not isinstance( cfglist,list) :
+        if not isinstance(cfglist, list):
             cfglist = [cfglist]
         for cfg in cfglist:
             try:
@@ -415,16 +533,15 @@ if __name__ == "__main__":
             if args.domain and args.domain != scopepath:
                 continue
             modified = []
-            domainlist = [os.path.normpath(i) for i in glob(scopepath+cfg['glob'])]
+            domainlist = [os.path.normpath(i) for i in glob(scopepath + cfg['glob'])]
 
             if args.batch:
                 # update modified list to be everything missing, or everything if -f
-                if args.force :
+                if args.force:
                     modified = domainlist
                 else:
                     # fix - this will be broken for globbing pattern
-                    modified = list ( set(domainlist) - set(glob(scopepath+ "/entailed" + cfg['glob'])))
-
+                    modified = list(set(domainlist) - set(glob(scopepath + "/entailed" + cfg['glob'])))
 
             for f in modlist:
                 # if the file matches the glob using the scopepath and glob pattern  it's a vocab file
@@ -436,19 +553,18 @@ if __name__ == "__main__":
                 if f.startswith(scopepath) and f.endswith(".ttl") and os.path.normpath(f) in domainlist:
                     p = Path(f)
                     added.append(p)
-            if modified + added :
-                if 'extraont' in cfg and cfg['extraont'] :
+            if modified + added:
+                if 'extraont' in cfg and cfg['extraont']:
                     extra_ont = get_closure_graph(cfg['extraont'])
                 else:
                     extra_ont = None
 
-
             for f in modified + added:
                 try:
-                    newg = perform_entailments(cfg['rulelist'],f,extra=extra_ont, anno=annotations)
-                    v = validate(data_graph=newg, ont_graph=extra_ont , inference='rdfs', shacl_graph=cfg['validator'])
+                    newg = perform_entailments(cfg['rulelist'], f, extra=extra_ont, anno=annotations)
+                    v = validate(data_graph=newg, ont_graph=extra_ont, inference='rdfs', shacl_graph=cfg['validator'])
                     if True or not v[0]:
-                        with open( str(f).replace('.ttl','.txt') , "w" ) as vr:
+                        with open(str(f).replace('.ttl', '.txt'), "w") as vr:
                             vr.write(v[2])
                     loadable_path = make_rdf(f, g=newg, rootpath=cfg['uri_root_filter'])
                     if args.update:
@@ -459,17 +575,17 @@ if __name__ == "__main__":
                             gname = list(get_graph_uri_for_vocab(None, newg))[0]
                         except:
                             gname = "x-urn:{}".format(str(f).replace('\\', ':'))
-                        for n,loadable in enumerate(loadlist):
+                        for n, loadable in enumerate(loadlist):
                             try:
                                 # need to add annotations to a new context
-                                loc = load_vocab( loadable, gname)
+                                loc = load_vocab(loadable, gname)
                                 log("Uploaded {} for {} to   {} ".format(loadable, f, loc))
                             except  Exception as e:
                                 log("Failed to upload {} for {} : ( {} )".format(loadable, f, e))
-                            if n == 0 :
-                                gname = gname+str(n+1)
+                            if n == 0:
+                                gname = gname + str(n + 1)
                             else:
-                                gname = gname[:-1] +str(n+1)
+                                gname = gname[:-1] + str(n + 1)
                 except Exception as e:
                     log("Failed to generate {} : ( {}  )".format(f, e))
 
@@ -481,17 +597,17 @@ if __name__ == "__main__":
                         p = Path(f)
                         removed.append(p)
 
-        #i = Path(__file__).parent.parent / "vocabularies" / "index.json"
-        #with open(i, "r") as f:
-        #    mappings = json.load(f)
-        # remove all removed and modified vocabs
-        #remove_vocabs(removed + modified, mappings)
+            # i = Path(__file__).parent.parent / "vocabularies" / "index.json"
+            # with open(i, "r") as f:
+            #    mappings = json.load(f)
+            # remove all removed and modified vocabs
+            # remove_vocabs(removed + modified, mappings)
 
-        # add all added and modified vocabs
-        #add_vocabs(added + modified, mappings)
+            # add all added and modified vocabs
+            # add_vocabs(added + modified, mappings)
 
             # print for testing
-            print ( "Scope : {}".format(scopepath))
+            print("Scope : {}".format(scopepath))
             if modified:
                 print("modified:")
                 print([str(x) for x in modified])
@@ -503,6 +619,5 @@ if __name__ == "__main__":
                 print([str(x) for x in removed])
 
     # rebuild VocPrez' cache
-    #r = httpx.get("http://defs-dev.opengis.net/vocprez/cache-reload")
-    #assert r.status_code == 200
-
+    # r = httpx.get("http://defs-dev.opengis.net/vocprez/cache-reload")
+    # assert r.status_code == 200
