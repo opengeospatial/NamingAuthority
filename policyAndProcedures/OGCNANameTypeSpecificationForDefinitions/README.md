@@ -1,13 +1,13 @@
-# OGC Name Type Specification - definitions - part 1 – basic name
+# Working folder for the OGC Name Type Specification - definitions - part 1 – basic name
 
-## Content
+This is a working folder, used for developing draft revisions of the document.
 
-This folder contains the DRAFT text for the 'OGC Name Type Specification - definitions - part 1 – basic name' policy.
+## Compiling a Draft Policy with a docker-containerized Metanorma instance
 
-The entry point is link:/ogcna_definitions_policy.adoc[ogcna_definitions_policy.adoc].
+To convert the draft Policy from asciidoc format to HTML and PDF formats, we use the metanorma software to **compile** the document.
 
-## Building
+From the folder containing the `document.adoc` file, run the following command.
 
-To produce the HTML of the standard run `asciidoctor --safe -a data-uri -o ogcna_definitions_policy.html ogcna_definitions_policy.adoc`.
+`docker run -v "$(pwd)":/metanorma -v ${HOME}/.fontist/fonts/:/config/fonts  metanorma/mn  metanorma compile --agree-to-terms -t ogc -x xml,html,doc document.adoc`
 
-To produce the PDF of the standard run `asciidoctor-pdf --safe -o ogcna_definitions_policy.pdf ogcna_definitions_policy.adoc`
+NOTE: You need to add this option to retrieve licensed fonts  `--agree-to-terms`
