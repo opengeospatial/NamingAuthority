@@ -67,16 +67,16 @@ for v4_item in v4_identifiers:
         superseded_uri = URIRef("http://www.opengis.net/def/status/superseded")
         isReplacedBy_uri = URIRef("http://purl.org/dc/terms/isReplacedBy")
         replaces_uri = URIRef("http://purl.org/dc/terms/replaces")
-        print("<"+v4_item+"> <http://www.opengis.net/def/metamodel/ogc-na/status> <http://www.opengis.net/def/status/superseded>.\n")
+        #print("<"+v4_item+"> <http://www.opengis.net/def/metamodel/ogc-na/status> <http://www.opengis.net/def/status/superseded>.\n")
         h.add((v4_item_uri,status_uri,superseded_uri))
-        print("<"+v4_item+"> <http://purl.org/dc/terms/isReplacedBy> <"+v4_item.replace("4.0","5.0")+">.\n")
+        #print("<"+v4_item+"> <http://purl.org/dc/terms/isReplacedBy> <"+v4_item.replace("4.0","5.0")+">.\n")
         h.add((v4_item_uri,isReplacedBy_uri,v5_item_uri))
-        print("<"+v4_item+"> <http://www.opengis.net/def/metamodel/ogc-na/status> <http://www.opengis.net/def/status/deprecated>.\n")
+        #print("<"+v4_item+"> <http://www.opengis.net/def/metamodel/ogc-na/status> <http://www.opengis.net/def/status/deprecated>.\n")
         h.add((v4_item_uri,status_uri,deprecated_uri))
-        print("<"+v4_item.replace("4.0","5.0")+"> <http://purl.org/dc/terms/replaces> <"+v4_item+">.\n")
+        #print("<"+v4_item.replace("4.0","5.0")+"> <http://purl.org/dc/terms/replaces> <"+v4_item+">.\n")
         h.add((v5_item_uri,replaces_uri,v4_item_uri))
     else:
-        print("<"+v4_item+"> <http://www.opengis.net/def/metamodel/ogc-na/status> <http://www.opengis.net/def/status/deprecated>.\n")
+        #print("<"+v4_item+"> <http://www.opengis.net/def/metamodel/ogc-na/status> <http://www.opengis.net/def/status/deprecated>.\n")
         h.add((v4_item_uri,status_uri,deprecated_uri))
 
 
