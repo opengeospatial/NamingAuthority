@@ -66,7 +66,8 @@ DOMAIN_CFG[ 'specification-elements/defs'] =  {
   'rulelist': SPEC_RULES,
   'validator': SPEC_VALIDATOR,
   'extraont': ['definitions/models/modspec_validations.ttl',
-   'definitions/conceptschemes/status.ttl'],
+   'definitions/conceptschemes/status.ttl','definitions/models/doc_relations_model.ttl'],
+    'annotations': ['definitions/models/modspec.ttl' , 'definitions/models/policy.ttl' , 'definitions/models/doc_relations_model.ttl'],
   'uri_root_filter': '/spec/'}
 
 DOMAIN_CFG[ 'definitions/docs'] =  {
