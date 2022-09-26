@@ -56,7 +56,7 @@ g.add((
 ))
 g.add((
   rdflib.URIRef(collectionURI),
-  RDFS.label,
+  SKOS.definition,
   rdflib.Literal(collectionAndSchemeDefinition)
 ))
 g.add((
