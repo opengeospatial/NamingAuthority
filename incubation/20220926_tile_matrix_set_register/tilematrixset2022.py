@@ -9,8 +9,8 @@ from datetime import datetime
 from rdflib.namespace import DC, DCTERMS, DOAP, FOAF, SKOS, OWL, RDF, RDFS, VOID, XMLNS, XSD
 
 
-csvFileName = "/Users/gobehobona/Documents/GitHub/NamingAuthority/incubation/20220926_tile_matrix_set_register/tms.csv"
-ttlOutputFileName = "/Users/gobehobona/Documents/GitHub/NamingAuthority/incubation/20220926_tile_matrix_set_register/tms.ttl"
+csvFileName = "/Users/ogckm/Documents/GitHub/NamingAuthority/incubation/20220926_tile_matrix_set_register/tms.csv"
+ttlOutputFileName = "/Users/ogckm/Documents/GitHub/NamingAuthority/incubation/20220926_tile_matrix_set_register/tms.ttl"
 conceptNamespace = "http://www.opengis.net/def/tilematrixset/OGC/1.0"
 schemeURI = "http://www.opengis.net/def/tms"
 collectionAndSchemeLabel = "OGC Tile Matrix Set Register"
