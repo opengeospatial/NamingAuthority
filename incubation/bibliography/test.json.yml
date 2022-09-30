@@ -1,0 +1,49 @@
+# Sample single-file JSON-LD context
+# Processing order is transform -> types -> context
+
+# `transform` uses jq expressions for light data transformations
+#   see: https://pypi.org/project/jq/
+#   see: https://stedolan.github.io/jq/manual/
+transform: '[to_entries[]|.value+{"@id":("#"+.key),"@type":["MyType", "skos:Concept"]}]'
+
+# `types` adds @type annotations to nodes represented by a jsonpath-ng expression
+# (note: expressions are matched against *transformed* data)
+#   see: https://pypi.org/project/jsonpath-ng/
+types:
+  '$[?type="IS"]': [AddedClass, ISClass]
+  '$[?type="DP"]': [AddedClass, DPClass]
+
+# `base-uri` sets the base uri that will be used for JSON-LD.
+#  This is sometimes necessary since pyld ignores the @base in the root @context
+#   see: https://github.com/digitalbazaar/pyld/issues/143
+base-uri: http://example.org/vocab#
+
+# `context` adds JSON-LD @context to the root element (empty key, '.' or '$')
+# or to specific elements using jsonpath-ng expressions (note: expressions are
+# matched against *transformed* data
+#   see: https://pypi.org/project/jsonpath-ng/
+context:
+  # global context
+  '$': [
+    # dcterms profile
+    "http://defs-dev.opengis.net/ogc-na/definitions/profiles/resources/dcterms.jsonld",
+    # skos profile
+    "http://defs-dev.opengis.net/ogc-na/definitions/profiles/resources/skos.jsonld",
+
+    # custom context for bibliography
+    {
+      "skos": "http://www.w3.org/2004/02/skos/core#",
+      "@vocab": "http://example.org/vocab#",
+      "type": "http://www.opengis.net/def/metamodel/ogc-na/doctype",
+      "alternative": "skos:altLabel",
+      "title": "skos:definition",
+      "description": "rdfs:comment",
+      "date": "dct:created",
+      "URL": "rdfs:seeAlso"
+    }
+  ]
+
+  # local context for elements with type = "IS"
+  '$[?type="IS"]': {
+    "@vocab": "http://example.org/vocab3#"
+  }
