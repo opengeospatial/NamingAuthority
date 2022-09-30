@@ -55,7 +55,7 @@ TEST_VALIDATOR = get_closure_graph([ 'scripts/test/test_validator.ttl'])
 
 OGCAPI_LD_RULES = ['scripts/ogcapi-ld.entailment.shapes.ttl']
 OGCAPI_LD_VALIDATION_RULES = ['scripts/ogcapi-ld.validation.shapes.ttl']
-OGCAPI_LD_VALIDATOR = get_closure_graph(OGCAPI_LD_VALIDATION_RULES)
+OGCAPI_LD_VALIDATOR = SKOS_VALIDATOR + get_closure_graph(OGCAPI_LD_VALIDATION_RULES)
 
 DOMAIN_CFG = {}
 
