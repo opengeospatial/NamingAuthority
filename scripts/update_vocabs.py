@@ -53,6 +53,10 @@ SPEC_VALIDATOR =  get_closure_graph ( SPEC_VALIDATORS  ) + SKOS_VALIDATOR
 #DOCREGISTER_GRAPH = get_closure_graph( DOCREG_CLOSURE )
 TEST_VALIDATOR = get_closure_graph([ 'scripts/test/test_validator.ttl'])
 
+OGCAPI_LD_RULES = ['scripts/ogcapi-ld.entailment.shapes.ttl']
+OGCAPI_LD_VALIDATION_RULES = ['scripts/ogcapi-ld.validation.shapes.ttl']
+OGCAPI_LD_VALIDATOR = get_closure_graph(OGCAPI_LD_VALIDATION_RULES)
+
 DOMAIN_CFG = {}
 
 DOMAIN_CFG['definitions/conceptschemes'] =  { 'description': "Set of terms registered with OGC NA not covered by specialised domains" ,
@@ -151,6 +155,14 @@ DOMAIN_CFG['entities'] = {
   'extraont': None,
   'uri_root_filter': '/def/'
   }
+
+DOMAIN_CFG['incubation/ogcapi-ld'] = {
+  'glob': "/*.ttl",
+  'rulelist': OGCAPI_LD_RULES,
+  'validator': OGCAPI_LD_VALIDATOR,
+  'extraont': None,
+  'uri_root_filter': None,
+}
 
 try:
     RDF4JSERVER = os.environ["RDF4JSERVER"]

@@ -1,0 +1,50 @@
+transform:
+  # Convert geometry array to lat + long
+  - '.geometry.coordinates = {"lat": .geometry.coordinates[0], "long": .geometry.coordinates[1]}'
+  # Extract author from properties
+  - '.by = {"@id": .properties.person, "name": .properties.name}'
+  # Extract description from properties
+  - '.desc = .properties.desc'
+  # Create WKT
+  - '.geometry.wkt = "POINT(\(.geometry.coordinates.lat),\(.geometry.coordinates.long))"'
+
+types:
+  # Outer type
+  '$': 'ex:BirdObservation'
+  # Author type
+  '$.by': 'foaf:Person'
+
+# Define base URI
+base-uri: 'ex:'
+
+context:
+  # Global context
+  '$': {
+    "@version": 1.1,
+    "@base": "ex",
+    "ex": "https://example.org/birds/",
+    "foaf": "http://xmlns.com/foaf/0.1/",
+    "dct": "http://purl.org/dc/terms/",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "geo": "http://www.w3.org/2003/01/geo/wgs84_pos#",
+    "geosparql": "http://www.opengis.net/spec/geosparql/1.0/",
+    "Feature": "geosparql:Feature",
+    "by": "dct:creator",
+    "desc": "dct:description",
+    "name": "foaf:name",
+    "id": "@id",
+    "type": "@type",
+    "geometry": "dct:spatial",
+    "links": "rdfs:seeAlso",
+    "title": "dct:title",
+    "href": "@id"
+  }
+  # Context for geometry
+  '$.geometry': {
+    "@vocab": "geo",
+    "coordinates": "@nest",
+    "wkt": {
+      "@id": "geosparql:hasSerialization",
+      "@type": "geosparql:wktLiteral"
+    },
+  }
