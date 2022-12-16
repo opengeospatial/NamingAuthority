@@ -165,6 +165,7 @@ def load_vocab(vocab: Path, guri):
     except:
         pass
     context = "{}/rdf4j-server/repositories/{}/statements?context=<{}>".format(RDF4JSERVER, REPO, quote_plus(guri))
+    context = "{}?graph=<{}>".format(RDF4JSERVER, REPO, quote_plus(guri))
     
     
     r = httpx.delete(
