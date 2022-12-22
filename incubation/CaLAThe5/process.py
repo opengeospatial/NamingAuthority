@@ -46,7 +46,7 @@ for v5_concept_row in v5_concept_qres:
 v5_codelist_query = """
 SELECT * {
  ?s ?p ?o
- FILTER (isURI(?s) && STRSTARTS(str(?s), str('https://www.opengis.net/def/CaLATheCodeList/5.0') ) )
+ FILTER (isURI(?s) && STRSTARTS(str(?s), str('https://www.opengis.net/def/CaLATheCodeList/2.0') ) )
 }"""
 
 v5_codelist_qres = h.query(v5_codelist_query)
