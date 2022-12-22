@@ -1,0 +1,140 @@
+# baseURI: https://www.opengis.net/def/profile/skos/owl2skos
+# imports: http://datashapes.org/dash
+# imports: http://www.w3.org/2004/02/skos/core
+
+@prefix dash: <http://datashapes.org/dash#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix : <https://www.opengis.net/def/profile/skos/owl2skos#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://www.opengis.net/def/profile/skos/basics>
+  a owl:Ontology ;
+  owl:imports <http://datashapes.org/dash> ;
+  owl:imports <http://www.w3.org/2004/02/skos/core> ;
+  dcterms:creator "Rob Atkinson" ;
+  rdfs:comment "SHACL rules to entail a SKOS concept scheme preserving a declared rdfs:subClassOf heirarchy" ;
+.
+
+:ontology a sh:NodeShape;
+  sh:rule :buildConceptScheme ;
+        # skostopconcepts:rdfslabel> ;
+  sh:targetClass owl:Ontology ;
+.
+
+:feature a sh:NodeShape;
+  sh:rule :buildClass ;
+        # skostopconcepts:rdfslabel> ;
+  sh:targetClass owl:Class ;
+.
+
+:buildConceptScheme
+  a sh:SPARQLRule ;
+  rdfs:label "Build Concept Scheme" ;
+  rdfs:comment "Also builds top level collections for classes and properties" ;
+  sh:construct """PREFIX ogc: <http://www.opengis.net/def/metamodel/>
+    PREFIX ft: <http://www.opengis.net/def/metamodel/featuretypes/>
+    PREFIX prof: <http://www.w3.org/ns/dx/prof/>
+	  prefix skos: <http://www.w3.org/2004/02/skos/core#>
+      PREFIX afn: <http://jena.hpl.hp.com/ARQ/function#>
+      prefix dct: <http://purl.org/dc/terms/>
+      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+      CONSTRUCT {
+    ?this a skos:ConceptScheme .
+    ?this skos:prefLabel ?cslabel .
+    ?this rdfs:comment "This object provides the metadata view of an application schema. Definitions are organised as a SKOS ConceptScheme and can be accessed via the collection view property."@en .
+	?this a owl:Ontology .
+	?this owl:imports <http://www.opengis.net/ont/geosparql> .
+	?this skos:definition ?def .
+	?this ft:propertyList ?pcollection .
+	?this ft:ftList ?ftcollection .
+    ?this ft:codelistList ?clcollection .
+	?topcollection a skos:Collection .
+    ?topcollection rdfs:comment "This is the collection viewpoint of this application schema, consisting of sub-collections of feature types, properties and codelists defined by the application schema."@en .
+    ?topcollection skos:inScheme ?this .
+    ?ftcollection a skos:Collection .
+    ?ftcollection rdfs:label "Feature Types" .
+    ?ftcollection rdfs:comment "All feature types declared in this Application Schema." .
+    ?ftcollection skos:inScheme ?this .
+	?pcollection a skos:Collection .
+    ?pcollection rdfs:label "Feature Properties" .
+    ?pcollection rdfs:comment "All properties declared in this Application Schema." .
+    ?pcollection skos:inScheme ?this .
+	?clcollection a skos:Collection .
+    ?clcollection rdfs:label "Code Lists" .
+    ?clcollection rdfs:comment "All Code Lists declared in this Application Schema" .
+    ?clcollection skos:inScheme ?this .
+	?topcollection skos:member ?ftcollection .
+	?topcollection skos:member ?pcollection .
+    ?topcollection skos:member ?clcollection .
+	?ftcollection skos:member ?class .
+	?class skos:inScheme ?this .
+    ?pcollection skos:member ?property .
+    ?property a skos:Concept.
+    ?property skos:broader ?superprop .
+    ?property skos:inScheme ?this .
+}
+WHERE {
+     ?this a owl:Ontology FILTER ( ?this != <http://www.opengis.net/def/metamodel/featuretypes> )
+     OPTIONAL { ?this rdfs:label ?label }
+    OPTIONAL { ?this skos:prefLabel ?plabel }
+    OPTIONAL { ?this dct:title ?title }
+BIND ( COALESCE (?title,?plabel,?label,afn:localname(?this)) as ?cslabel )
+	 OPTIONAL { ?this skos:definition ?def }
+    OPTIONAL { ?this ogc:sourceGraph ?sourceGraph . }
+    BIND ( COALESCE(?sourceGraph,?this) as ?g )
+		BIND (URI(CONCAT(str(?g), "/")) AS ?topcollection) .
+	BIND (URI(CONCAT(str(?g), "/FeatureTypes/")) AS ?ftcollection) .
+	BIND (URI(CONCAT(str(?g), "/Properties/")) AS ?pcollection) .
+	BIND (URI(CONCAT(str(?g), "/CodeLists/")) AS ?clcollection) .
+
+      OPTIONAL { ?class a owl:Class  }
+
+        OPTIONAL {
+          { ?property a owl:ObjectProperty }
+           UNION { ?property a owl:DatatypeProperty }
+           UNION { ?property a rdf:Property }
+           UNION { ?property rdfs:domain|rdfs:range ?anyClass }
+          OPTIONAL { ?property rdfs:subPropertyOf ?superprop }
+
+  }
+
+}""" ;
+.
+
+:buildClass
+  a sh:SPARQLRule ;
+  rdfs:label "Build owl:Class as a Feature and properties" ;
+  rdfs:comment "under construction.." ;
+  sh:construct """
+    PREFIX prof: <http://www.w3.org/ns/dx/prof/>
+	  prefix skos: <http://www.w3.org/2004/02/skos/core#>
+      PREFIX afn: <http://jena.hpl.hp.com/ARQ/function#>
+      prefix dct: <http://purl.org/dc/terms/>
+      PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+      CONSTRUCT {
+    ?this a skos:Concept;
+       rdfs:comment "Entailed as SKOS Concept for Linked Data purposes." ;
+       skos:definition ?bestclassdef ;
+	   skos:broader ?parent ;
+     .
+        }
+WHERE {
+     ?this a owl:Class .
+
+      OPTIONAL {
+            ?this rdfs:subClassOf ?parent FILTER ( !isBlank(?parent) )
+        } .
+
+        OPTIONAL { ?this skos:definition ?cdef . }
+        OPTIONAL { ?this dct:description ?cdesc . }
+        OPTIONAL { ?this rdfs:comment ?ccomment . }
+        BIND (COALESCE(?cdef,?cdesc,?ccomment) AS ?bestclassdef) .
+
+}""" ;
+.
+
