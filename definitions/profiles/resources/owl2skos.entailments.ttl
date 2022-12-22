@@ -26,10 +26,18 @@
   sh:targetClass owl:Ontology ;
 .
 
-:feature a sh:NodeShape;
-  sh:rule :buildClass ;
-        # skostopconcepts:rdfslabel> ;
+:feature
+  a              sh:NodeShape ;
+  sh:rule        :buildClass ;
+  # skostopconcepts:rdfslabel> ;
   sh:targetClass owl:Class ;
+  sh:target      [ a sh:SPARQLTarget ;
+                 sh:select """
+                 SELECT ?this
+                 WHERE {
+                   { ?this a owl:Class } UNION { ?this rdfs:subClassOf ?superClass } UNION { ?subClass rdfs:subClassOf ?this }
+                 }
+                 """]
 .
 
 :buildConceptScheme
@@ -124,7 +132,7 @@ BIND ( COALESCE (?title,?plabel,?label,afn:localname(?this)) as ?cslabel )
      .
         }
 WHERE {
-     ?this a owl:Class .
+     { ?this a owl:Class } UNION { ?this rdfs:subClassOf ?superClass } UNION { ?subClass rdfs:subClassOf ?this }
 
       OPTIONAL {
             ?this rdfs:subClassOf ?parent FILTER ( !isBlank(?parent) )
