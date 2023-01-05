@@ -1,11 +1,14 @@
 name: Entail, validate changes, update database
 on:
-  push:
-    branches:
-      - master
-  pull_request:
-      types: closed
+  workflow_call:
   workflow_dispatch:
+    inputs:
+      files-added:
+        type: string
+      files-modified:
+        type: string
+      files-removed:
+        type: string
 jobs:
   changes:
     runs-on: ubuntu-latest
@@ -16,14 +19,10 @@ jobs:
         run: |
           python -m pip install -U pip
           pip install -r scripts/requirements.txt
-      - id: file_changes
-        uses: trilom/file-changes-action@v1.2.4
-        with:
-          output: ','
       - name: embed context into JSON/JSON-LD documents
         run: |
-          a="${{steps.file_changes.outputs.files_added}}"
-          m="${{steps.file_changes.outputs.files_modified}}"
+          a="${{inputs.files-added}}"
+          m="${{inputs.files-modified}}"
           jsona=$(python -m ogc.na.ingest_json --batch --fs ',' -t -j "$a")
           jsonm=$(python -m ogc.na.ingest_json --batch --fs ',' -t -j "$m")
           echo "Added JSON-LD files: $jsona"
@@ -36,9 +35,9 @@ jobs:
             DB_PASSWORD: ${{secrets.DB_PASSWORD}}
         run: |
           echo 'Run update script...'
-          a="${{steps.file_changes.outputs.files_added}},$jsona"
-          m="${{steps.file_changes.outputs.files_modified}},$jsonm"
-          r="${{steps.file_changes.outputs.files_removed}}"
+          a="${{inputs.files-added}},$jsona"
+          m="${{inputs.files-modified}},$jsonm"
+          r="${{inputs.files-removed}}"
           if [ -z $a ]; then a="x"; fi
           if [ -z $m ]; then m="x"; fi
           if [ -z $r ]; then r="x"; fi
