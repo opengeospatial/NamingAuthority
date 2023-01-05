@@ -4,7 +4,7 @@ from rdflib import Graph, Literal, RDF, URIRef
 # first we read the v4 version
 
 g = rdflib.Graph()
-g.parse("/Users/ogckm/Documents/GitHub/NamingAuthority/definitions/conceptschemes/CaLAThe.ttl")
+g.parse("/Users/gobehobona/Documents/GitHub/NamingAuthority/definitions/conceptschemes/CaLAThe.ttl")
 
 query = """
 SELECT * {
@@ -23,8 +23,8 @@ for row in qres:
 # Now we read the v5 version
 
 h = rdflib.Graph()
-h.parse("/Users/ogckm/Documents/GitHub/NamingAuthority/incubation/CaLAThe5/CaLAThe5.rdf")
-h.parse("/Users/ogckm/Documents/GitHub/NamingAuthority/incubation/CaLAThe5/CaLATheCodeList2.rdf")
+h.parse("/Users/gobehobona/Documents/GitHub/NamingAuthority/incubation/CaLAThe5/CaLAThe5.rdf")
+h.parse("/Users/gobehobona/Documents/GitHub/NamingAuthority/incubation/CaLAThe5/CaLATheCodeList2.rdf")
 
 
 # Now we compare v4 concepts to v5 concepts to determine which are being deprecated and which are also being superseded
