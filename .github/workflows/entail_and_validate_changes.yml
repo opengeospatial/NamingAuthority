@@ -20,14 +20,24 @@ jobs:
         uses: trilom/file-changes-action@v1.2.4
         with:
           output: ','
+      - name: embed context into JSON/JSON-LD documents
+        run: |
+          a="${{steps.file_changes.outputs.files_added}}"
+          m="${{steps.file_changes.outputs.files_modified}}"
+          jsona=$(python -m ogc.na.ingest_json --batch --fs ',' -t -j "$a")
+          jsonm=$(python -m ogc.na.ingest_json --batch --fs ',' -t -j "$m")
+          echo "Added JSON-LD files: $jsona"
+          echo "Modified JSON-LD files: $jsonm"
+          echo "jsona=$jsona" >> $GITHUB_ENV
+          echo "jsonm=$jsonm" >> $GITHUB_ENV
       - name: detect file changes
         env:
             DB_USERNAME: ${{secrets.DB_USERNAME}}
             DB_PASSWORD: ${{secrets.DB_PASSWORD}}
         run: |
           echo 'Run update script...'
-          a="${{steps.file_changes.outputs.files_added}}"
-          m="${{steps.file_changes.outputs.files_modified}}"
+          a="${{steps.file_changes.outputs.files_added}},$jsona"
+          m="${{steps.file_changes.outputs.files_modified}},$jsonm"
           r="${{steps.file_changes.outputs.files_removed}}"
           if [ -z $a ]; then a="x"; fi
           if [ -z $m ]; then m="x"; fi
