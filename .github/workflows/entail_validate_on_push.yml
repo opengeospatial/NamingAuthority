@@ -1,0 +1,36 @@
+name: Update on push
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+      types: closed
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bring in repo
+        uses: actions/checkout@v2
+      - name: install Python dependencies
+        run: |
+          python -m pip install -U pip
+          pip install -r scripts/requirements.txt
+      - id: file_changes
+        uses: trilom/file-changes-action@v1.2.4
+        with:
+          output: ','
+    outputs:
+      files-added: ${{ steps.file_changes.outputs.files_added }}
+      files-modified: ${{ steps.file_changes.outputs.files_modified }}
+      files-removed: ${{ steps.file_changes.outputs.files_removed }}
+      has-changes: ${{ steps.file_changes.outputs.files && 'true' || '' }}
+
+  call-entail-validate-changes-workflow:
+    needs: changes
+    if: needs.changes.outputs.has-changes == 'true'
+    uses: ./.github/workflows/entail_and_validate_changes.yml
+    with:
+      files-added: ${{ needs.changes.outputs.files-added }}
+      files-modified: ${{ needs.changes.outputs.files-modified }}
+      files-removed: ${{ needs.changes.outputs.files-removed }}
+

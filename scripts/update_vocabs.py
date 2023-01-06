@@ -41,8 +41,8 @@ DOC_RULES =  [ 'scripts/docs_entailments.shapes.ttl'  ] + SKOS_RULES
 #SPEC_VALIDATORS = [ 'definitions/models/modspec_shacl.ttl']
 SPEC_VALIDATORS = [ 'definitions/models/modspec-owl2sh-semi-closed.ttl']
 #DOCREG_CLOSURE = [ "definitions/conceptschemes/docs.ttl" ]
-SPECMODEL_CLOSURE = [ 'entities/entailed/entities/bodies.ttl', 'definitions/models/modspec_validations.ttl', 'definitions/conceptschemes/status.ttl' ]
-PROFMODEL_CLOSURE = [ 'entities/entailed/entities/bodies.ttl','definitions/conceptschemes/profiles.ttl' , 'definitions/models/prof.ttl'  ]
+SPECMODEL_CLOSURE = [ 'definitions/models/modspec_validations.ttl', 'definitions/conceptschemes/status.ttl' ]
+PROFMODEL_CLOSURE = [ 'definitions/conceptschemes/profiles.ttl' , 'definitions/models/prof.ttl'  ]
 APPSCHEMA_CLOSURE = [ 'definitions/models/featuretypes.ttl' ]
 # 'definitions/models/modspec.ttl',
 

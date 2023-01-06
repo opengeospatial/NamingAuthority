@@ -1,0 +1,31 @@
+transform:
+  # Detect DWG and SWG
+  - >-
+    [.[] | . + (
+      if .name | test("\\bDWG\\b") 
+        then {"type": "policy:Dwg"} 
+        else (
+          if .name | test("\\bSWG\\b")
+            then {"type": "policy:Swg"} 
+            else {"type": "policy:Body"}
+          end)
+        end)]
+  # Create @id from id, add inScheme and alias label to name
+  - '[.[] | . + {"@id" : ("bodies:" + .id), "inScheme": "http://www.opengis.net/def/entities/bodies", "label": .name}]'
+
+types:
+  '$[*]':
+    - skos:Concept
+
+context:
+  '$':
+    bodies: 'http://www.opengis.net/def/entities/bodies/'
+    skos: 'http://www.w3.org/2004/02/skos/core#'
+    rdfs: 'http://www.w3.org/2000/01/rdf-schema#'
+    policy: 'http://www.opengis.net/def/metamodel/ogc-na/'
+    inScheme:
+      "@id": "skos:inScheme"
+      "@type": "@id"
+    name: skos:prefLabel
+    label: rdfs:label
+    type: "@type"
