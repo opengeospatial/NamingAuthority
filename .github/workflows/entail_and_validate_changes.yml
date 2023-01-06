@@ -8,6 +8,10 @@ on:
         type: string
       files-removed:
         type: string
+      repo-ref:
+        description: 'Branch, tag or commit'
+        type: string
+        default: 'master'
   workflow_dispatch:
     inputs:
       files-added:
@@ -16,20 +20,26 @@ on:
         type: string
       files-removed:
         type: string
+      repo-ref:
+        description: 'Branch, tag or commit'
+        type: string
+        default: 'master'
 jobs:
   changes:
     runs-on: ubuntu-latest
     steps:
       - name: Bring in repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.repo-ref }}
       - name: install Python dependencies
         run: |
           python -m pip install -U pip
           pip install -r scripts/requirements.txt
       - name: embed context into JSON/JSON-LD documents
         run: |
-          a="${{inputs.files-added}}"
-          m="${{inputs.files-modified}}"
+          a="${{ inputs.files-added }}"
+          m="${{ inputs.files-modified }}"
           jsona=$(python -m ogc.na.ingest_json --batch --fs ',' -t -j "$a")
           jsonm=$(python -m ogc.na.ingest_json --batch --fs ',' -t -j "$m")
           echo "Added JSON-LD files: $jsona"
