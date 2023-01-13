@@ -4,6 +4,7 @@ import csv
 import requests
 import json
 import os
+from pathlib import Path
 from rdflib import Graph, URIRef, PROV
 
 GS_URL = os.environ['SWGDOCMATCH_GS_URL']
@@ -11,6 +12,7 @@ SWG_FILE = 'incubation/working-groups/working-groups.json'
 
 BODIES = 'http://www.opengis.net/def/entities/bodies/'
 DOCS = 'http://www.opengis.net/def/docs/'
+OUTPUT = Path('incubation/working-groups/docs.ttl')
 
 print("Loading working groups file...")
 with open(SWG_FILE, 'rb') as f:
@@ -35,6 +37,16 @@ for row in reader:
             # Not a numeric SWGid
             pass
 
-print("Writing output...")
-g.serialize('incubation/working-groups/docs.ttl', format='ttl')
+changed = True
+if OUTPUT.exists():
+    print("Loading current version for comparison...")
+    existing = Graph().parse(OUTPUT)
+    changed = len(g ^ existing) > 0
+
+if changed:
+    print("Writing output...")
+    g.serialize('incubation/working-groups/docs.ttl', format='ttl')
+else:
+    print("No changes found")
+
 print("All tasks done")
