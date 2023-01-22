@@ -1,0 +1,66 @@
+# baseURI: https://www.opengis.net/def/profile/skos/vocprez
+# imports: http://datashapes.org/dash
+# imports: http://www.w3.org/2004/02/skos/core
+
+@prefix dash: <http://datashapes.org/dash#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix : <https://www.opengis.net/def/profile/skos/vocprez#> .
+@prefix swa: <http://topbraid.org/swa#> .
+@prefix tosh: <http://topbraid.org/tosh#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://www.opengis.net/def/profile/skos/vocprez>
+  a owl:Ontology ;
+  owl:imports <http://datashapes.org/dash> ;
+  owl:imports <http://www.w3.org/2004/02/skos/core> ;
+  rdfs:comment "Entail metadata needed to support VocPrez SKOS profile" ;
+  dcterms:creator "Rob Atkinson"
+.
+
+:NodeShape_concept
+  a sh:NodeShape ;
+  sh:rule :definition_required;
+  sh:targetClass skos:Concept ;
+.
+
+:NodeShape_conceptscheme
+  a sh:NodeShape ;
+  sh:rule :definition_required;
+  sh:targetClass skos:ConceptScheme ;
+.
+
+:NodeShape_collection
+  a sh:NodeShape ;
+  sh:rule :definition_required;
+  sh:targetClass skos:Collection ;
+.
+
+
+
+:definition_required
+  a sh:SPARQLRule ;
+  rdfs:label "Best definition option" ;
+  sh:construct """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+  prefix dcterms: <http://purl.org/dc/terms/>
+  prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+CONSTRUCT {
+?this skos:definition ?skosdef
+}
+WHERE {
+    OPTIONAL { ?this skos:definition ?def }
+    OPTIONAL { ?this dcterms:description ?desc }
+    ?this rdfs:label|skos:prefLabel ?lab
+    BIND ( COALESCE( ?def,?desc, ?lab  ) AS ?skosdef )
+    FILTER ( ! bound(?def ) )
+}
+""" ;
+  sh:prefixes <http://www.w3.org/2004/02/skos/core> ;
+.
+
+
+

@@ -1,0 +1,81 @@
+# baseURI: https://www.opengis.net/def/profile/orm/specascs
+# imports: http://datashapes.org/dash
+# imports: http://www.w3.org/2004/02/skos/core
+
+@prefix dash: <http://datashapes.org/dash#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix : <https://www.opengis.net/def/profile/prof2skos#> .
+@prefix swa: <http://topbraid.org/swa#> .
+@prefix tosh: <http://topbraid.org/tosh#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix prof: <http://www.w3.org/ns/dx/prof/> .
+
+<https://www.opengis.net/def/profile/prof2skos>
+  a owl:Ontology ;
+  owl:imports <http://datashapes.org/dash> ;
+  owl:imports <http://www.w3.org/2004/02/skos/core> ;
+  dcterms:description "Entail a SKOS hierarchy to navigate a Profile hierarchy as linked data."
+.
+
+:NodeShape_prof_as_concept
+  a sh:NodeShape ;
+  sh:rule :prof_as_concept ;
+  sh:rule :top_if_no_parent ;
+  sh:targetClass prof:Profile ;
+.
+
+
+:prof_as_concept
+  a sh:SPARQLRule ;
+  rdfs:label "Entail profile as skos concepts" ;
+  sh:construct """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+                  PREFIX prof: <http://www.w3.org/ns/dx/prof/>
+                  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                  PREFIX  dcterms: <http://purl.org/dc/terms/>
+                  CONSTRUCT {
+                    ?this a skos:Concept .
+                    ?this skos:inScheme <http://www.opengis.net/def/metamodel/profiles> .
+                    ?this skos:broader ?c .
+                    ?c skos:narrower ?this .
+                    ?this skos:prefLabel ?preflabel .
+                    }
+                    WHERE {
+                         OPTIONAL
+                            { ?this prof:isProfileOf ?c }
+                         OPTIONAL
+                            { ?this rdfs:label ?dctitle }
+                         OPTIONAL
+                            { ?this dcterms:title ?dctitle  }
+                         OPTIONAL
+                            { ?this skos:prefLabel ?pref  }
+                         BIND ( COALESCE (?pref, ?dctitle, ?dctitle , str(?this) ) as ?preflabel )
+
+
+                  }""" ;
+
+.
+
+:top_if_no_parent
+  a sh:SPARQLRule ;
+  rdfs:label "Add as top parent to container iff no broader exists" ;
+  sh:construct """PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+                  PREFIX prof: <http://www.w3.org/ns/dx/prof/>
+                  PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+                  PREFIX  dcterms: <http://purl.org/dc/terms/>
+                  CONSTRUCT {
+                    <http://www.opengis.net/def/metamodel/profiles/community> skos:narrower ?tc .
+                    ?tc skos:broader <http://www.opengis.net/def/metamodel/profiles/community> .
+                  }
+                  WHERE
+                  {
+                       ?tc a skos:Concept FILTER (?tc = ?this )
+                       FILTER NOT EXISTS { ?this prof:isProfileOf|skos:broader ?parent }
+
+                  }
+                  """
+.
