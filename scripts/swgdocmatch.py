@@ -45,7 +45,7 @@ if OUTPUT.exists():
 
 if changed:
     print("Writing output...")
-    g.serialize('incubation/working-groups/docs.ttl', format='ttl')
+    g.serialize(OUTPUT, format='ttl')
 else:
     print("No changes found")
 
