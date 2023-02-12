@@ -12,7 +12,7 @@ SWG_FILE = 'incubation/working-groups/working-groups.json'
 
 BODIES = 'http://www.opengis.net/def/entities/bodies/'
 DOCS = 'http://www.opengis.net/def/docs/'
-OUTPUT = Path('incubation/working-groups/docs.ttl')
+OUTPUT = Path('definitions/docs/docs-working-groups.ttl')
 
 print("Loading working groups file...")
 with open(SWG_FILE, 'rb') as f:
