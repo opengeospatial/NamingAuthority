@@ -72,11 +72,11 @@ DOMAIN_CFG[ 'specification-elements/defs'] =  {
 
 DOMAIN_CFG[ 'definitions/docs'] =  {
   'description': 'Document Register' ,
-  'glob': '/*.ttl',
+  'glob': '/docs.ttl',
   'rulelist': DOC_RULES,
   'validator': SKOS_VALIDATOR,
   'extraont': ['definitions/conceptschemes/doc-type.ttl'],
-  'annotations': ['definitions/docs/annotations/docs_upper_collections.ttl'],
+  'annotations': ['definitions/docs/annotations/docs_upper_collections.ttl', 'definitions/docs/docs-working-groups.ttl'],
   'uri_root_filter': '/def/'}
 
 DOMAIN_CFG[ 'incubation/binary-array-ld'] =  {
