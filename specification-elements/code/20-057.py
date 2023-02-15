@@ -15,14 +15,16 @@ for line in fin:
             if "</tt>" in token1:
                 token2 = token1[:token1.index("</tt>")]
                 token_a1 = line[line.index("<table id=")+len("<table id=")+1:line.index("\" class=\"modspec\"")]
-                fout.write("https://docs.ogc.org/is/20-057/20-057.html#"+token_a1+","+"http://www.opengis.net/spec/ogcapi-tiles-1/1.0"+token2+"\n")
+                if not("/ats/" in token_a1):
+                    fout.write("https://docs.ogc.org/is/20-057/20-057.html#"+token_a1+","+"http://www.opengis.net/spec/ogcapi-tiles-1/1.0"+token2+"\n")
 
         if "/conf/" in line:
             token1 = line[line.index("/conf/"):]
             if "</tt>" in token1:
                 token2 = token1[:token1.index("</tt>")]
                 token_a1 = line[line.index("<table id=")+len("<table id=")+1:line.index("\" class=\"modspec\"")]
-                fout.write("https://docs.ogc.org/is/20-057/20-057.html#"+token_a1+","+"http://www.opengis.net/spec/ogcapi-tiles-1/1.0"+token2+"\n")
+                if "/ats/" in token_a1:
+                    fout.write("https://docs.ogc.org/is/20-057/20-057.html#"+token_a1+","+"http://www.opengis.net/spec/ogcapi-tiles-1/1.0"+token2+"\n")
 
 
 
