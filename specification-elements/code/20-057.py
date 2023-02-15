@@ -7,6 +7,9 @@ elementList = []
 
 # processing the input file
 
+fout.write("https://docs.ogc.org/is/20-057/20-057.html,http://www.opengis.net/doc/IS/ogcapi-tiles-1/1.0\n")
+
+
 for line in fin:
     if ("<table id=" in line) and ("class=\"modspec\"" in line):
         #print(line)
