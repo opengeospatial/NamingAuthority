@@ -1,0 +1,61 @@
+transform:
+  # Fix dates/datetimes
+  - |
+    walk(
+      if type == "object" then
+        if has("last_updated") then
+          .last_updated = (.last_updated | sub(" "; "T") // empty)
+        else .
+        end
+        | .start_date = (if (.start_date? != "") then .start_date else null end)
+        | .completion_date = (if (.completion_date? != "") then .completion_date else null end)
+        | .initiated_date = (if (.initiated_date? != "") then .initiated_date else null end)
+      else . 
+      end
+    )
+  # Add inScheme and types for top level
+  - '[ .[] | . + {"inScheme": "http://www.opengis.net/def/standards-roadmap", "@type": ["skos:Concept", "prov:Activity"]} ]'
+  # Add ConceptScheme
+  - |
+    . + [{
+      "@id": "http://www.opengis.net/def/standards-roadmap",
+      "@type": "skos:ConceptScheme",
+      "skos:prefLabel": "Standards Roadmap"
+    }]
+
+types:
+  '$[*].steps[*]':
+    - prov:Activity
+    - skos:Concept
+
+context:
+  '$':
+    '@base': http://www.opengis.net/def/standards-roadmap/
+    skos: http://www.w3.org/2004/02/skos/core#
+    dct: http://purl.org/dc/terms/
+    xsd: http://www.w3.org/2001/XMLSchema#
+    prov: http://www.w3.org/ns/prov#
+    standard_workflow_id: '@id'
+    label: skos:prefLabel
+    last_updated:
+      '@id': dct:modified
+      '@type': xsd:dateTime
+    start_date:
+      '@id': prov:startedAtTime
+      '@type': xsd:date
+    initiated_date:
+      '@id': prov:startedAtTime
+      '@type': xsd:date
+    completion_date:
+      '@id': prov:endedAtTime
+      '@type': xsd:date
+    description: dct:description
+    updated_by: dct:contributor
+    inScheme:
+      '@id': skos:inScheme
+      '@type': '@id'
+    steps:
+      '@id': prov:wasInformedBy
+      '@context':
+        id: '@id'
+        '@base': http://www.opengis.net/def/standards-roadmap/step/
