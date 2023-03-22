@@ -36,15 +36,20 @@ class DefParser(HTMLParser):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.text = ''
+        self._breaking_tag = []
 
     def handle_starttag(self, tag, attrs) -> None:
-        self.text += '\n'
+        breaking = tag in ('p', 'div')
+        self._breaking_tag.append(breaking)
+        if breaking:
+            self.text += '\n'
 
     def handle_endtag(self, tag: str) -> None:
-        self.text += '\n'
+        if self._breaking_tag.pop():
+            self.text += '\n'
 
     def handle_data(self, data):
-        self.text += data
+        self.text += re.sub(r'\n\r?', ' ', data)
 
 
 if __name__ == '__main__':
