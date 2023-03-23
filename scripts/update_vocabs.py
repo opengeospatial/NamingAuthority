@@ -26,7 +26,7 @@ def get_closure_graph( vlist: List[str] ):
 
     return g
 
-SKOS_RULES = [ 'scripts/skosbasics.shapes.ttl', 'scripts/ogc_skos_profile_entailments.ttl', 'scripts/skos_vocprez.shapes.ttl' ]
+SKOS_RULES = [ 'scripts/skosbasics.shapes.ttl', 'scripts/skos-sameas.shapes.ttl', 'scripts/ogc_skos_profile_entailments.ttl', 'scripts/skos_vocprez.shapes.ttl' ]
 #COMMON_VALIDATORS = [ "https://w3id.org/profile/vocpub/validator" ]
 COMMON_VALIDATORS = [ 'scripts/vocprez.shapes.ttl' ]
 #OWL_RULES = [ 'scripts/owl2skos.shapes.ttl' , 'scripts/skos2ftc.shapes.ttl'] + SKOS_RULES

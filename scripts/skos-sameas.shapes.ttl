@@ -1,0 +1,63 @@
+# baseURI: https://www.opengis.net/def/profile/skos/sameas
+# imports: http://datashapes.org/dash
+# imports: http://www.w3.org/2004/02/skos/core
+
+@prefix dash: <http://datashapes.org/dash#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix sameas: <https://www.opengis.net/def/profile/skos/sameas#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<https://www.opengis.net/def/profile/skos/sameas>
+  a owl:Ontology ;
+  owl:imports <http://datashapes.org/dash> ;
+  owl:imports <http://www.w3.org/2004/02/skos/core> ;
+  dcterms:creator "Rob Atkinson" ;
+  rdfs:comment "entails key properties across sameAs references within current graph closure" ;
+  owl:versionInfo "Created for automated entailment per Concept Scheme" ;
+.
+sameas:NodeShape_concept
+  a sh:NodeShape ;
+  sh:rule sameas:SPARQLRule_sameas, sameas:SPARQLRule_sameas_inv ;
+  sh:targetClass skos:Concept ;
+.
+
+
+sameas:SPARQLRule_sameas
+  a sh:SPARQLRule ;
+  rdfs:label "Add skos:broader inverse reference" ;
+  sh:construct """PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+CONSTRUCT {
+?c ?p ?a
+}
+WHERE {
+    ?this owl:sameAs ?c .
+    ?this ?p ?a
+    FILTER NOT EXISTS { ?c ?p ?anything }
+    FILTER ( ?p in ( skos:prefLabel )  )
+}""" ;
+.
+
+
+sameas:SPARQLRule_sameas_inv
+  a sh:SPARQLRule ;
+  rdfs:label "Add sameAs missing metadata inverse references" ;
+  sh:construct """PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX skos: <http://www.w3.org/2004/02/skos/core#>CONSTRUCT {
+?c ?p ?a
+}
+WHERE {
+    ?c owl:sameAs ?this .
+    ?this ?p ?a
+    FILTER NOT EXISTS { ?c ?p ?anything }
+    FILTER ( ?p in ( skos:prefLabel )  )
+}""" ;
+
+.
+
+
