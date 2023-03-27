@@ -8,7 +8,7 @@ from pathlib import Path
 from rdflib import Graph, URIRef, PROV
 
 GS_URL = os.environ['SWGDOCMATCH_GS_URL']
-SWG_FILE = 'incubation/working-groups/working-groups.json'
+SWG_FILE = 'entities/bodies.json'
 
 BODIES = 'http://www.opengis.net/def/entities/bodies/'
 DOCS = 'http://www.opengis.net/def/docs/'
