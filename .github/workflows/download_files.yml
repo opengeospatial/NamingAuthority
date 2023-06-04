@@ -1,4 +1,4 @@
-name: Download JSON
+name: Download files
 on:
   schedule:
     - cron: '0 3 */4 * *'
@@ -9,11 +9,11 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
-      - name: Download and compare files
-        run: python scripts/download_json.py
       - name: Get changed files
         id: changed-files
         run: |
+          pip install ogc-na
+          python -m ogc.na.download --spec file_downloads.yaml
           MODIFIED="$(git status -u --porcelain=v1 | grep '^ M' | cut -c 4- | tr '\n' , | sed -r 's@,$@@')"
           ADDED="$(git status -u --porcelain=v1 | grep '^??' | cut -c 4- | tr '\n' , | sed -r 's@,$@@')"
           [ -n "${ADDED}{MODIFIED}" ] && ANY_CHANGED=true || ANY_CHANGED=false
@@ -24,7 +24,7 @@ jobs:
         uses: EndBug/add-and-commit@v9
         with:
           add: .
-          message: "Downloaded new versions of JSON documents"
+          message: "Downloaded new versions of documents"
           default_author: github_actions
     outputs:
       files-added: ${{ steps.changed-files.outputs.added_files }}
