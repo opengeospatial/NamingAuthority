@@ -1,6 +1,7 @@
 # External sources used
 
-The Naming Authority repository downloads and processes the following external resources (defined in `file_downloads.yaml):
+The Naming Authority repository downloads and processes the following external resources (most of them 
+defined in `file_downloads.yaml):
 
 * Documents to SWGs
   * Type: Google Docs Spreadsheet (CSV format)
