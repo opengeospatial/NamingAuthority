@@ -1,10 +1,12 @@
+from __future__ import annotations
 
 import json
 from glob import glob
+import re
 from typing import List
 import argparse
 from pathlib import Path
-from urllib.parse import urlencode, quote_plus
+from urllib.parse import urlparse
 
 import httpx
 from pyshacl import validate
@@ -152,12 +154,7 @@ DOMAIN_CFG['entities'] = {
   'uri_root_filter': '/def/'
   }
 
-try:
-    RDF4JSERVER = os.environ["RDF4JSERVER"]
-except:
-    RDF4JSERVER = 'http://defs-dev.opengis.net:8080'
-
-REPO = 'ogc-na'
+DEFAULT_RDF_SERVICE = 'http://defs-dev.opengis.net:8080'
 
 def load_vocab(vocab: Path, guri):
     authdetails = None
@@ -165,26 +162,27 @@ def load_vocab(vocab: Path, guri):
         authdetails = (os.environ["DB_USERNAME"], os.environ["DB_PASSWORD"])
     except:
         pass
-    context = "{}/rdf4j-server/repositories/{}/statements?context=<{}>".format(RDF4JSERVER, REPO, quote_plus(guri))
-
 
     r = httpx.delete(
-        # "http://"+os.environ["VOCAB_HOST"] + "/rdf4j-server/repositories/ogc-na" ,
-        context,
+        RDF_SERVICE,
+        params={
+            'graph': guri
+        },
         auth=authdetails
     )
-    # print ( r.status_code )
-    r = httpx.post(
-    #"http://"+os.environ["VOCAB_HOST"] + "/rdf4j-server/repositories/ogc-na" ,
-    context,
-    params={"graph":  guri },
-    headers={"Content-Type": "application/x-turtle;charset=UTF-8"},
-    content=open(vocab, "rb").read(),
-    auth= authdetails
+
+    with open(vocab, "rb") as f:
+        content = f.read()
+
+    r = httpx.put(
+        RDF_SERVICE,
+        params={"graph":  guri },
+        headers={"Content-Type": "application/x-turtle;charset=UTF-8"},
+        content=content,
+        auth= authdetails
     )
-    assert 200 <= r.status_code <= 300, "Status code was {}".format(r.status_code)
-    # add_to_vocab_index(vocab, get_graph_uri_for_vocab(vocab))
-    return context
+    r.raise_for_status()
+    return r.url
 
 
 
@@ -199,7 +197,7 @@ def remove_vocabs(vocabs: List[Path], mappings: dict):
         # remove_from_vocab_index(vocab)
 
 
-def get_graph_uri_for_vocab(vocab: Path, g: Graph = None) -> URIRef:
+def get_graph_uri_for_vocab(vocab: Path | None, g: Graph = None) -> URIRef:
     """We can get the Graph URI for a vocab using assumption that the ConceptScheme is declared in the graph being processed."""
     if not g:
         g = Graph().parse(str(vocab), format="ttl")
@@ -378,22 +376,30 @@ if __name__ == "__main__":
     parser.add_argument(
         "-s",
         "--server" ,
-        help="override server - default =  " + RDF4JSERVER ,
+        help=f"override server - default = {DEFAULT_RDF_SERVICE}",
     )
 
     parser.add_argument(
         "-t",
         "--triplerepo",
-        help="override triplestore repo - default =  " + REPO,
+        default='ogc-na',
+        help="Legacy option to override triplestore repo - default = ogc-na",
     )
 
     args = parser.parse_args()
 
+    RDF_SERVICE = os.environ.get('RDF4JSERVER', DEFAULT_RDF_SERVICE)
     if args.server:
-        RDF4JSERVER = args.server
-    if args.triplerepo:
-        REPO = args.triplerepo
+        RDF_SERVICE = args.server
 
+    RDF_SERVICE_PARSED = urlparse(RDF_SERVICE)
+    if re.match(r'^defs(-dev)?\.opengis\.net(:80(80)?)?$', RDF_SERVICE_PARSED.netloc) \
+            and re.match(f'^/*$', RDF_SERVICE_PARSED.path):
+        # Legacy server definition, built from scheme, netloc and args.triplerepo
+        RDF_SERVICE = f"{RDF_SERVICE_PARSED.scheme}://{RDF_SERVICE_PARSED.netloc}" \
+                      f"/rdf4j-server/repositories/{args.triplerepo}/rdf-graphs/service"
+
+    print(RDF_SERVICE)
     modlist = []
     addedlist = []
 
@@ -437,12 +443,9 @@ if __name__ == "__main__":
                 if f.startswith(scopepath) and f.endswith(".ttl") and os.path.normpath(f) in domainlist:
                     p = Path(f)
                     added.append(p)
-            if modified + added :
-                if 'extraont' in cfg and cfg['extraont'] :
-                    extra_ont = get_closure_graph(cfg['extraont'])
-                else:
-                    extra_ont = None
-
+            extra_ont = None
+            if modified + added and 'extraont' in cfg and cfg['extraont'] :
+                extra_ont = get_closure_graph(cfg['extraont'])
 
             for f in modified + added:
                 try:
