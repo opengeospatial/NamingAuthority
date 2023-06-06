@@ -78,7 +78,10 @@ DOMAIN_CFG[ 'definitions/docs'] =  {
   'rulelist': DOC_RULES,
   'validator': SKOS_VALIDATOR,
   'extraont': ['definitions/conceptschemes/doc-type.ttl'],
-  'annotations': ['definitions/docs/annotations/docs_upper_collections.ttl', 'definitions/docs/docs-working-groups.ttl'],
+  'annotations': [
+      'definitions/docs/annotations/docs_upper_collections.ttl',
+      'definitions/docs/docs-working-groups.ttl',
+  ],
   'uri_root_filter': '/def/'}
 
 DOMAIN_CFG[ 'incubation/binary-array-ld'] =  {
@@ -177,7 +180,7 @@ def load_vocab(vocab: Path, guri):
     r = httpx.put(
         RDF_SERVICE,
         params={"graph":  guri },
-        headers={"Content-Type": "application/x-turtle;charset=UTF-8"},
+        headers={"Content-Type": "text/turtle"},
         content=content,
         auth= authdetails
     )
@@ -399,7 +402,8 @@ if __name__ == "__main__":
         RDF_SERVICE = f"{RDF_SERVICE_PARSED.scheme}://{RDF_SERVICE_PARSED.netloc}" \
                       f"/rdf4j-server/repositories/{args.triplerepo}/rdf-graphs/service"
 
-    print(RDF_SERVICE)
+    if args.update:
+        print("Using RDF Server for update:", RDF_SERVICE)
     modlist = []
     addedlist = []
 
