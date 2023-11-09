@@ -103,3 +103,31 @@
     }
   """
 .
+
+:doctype-collections
+  a sh:NodeShape ;
+  sh:targetNode :dummy ;
+  sh:rule [
+    a sh:SPARQLRule ;
+    rdfs:label "Create skos:Collection's for document types" ;
+    sh:construct """
+      prefix na: <http://www.opengis.net/def/metamodel/ogc-na/>
+      prefix skos: <http://www.w3.org/2004/02/skos/core#>
+
+      CONSTRUCT {
+        ?collection a skos:Collection ;
+          skos:prefLabel ?collectionLabel ;
+          rdfs:label ?collectionLabel ;
+          skos:inScheme ?scheme ;
+          skos:member ?doc ;
+        .
+      } WHERE {
+        ?doc na:doctype ?docType .
+        ?docType skos:prefLabel ?docTypeLabel .
+        OPTIONAL { ?docType skos:inScheme ?scheme }
+        BIND(IRI(REPLACE(str(?docType), '/?$', '/collection')) as ?collection) .
+        BIND(CONCAT('Documents of type ', ?docTypeLabel) as ?collectionLabel) .
+      }
+      """
+  ] ;
+.
