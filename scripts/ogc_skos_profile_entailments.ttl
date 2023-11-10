@@ -31,8 +31,9 @@
   a sh:NodeShape ;
   sh:rule :topcollection ;
   sh:rule :inscheme_by_uriroot ;
-   sh:rule :source_required;
-        # :rdfslabel> ;
+  sh:rule :source_required ;
+  #sh:rule :rdfslabel> ;
+  sh:rule :topConcepts ;
   sh:targetClass skos:ConceptScheme ;
 .
 
@@ -190,6 +191,19 @@ WHERE {
 .
 
 
-
-
-
+:topConcepts
+  a sh:SPARQLRule ;
+  rdfs:label "Add topConceptOf and hasTopConcept when no broader present" ;
+  sh:order 99 ;
+  sh:construct """
+  PREFIX skos: <http://www.w3.org/2004/02/skos/core#>
+  CONSTRUCT {
+    $this skos:hasTopConcept ?concept .
+    ?concept skos:topConceptOf $this .
+  } WHERE {
+    ?concept skos:inScheme $this .
+    FILTER NOT EXISTS { ?concept skos:broader ?broader1 }
+    FILTER NOT EXISTS { ?broader2 skos:narrower ?concept }
+  }
+  """ ;
+.
