@@ -163,7 +163,9 @@ def load_vocab(vocab: Path, guri):
     authdetails = None
     try:
         authdetails = (os.environ["DB_USERNAME"], os.environ["DB_PASSWORD"])
+        print('Using authentication with user', authdetails[0])
     except:
+        print('Not using authentication')
         pass
 
     r = httpx.delete(
