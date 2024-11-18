@@ -4,6 +4,7 @@ import json
 with open("geolexica.html") as fp:
     soup = BeautifulSoup(fp, 'html.parser')
 
+cfout = open('./data/tc211/0.csv','w')
 
 for term in soup.find_all('tr'):
     filename = ''
@@ -23,7 +24,9 @@ for term in soup.find_all('tr'):
         path, headers = urlretrieve('https://isotc211.geolexica.org/api/concepts/'+termid_number+'.json', './data/json/'+filename+".json")
         for name, value in headers.items():
             print(name, value)
-
+        
+        cfout.write(filename+".json"+','+label+'\n')
+        
         with open('./data/json/'+filename+".json") as f:
             d = json.load(f)
             fout = open('./data/tc211/'+filename+".adoc",'w')
@@ -32,3 +35,4 @@ for term in soup.find_all('tr'):
             fout.write(d['eng']['definition'][0]['content']+"\n\n")
             fout.write("(Source: ISO)\n\n")
             fout.close()
+cfout.close()
