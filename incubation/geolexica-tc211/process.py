@@ -4,7 +4,7 @@ import json
 with open("geolexica.html") as fp:
     soup = BeautifulSoup(fp, 'html.parser')
 
-cfout = open('./data/tc211/0.csv','w')
+cfout = open('./data/adoc/0.csv','w')
 
 for term in soup.find_all('tr'):
     filename = ''
@@ -20,19 +20,21 @@ for term in soup.find_all('tr'):
             label = a_term_label.get_text().strip()
             filename = filename +'_'+ a_term_label.get_text().strip().replace(' ','_')
     if len(filename) > 0:
-
-        path, headers = urlretrieve('https://isotc211.geolexica.org/api/concepts/'+termid_number+'.json', './data/json/'+filename+".json")
-        for name, value in headers.items():
-            print(name, value)
-        
+        filename = filename.replace(',','_')
+        print('reading '+'https://isotc211.geolexica.org/api/concepts/'+termid_number+'.json')
+        urlretrieve('https://isotc211.geolexica.org/api/concepts/'+termid_number+'.json','./data/json/'+filename+".json")
         cfout.write(filename+".json"+','+label+'\n')
-        
         with open('./data/json/'+filename+".json") as f:
             d = json.load(f)
-            fout = open('./data/tc211/'+filename+".adoc",'w')
+            fout = open('./data/adoc/'+filename+".adoc",'w')
             print(filename)
             fout.write("=== "+d['term']+"\n\n")
-            fout.write(d['eng']['definition'][0]['content']+"\n\n")
-            fout.write("(Source: ISO)\n\n")
+            for definition in d['eng']['definition']:
+                fout.write(definition['content']+"\n\n")
+            for note in d['eng']['notes']:
+                fout.write('NOTE: '+note['content']+"\n\n")
+            for source in d['eng']['sources']:
+                fout.write('(Source: '+source['origin']['ref']+")\n\n")                
+         
             fout.close()
 cfout.close()
