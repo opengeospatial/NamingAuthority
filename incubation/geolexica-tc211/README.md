@@ -1,6 +1,6 @@
 ## Geolexica concept list parser
 
-download the concepts list from https://isotc211.geolexica.org/concepts/ to a file named `geolexica.html`
+To harvest the concepts, download the concepts list from https://isotc211.geolexica.org/concepts/ to a file named `geolexica.html`
 
 then run the python script `process.py`
 
@@ -15,4 +15,4 @@ include::./glossaries/tc211/1018_feature_identifier.adoc[]
 ```
 
 
-last modified: 2024-11-18
+last modified: 2024-11-22
