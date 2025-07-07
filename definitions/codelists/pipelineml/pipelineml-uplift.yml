@@ -1,0 +1,57 @@
+input-filter:
+  xml:
+    process-namespaces: true
+    namespaces:
+      'http://www.opengis.net/gml/3.2': gml
+      'http://www.isotc211.org/2005/gmx': gmx
+      'http://www.isotc211.org/2005/gco': gco
+      'http://www.w3.org/1999/xlink': xlink
+      'http://www.w3.org/2001/XMLSchema-instance': xsi
+transform:
+  - |
+    def to_array: if type != "array" then [.] end;
+    def to_namespace: try if test("[#/]$") | not then . + "/" end catch "";
+    def get_id($parent_id):
+      if ."gml:identifier" | to_array | .[0]? then
+        ."gml:identifier" | (._codeSpace | to_namespace) + ._
+      else
+        ($parent_id | to_namespace) + ."_gml:id"
+      end
+    ;
+    def get_notation: ."gml:identifier" | to_array | map({
+      "@value": ._,
+      "@type": "URN"
+    });
+    .metadata.filename as $FILENAME |
+    .data."gml:Dictionary" | to_array | map(
+      ("PipelineML - \(."_gml:id")" | { "@value": ., "@language": "en" }) as $LABEL |
+      (."gml:identifier" | to_array | .[0]._codeSpace | to_namespace)? as $NAMESPACE |
+      {
+        "@id": get_id(""),
+        "@type": "skos:ConceptScheme",
+        "rdfs:label": $LABEL,
+        "skos:prefLabel": $LABEL,
+        "skos:changeNote": "Bulk import via Ingest JSON module on \(now | todateiso8601) from source \($FILENAME)",
+        "skos:definition": ."gml:description"?,
+        "skos:notation": get_notation,
+        "concepts": ."gml:dictionaryEntry" | to_array | map(
+          ."gml:Definition" |
+          {
+            "@id": get_id($NAMESPACE),
+            "@type": "skos:Concept",
+            "skos:notation": get_notation,
+            "skos:definition": ."gml:description"?,
+            "skos:prefLabel": { "@value": ."gml:name" // ."_gml:id", "@language": "en" }
+          }
+        )
+      }
+    )
+    - .
+context:
+  '$':
+    skos: http://www.w3.org/2004/02/skos/core#
+    rdfs: http://www.w3.org/2000/01/rdf-schema#
+    URN: http://www.opengis.net/def/metamodel/URN
+    concepts:
+      '@reverse': skos:inScheme
+
