@@ -9,8 +9,12 @@ input-filter:
       'http://www.w3.org/2001/XMLSchema-instance': xsi
 transform:
   - |
+    # Converts anything that is not an array into an array
     def to_array: if type != "array" then [.] end;
+    # Appends a forward slash to a string if it is not a proper namespace
     def to_namespace: try if test("[#/]$") | not then . + "/" end catch "";
+    # Extracts an identifier from the first gml:identifier that is found in the object
+    # Falls back to the @gml:id using the $parent_id as the namespace, if any
     def get_id($parent_id):
       if ."gml:identifier" | to_array | .[0]? then
         ."gml:identifier" | (._codeSpace | to_namespace) + ._
@@ -18,16 +22,18 @@ transform:
         ($parent_id | to_namespace) + ."_gml:id"
       end
     ;
+    # Returns an array of gml:identifier's with type URN 
     def get_notation: ."gml:identifier" | to_array | map({
       "@value": ._,
       "@type": "URN"
     });
     .metadata.filename as $FILENAME |
     .data."gml:Dictionary" | to_array | map(
+      # Label from gml:id
       ("PipelineML - \(."_gml:id")" | { "@value": ., "@language": "en" }) as $LABEL |
       (."gml:identifier" | to_array | .[0]._codeSpace | to_namespace)? as $NAMESPACE |
       {
-        "@id": get_id(""),
+        "@id": get_id("") | ascii_downcase,
         "@type": "skos:ConceptScheme",
         "rdfs:label": $LABEL,
         "skos:prefLabel": $LABEL,
