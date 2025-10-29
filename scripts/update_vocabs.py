@@ -157,6 +157,14 @@ DOMAIN_CFG['entities'] = {
   'uri_root_filter': '/def/'
   }
 
+DOMAIN_CFG[ 'incubation/geopose'] =  {
+  'glob': '/*.ttl',
+  'rulelist': OWL_RULES,
+  'validator': SKOS_VALIDATOR,
+  'extraont': None,
+  'uri_root_filter': '/ogc/geopose/'
+}
+
 DEFAULT_RDF_SERVICE = 'http://defs-dev.opengis.net:8080'
 
 def load_vocab(vocab: Path, guri):
