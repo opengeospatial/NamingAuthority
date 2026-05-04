@@ -1,9 +1,12 @@
+#!/usr/bin/env python3
+
+# Metanorma generated standards
+# python3 processor.py 22-047r1.html https://docs.ogc.org/is/22-047r1/22-047r1.html http://www.opengis.net/spec/geosparql/1.1
+
 from lxml import etree
 import json
 import sys
 from datetime import datetime
-
-
 
 def check_num_segments(inputstring):
     #inputstring = "https://docs.ogc.org/is/22-047r1/22-047r1.html#conf_mf_tproperty_delete_success,http://www.opengis.net/spec/geosparql/1.1/conf/movingfeatures/tproperty-delete-success"
@@ -11,8 +14,8 @@ def check_num_segments(inputstring):
         token = inputstring[1+inputstring.index("/req/"):]
         return str(len(token.split("/")))
     elif "/conf/" in inputstring:
-        token = inputstring[1+inputstring.index("/conf/"):]   
-        return str(len(token.split("/"))) 
+        token = inputstring[1+inputstring.index("/conf/"):]
+        return str(len(token.split("/")))
     else:
         return str(0)
 
@@ -25,38 +28,52 @@ def check_segments(elem_type,inputstring):
         elif len(token.split("/")) == 3 and elem_type == "requirement":
             return "PASS"
         else:
-            return "FAIL"      
-            
+            return "FAIL"
+
     elif "/conf/" in inputstring:
-        token = inputstring[1+inputstring.index("/conf/"):]   
+        token = inputstring[1+inputstring.index("/conf/"):]
         if len(token.split("/")) == 2 and elem_type == "conformance_class":
             return "PASS"
         elif len(token.split("/")) == 3 and elem_type == "abstract_test":
             return "PASS"
         else:
-            return "FAIL"          
+            return "FAIL"
     else:
         return "FAIL"
 
 
+def append_if_new(outputstring, value):
+    if not value:
+        return outputstring
+
+    parts = outputstring.split(",") if outputstring else []
+
+    # Only append if different from last element
+    if not parts or parts[-1] != value:
+        if outputstring:
+            return outputstring + "," + value
+        else:
+            return value
+    return outputstring
+
+
 def main(argv):
 
-    # python3 processor.py 22-047r1.html https://docs.ogc.org/is/22-047r1/22-047r1.html http://www.opengis.net/spec/geosparql/1.1 
+    # python3 processor.py 22-047r1.html https://docs.ogc.org/is/22-047r1/22-047r1.html http://www.opengis.net/spec/geosparql/1.1
     # python3 processor.py 22-003.html https://docs.ogc.org/is/22-003/22-003.html http://www.opengis.net/spec/ogcapi-movingfeatures-1/1.0
 
     baseURI = argv[2]
     source_webpage = argv[1]
-    document_number = str(argv[0]).lower().replace(".html","")  
+    document_number = str(argv[0]).lower().replace(".html","")
 
     wd = "./"
+    fout = open(wd + document_number + '.csv', 'w')
 
-
-
-    fout = open(wd+document_number+'.csv','w')
     now = datetime.now()
 
     current_time = now.strftime("%Y-%m-%dT%H:%M:%S")
-    fout.write("timestamp,target,source,type,num_segments,segment_result\n")
+#    fout.write("timestamp,target,source,type,num_segments,segment_result\n")
+    fout.write("target,source\n")
 
 
     with open(wd+document_number+".html",'r') as file:
@@ -77,18 +94,19 @@ def main(argv):
                         if 'class' in paragraph.attrib:
                             if paragraph.attrib['class'] == 'RecommendationTitle' or paragraph.attrib['class'] == 'RecommendationTestTitle':
                                 if 'id' in row.attrib:
-                                    outputstring = outputstring +str(current_time)+","+ source_webpage+"#"+str(row.attrib['id'])
+                                    #outputstring = outputstring +str(current_time)+","+ source_webpage+"#"+str(row.attrib['id'])
+                                    outputstring = outputstring + source_webpage+"#"+str(row.attrib['id'])
                                 readingModSpecElement = True
                                 if "Requirements class " in str(paragraph.text):
                                     modSpecElementType = "requirements_class"
                                 elif "Conformance class " in str(paragraph.text):
-                                    modSpecElementType = "conformance_class"                                   
+                                    modSpecElementType = "conformance_class"
                                 elif "Requirement " in str(paragraph.text):
-                                    modSpecElementType = "requirement"  
+                                    modSpecElementType = "requirement"
                                 elif "Abstract test " in str(paragraph.text):
                                     modSpecElementType = "abstract_test"
                                 else:
-                                    modSpecElementType = str(paragraph.text)                                                                    
+                                    modSpecElementType = str(paragraph.text)
                                 print(paragraph.text)
             if readingModSpecElement == True:
                 trElements = row.findall(".//tr")
@@ -104,12 +122,28 @@ def main(argv):
                                         outputstring = outputstring +","+str(ttElement.text)+""
                                     else:
                                         outputstring = outputstring +","+baseURI+ str(ttElement.text)+""
+                        elif str(thElement.text) == 'Label':
+                            tdElements = trElement.findall(".//td")
+                            for tdElement in tdElements:
+                                label_text = ''.join(tdElement.itertext()).strip()
+                                print(str(label_text)+"\n")  ### HERE
+                                existing_values = outputstring.split(",")
+                                if label_text and label_text not in existing_values:
+                                    if "www.opengis.net" in label_text or "https://www.opengis.net" in label_text:
+                                        outputstring = append_if_new(outputstring, label_text)
+                                    else:
+                                        outputstring = append_if_new(outputstring, baseURI + label_text)
+
             if(len(outputstring)>0):
-                fout.write(outputstring+","+str(modSpecElementType)+","+check_num_segments(outputstring)+","+check_segments(str(modSpecElementType),outputstring)+"\n")
-                print(outputstring+"\n")
+                #fout.write(outputstring+","+str(modSpecElementType)+","+check_num_segments(outputstring)+","+check_segments(str(modSpecElementType),outputstring)+"\n")
+                fout.write(outputstring+"\n")
+                #print(outputstring+"\n")
+                print(outputstring+","+str(modSpecElementType)+","+check_num_segments(outputstring)+","+check_segments(str(modSpecElementType),outputstring)+"\n")
 
     fout.close()
 
 
 if __name__ == "__main__":
    main(sys.argv[1:])
+
+# vim: ts=4
