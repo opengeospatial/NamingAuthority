@@ -2,6 +2,8 @@
 
 #############################################################
 
+### use with asciidoc manual generated schema and not metanorma generated files
+
 # 23-058r2: OGC API - Features - Part 5 / OGC API - Common - Part 3: Schemas
 # https://github.com/opengeospatial/ogcapi-features/tree/master/extensions/schemas/standard
 # https://www.ogc.org/standards/ogcapi-features/ ==> https://docs.ogc.org/is/23-058r2/23-058r2.html
