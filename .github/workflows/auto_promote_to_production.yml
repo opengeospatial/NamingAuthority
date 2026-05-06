@@ -1,0 +1,32 @@
+name: Auto-promote to Production
+on:
+  schedule:
+    - cron: '0 1 * * *'
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bring in repo
+        uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - name: Install Python dependencies
+        run: |
+          python -m pip install -U pip
+          pip install -r scripts/requirements.txt
+      - name: Promote auto entries to production
+        env:
+          DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          PROD_RDF_SERVICE_URL: ${{ vars.PROD_RDF_SERVICE_URL }}
+        run: |
+          python scripts/promote_to_production.py --auto-only
+      - name: Commit updated tracker
+        uses: EndBug/add-and-commit@v7
+        with:
+          add: production-tracker.json
+          message: "Update production tracker"
+          default_author: github_actions

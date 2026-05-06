@@ -1,0 +1,36 @@
+name: Promote to Production
+on:
+  workflow_dispatch:
+    inputs:
+      file-filter:
+        description: "Comma-separated glob patterns for source files to promote. Use '*' for all."
+        type: string
+        required: true
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bring in repo
+        uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+      - name: Install Python dependencies
+        run: |
+          python -m pip install -U pip
+          pip install -r scripts/requirements.txt
+      - name: Promote to production
+        env:
+          DB_USERNAME: ${{ secrets.PROD_DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.PROD_DB_PASSWORD }}
+          PROD_RDF_SERVICE_URL: ${{ vars.PROD_RDF_SERVICE_URL }}
+        run: |
+          python scripts/promote_to_production.py "${{ inputs.file-filter }}"
+      - name: Commit updated tracker
+        uses: EndBug/add-and-commit@v7
+        with:
+          add: production-tracker.json
+          message: "Update production tracker"
+          default_author: github_actions
