@@ -5,11 +5,36 @@ transform:
   - '[ .[] | . + {"alternative": [ .alternative, .identifier ], "@type": "skos:Concept" } ]'
   # Bind broader to doctype, add inScheme, add notation
   - '[ .[] | . + {"broader": .type, "inScheme": "http://www.opengis.net/def/docs", "notation": .identifier} ]'
+  # Embed https alias as owl:sameAs nested node inside each http concept
+  - |
+    [
+      .[] |
+      if .identifier != null and (.identifier | startswith("https://") | not) then
+        (if (.identifier | startswith("http://")) then .identifier
+         else "http://www.opengis.net/def/docs/" + .identifier
+         end) as $httpUri |
+        . + {
+          "owl:sameAs": {
+            "@id": ("https://" + ($httpUri | ltrimstr("http://"))),
+            "@type": "skos:Concept",
+            "rdfs:label": {"@value": ("Alias of " + $httpUri), "@language": "en"},
+            "skos:definition": {"@value": "This is an alias of the concept referenced by the sameAs predicate.", "@language": "en"},
+            "owl:sameAs": {"@id": $httpUri},
+            "skos:inScheme": {"@id": "https://www.opengis.net/def/alias-register"},
+            "skos:prefLabel": {"@value": ("Alias of " + $httpUri), "@language": "en"},
+            "na:status": {"@id": "http://www.opengis.net/def/status/experimental"}
+          }
+        }
+      else .
+      end
+    ]
   # Add concept scheme
   - '. + [{"@id": "http://www.opengis.net/def/docs", "@type": "skos:ConceptScheme", "skos:changeNote": "loaded from https://portal.opengeospatial.org/public_ogc/api/docs.php?CITE=1", "skos:prefLabel": "OGC Documents", "skos:definition": "OGC document register with annotations and links"}]'
 
 context:
   '$':
+    '@base': 'http://www.opengis.net/def/docs/'
+    owl: http://www.w3.org/2002/07/owl#
     skos: http://www.w3.org/2004/02/skos/core#
     dct: http://purl.org/dc/terms/
     rdfs: http://www.w3.org/2000/01/rdf-schema#
@@ -27,7 +52,6 @@ context:
     type:
       '@id': na:doctype
       '@type': '@id'
-    '@base': 'http://www.opengis.net/def/docs/'
     identifier: '@id'
     URL:
       '@id': rdfs:seeAlso
