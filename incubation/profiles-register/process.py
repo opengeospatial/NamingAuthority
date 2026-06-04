@@ -11,7 +11,7 @@ from datetime import datetime
 from rdflib.namespace import DC, DCTERMS, DOAP, FOAF, SKOS, OWL, RDF, RDFS, VOID, XMLNS, XSD
 
 
-ttlOutputFileName = "profiles.ttl"
+ttlOutputFileName = "profiles_register.ttl"
 schemeURI = "https://www.opengis.net/def/profile"
 collectionAndSchemeLabel = "Profiles Register"
 collectionAndSchemeDefinition = "This is a register of Profiles. "
